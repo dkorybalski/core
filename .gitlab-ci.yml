@@ -1,0 +1,107 @@
+#workflow:
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+include:
+  - "cicd-config/.rules-ci.yml"
+  - "cicd-config/.variables-ci.yml"
+
+stages:
+  - clean
+  - build
+  - test
+  - build-image
+  - publish-image
+  - deploy
+
+clean:
+  extends:
+    - .dev-branch-rules
+    - .main-branch-rules
+  image: $IMAGE_OPENJDK_MVN
+  stage: clean
+  # Cache downloaded dependencies and plugins between builds.
+  # The key here separates one cache per branch/tag ($CI_COMMIT_REF_SLUG)
+  cache:
+    key: "maven-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository
+  script:
+    - echo "Cleaning leftovers from previous builds"
+    - mvn $MAVEN_CLI_OPTS clean -B
+
+build:
+  extends:
+    - .dev-branch-rules
+    - .main-branch-rules
+  image: $IMAGE_OPENJDK_MVN
+  stage: build
+  # Cache downloaded dependencies and plugins between builds.
+  # The key here separates one cache per branch/tag ($CI_COMMIT_REF_SLUG)
+  cache:
+    key: "maven-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository
+  script:
+    - echo "Compiling the code..."
+    - mvn $MAVEN_CLI_OPTS package -DskipTests=true -B
+  artifacts:
+    name: "Maven artifacts from $CI_PROJECT_NAME on $CI_COMMIT_REF_SLUG"
+    paths:
+      - "**/target"
+
+code-analysis:
+  extends:
+    - .dev-branch-rules
+    - .main-branch-rules
+  image: $IMAGE_OPENJDK_MVN
+  stage: test
+  script:
+    - echo "Running SonarQube..."
+    - echo "To be done..."
+
+unit-test:
+  extends:
+    - .dev-branch-rules
+    - .main-branch-rules
+  image: $IMAGE_OPENJDK_MVN
+  stage: test
+  # Cache downloaded dependencies and plugins between builds.
+  # The key here separates one cache per branch/tag ($CI_COMMIT_REF_SLUG)
+  cache:
+    key: "maven-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository
+  script:
+    - echo "Running unit tests..."
+    - mvn $MAVEN_CLI_OPTS test
+
+build-image:
+  extends:
+    - .main-branch-rules
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'SYSPRI-18-2'
+  stage: build-image
+  script:
+    - echo "Building Docker Image..."
+#    - docker build -t $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA .
+#    - docker build -t $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:latest .
+
+publish-image:
+  extends:
+    - .main-branch-rules
+  stage: publish-image
+  script:
+    - echo "Publishing Docker Image..."
+#    - docker login -u our-docker -p $OUR-DOCKER_CONTAINER_REGISTRY_TOKEN $CI_REGISTRY
+#    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA
+#    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:latest
+
+# Alternative down stream pipeline to be triggered
+deploy:
+  extends:
+    - .main-branch-rules
+  stage: deploy
+  script:
+    - echo "Deployment... 1, 2, 3... 4"
+#  trigger: our-docker/our-image
