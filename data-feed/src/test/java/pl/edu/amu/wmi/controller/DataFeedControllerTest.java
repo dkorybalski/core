@@ -28,6 +28,7 @@ class DataFeedControllerTest {
         RestAssured
                 .given()
                 .multiPart(getMultiPart())
+                .param("studyYear", "2023#FullTime")
                 .when()
                 .post(uri + "/data/students")
                 .then()

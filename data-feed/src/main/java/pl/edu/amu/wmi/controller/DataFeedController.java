@@ -21,11 +21,16 @@ public class DataFeedController {
     }
 
     @PostMapping("/students")
-    public ResponseEntity<Void> createStudents(@RequestParam MultipartFile data) {
-        // TODO: 5/11/2023 make it async
+    public ResponseEntity<Void> createStudents(@RequestParam MultipartFile data, @RequestParam String studyYear) {
         DataFeedService service = DataFeedServiceFactory.getService(DataFeedType.NEW_STUDENT);
-        service.saveRecords(data);
+        service.saveRecords(data, studyYear);
+        return ResponseEntity.ok().build();
+    }
 
+    @PostMapping("/instructors")
+    public ResponseEntity<Void> createInstructors(@RequestParam MultipartFile data, @RequestParam String studyYear) {
+        DataFeedService service = DataFeedServiceFactory.getService(DataFeedType.NEW_INSTRUCTOR);
+        service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
     }
 

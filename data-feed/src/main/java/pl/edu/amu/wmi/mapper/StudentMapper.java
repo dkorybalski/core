@@ -5,17 +5,25 @@ import org.mapstruct.Mapping;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface StudentMapper {
 
-    @Mapping(target = "userData.firstName", source = "firstName")
-    @Mapping(target = "userData.lastName", source = "lastName")
-    @Mapping(target = "userData.email", source = "email")
-    Student mapToEntity(NewStudentDTO dto);
+    @Mapping(target = "userData.firstName", source = "dto.firstName")
+    @Mapping(target = "userData.lastName", source = "dto.lastName")
+    @Mapping(target = "userData.email", source = "dto.email")
+    @Mapping(target = "studyYear", source = "studyYear")
+    Student mapToEntity(NewStudentDTO dto, String studyYear);
 
-    List<Student> mapToEntities(List<NewStudentDTO> dtos);
+    default List<Student> mapToEntities(List<NewStudentDTO> dtos, String studyYear) {
+        List<Student> entities = new ArrayList<>();
+        for (NewStudentDTO dto : dtos) {
+            entities.add(mapToEntity(dto, studyYear));
+        }
+        return entities;
+    }
 
     @Mapping(target = "firstName", source = "userData.firstName")
     @Mapping(target = "lastName", source = "userData.lastName")

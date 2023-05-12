@@ -42,6 +42,37 @@ paths:
       tags:
       - data-feed-controller
       operationId: createStudents
+      parameters:
+      - name: studyYear
+        in: query
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - data
+              type: object
+              properties:
+                data:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+  /data/instructors:
+    post:
+      tags:
+      - data-feed-controller
+      operationId: createInstructors
+      parameters:
+      - name: studyYear
+        in: query
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:

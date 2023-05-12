@@ -38,9 +38,9 @@ public class DataFeedStudentServiceImpl implements DataFeedService {
     }
 
     @Override
-    public void saveRecords(MultipartFile data) {
+    public void saveRecords(MultipartFile data, String studyYear) {
         List<NewStudentDTO> newStudents = parseDataFromFileToObjects(data);
-        saveNewStudents(newStudents);
+        saveNewStudents(newStudents, studyYear);
     }
 
     private List<NewStudentDTO> parseDataFromFileToObjects(MultipartFile data) {
@@ -67,8 +67,8 @@ public class DataFeedStudentServiceImpl implements DataFeedService {
         return newStudents;
     }
 
-    public List<NewStudentDTO> saveNewStudents(List<NewStudentDTO> newStudents) {
-        List<Student> entities = studentMapper.mapToEntities(newStudents);
+    public List<NewStudentDTO> saveNewStudents(List<NewStudentDTO> newStudents, String studyYear) {
+        List<Student> entities = studentMapper.mapToEntities(newStudents, studyYear);
         List<Student> students = studentDAO.saveAll(entities);
         return studentMapper.mapToDTOs(students);
     }
