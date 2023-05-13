@@ -81,11 +81,30 @@ publish-image:
 #    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA
 #    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:latest
 
+pages:
+  extends:
+    - .after-merge-rule
+  image: $IMAGE_NODE_LATEST
+  stage: deploy
+  cache:
+    paths:
+      - ./node_modules
+  before_script:
+    - npm install swagger-ui-dist@3.22.1
+  script:
+    - mkdir public
+    - cp -rp node_modules/swagger-ui-dist/* public
+    - cp -rp $DOCS_FOLDER/* public
+    - sed -i "s#https://petstore\.swagger\.io/v2/swagger\.json#$SPEC_TO_DISPLAY#g" public/index.html
+  artifacts:
+    paths:
+      - public
+
 # Downstream will be triggered
 deploy:
   extends:
     - .after-merge-rule
   stage: deploy
   script:
-    - echo "Deployment... 1"
+    - echo "Deployment..."
 #  trigger: our-docker/our-image
