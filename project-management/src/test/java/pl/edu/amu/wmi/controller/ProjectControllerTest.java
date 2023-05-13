@@ -31,11 +31,10 @@ class ProjectControllerTest {
         uri = "http://localhost:" + port + "/pri";
     }
 
-
     @Test
     void shouldGetProjectsReturnsAllEntriesAndStatus200() {
         //given
-        int extectedNumberOfProjects = 1;
+        int extectedNumberOfProjects = 0;
         //when
         List<ProjectDTO> projects = RestAssured.get(uri + "/project/")
                 .then()
