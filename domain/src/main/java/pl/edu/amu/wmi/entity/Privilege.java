@@ -1,0 +1,24 @@
+package pl.edu.amu.wmi.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
+
+@Entity
+@Getter
+@Setter
+@EqualsAndHashCode
+@Table(name = "PRIVILEGE")
+public class Privilege extends BaseAbstractEntity {
+
+    private String name;
+
+    @ManyToMany(mappedBy = "privileges")
+    private Set<Role> roles;
+
+}

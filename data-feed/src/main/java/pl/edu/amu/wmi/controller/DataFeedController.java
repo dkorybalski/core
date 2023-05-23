@@ -27,9 +27,9 @@ public class DataFeedController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/instructors")
-    public ResponseEntity<Void> createInstructors(@RequestParam MultipartFile data, @RequestParam String studyYear) {
-        DataFeedService service = DataFeedServiceFactory.getService(DataFeedType.NEW_INSTRUCTOR);
+    @PostMapping("/supervisors")
+    public ResponseEntity<Void> createSupervisor(@RequestParam MultipartFile data, @RequestParam String studyYear) {
+        DataFeedService service = DataFeedServiceFactory.getService(DataFeedType.NEW_SUPERVISOR);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
     }

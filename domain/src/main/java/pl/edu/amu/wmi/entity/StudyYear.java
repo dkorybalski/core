@@ -3,17 +3,22 @@ package pl.edu.amu.wmi.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.NaturalId;
 import pl.edu.amu.wmi.enumerations.StudyType;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @Entity
 @Table(name = "STUDY_YEAR")
 public class StudyYear extends AbstractEntity {
+
+    @Column(name = "STUDY_YEAR")
+    @NaturalId
+    private String studyYear;
 
     @Column(name = "`YEAR`")
     private String year;
@@ -24,13 +29,21 @@ public class StudyYear extends AbstractEntity {
     @Column(name = "`IS_ACTIVE`")
     private boolean isActive;
 
-    @Column(name = "`START_DATE`")
-    private LocalDate startDate;
+    private String firstSemesterCode;
 
-    @Column(name = "`END_DATE`")
-    private LocalDate endDate;
+    /**
+     * field: CDYD_KOD, e.g. value: 2022/SZ
+     */
+    private String secondSemesterCode;
 
-    @Column(name = "`TAG`")
-    private String tag;
+    /**
+     * field: PRZ_KOD, e.g. value: 06-DPRILI0
+     */
+    private String subjectCode;
+
+    /**
+     * field: TZAJ_KOD, e.g. value: LAB
+     */
+    private String subjectType;
 
 }
