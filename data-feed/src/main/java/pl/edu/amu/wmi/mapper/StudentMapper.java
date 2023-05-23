@@ -14,7 +14,6 @@ public interface StudentMapper {
     @Mapping(target = "userData.firstName", source = "dto.firstName")
     @Mapping(target = "userData.lastName", source = "dto.lastName")
     @Mapping(target = "userData.email", source = "dto.email")
-    @Mapping(target = "studyYear", source = "studyYear")
     Student mapToEntity(NewStudentDTO dto, String studyYear);
 
     default List<Student> mapToEntities(List<NewStudentDTO> dtos, String studyYear) {

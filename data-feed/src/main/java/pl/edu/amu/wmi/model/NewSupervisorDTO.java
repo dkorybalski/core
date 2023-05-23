@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class NewInstructorDTO {
+public class NewSupervisorDTO {
 
     @CsvBindByName(column= "nazwisko")
     private String lastName;

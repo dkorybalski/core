@@ -8,6 +8,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 @Entity
 @Table(name = "PROJECT")
 public class Project extends AbstractEntity {
@@ -16,7 +17,7 @@ public class Project extends AbstractEntity {
 
     private String description;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "confirmedProject")
     private Set<Student> students;
 
     private Set<String> technologies;
@@ -24,15 +25,18 @@ public class Project extends AbstractEntity {
     private AcceptanceStatus acceptanceStatus;
 
     @ManyToOne
-    @JoinColumn(name = "INSTRUCTOR_ID")
-    private Instructor instructor;
+    @JoinColumn(name = "SUPERVISOR_ID")
+    private Supervisor supervisor;
 
     @OneToMany
     @JoinColumn(name = "PROJECT_ID")
     private Set<ExternalLink> externalLinks;
 
     @ManyToOne
-    @JoinColumn(name = "STUDY_YEAR_ID")
+    @JoinColumn(
+            name = "STUDY_YEAR",
+            referencedColumnName = "STUDY_YEAR"
+    )
     private StudyYear studyYear;
 
 }
