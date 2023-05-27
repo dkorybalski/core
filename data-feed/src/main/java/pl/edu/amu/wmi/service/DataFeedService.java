@@ -8,5 +8,4 @@ public interface DataFeedService {
     DataFeedType getType();
 
     void saveRecords(MultipartFile data, String studyYear);
-
 }

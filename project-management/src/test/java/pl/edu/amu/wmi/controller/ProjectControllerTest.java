@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import pl.edu.amu.wmi.model.ProjectDTO;
+import pl.edu.amu.wmi.model.ProjectCreationRequestDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.util.List;
@@ -34,13 +34,17 @@ class ProjectControllerTest {
     @Test
     void shouldGetProjectsReturnsAllEntriesAndStatus200() {
         //given
-        int extectedNumberOfProjects = 0;
+        int expectedNumberOfProjects = 0;
         //when
-        List<ProjectDTO> projects = RestAssured.get(uri + "/project/")
+        List<ProjectCreationRequestDTO> projects = RestAssured.get(uri + "/project/")
                 .then()
                 .statusCode(200)
-                .extract().body().jsonPath().getList(".", ProjectDTO.class);
+                .extract().body().jsonPath().getList(".", ProjectCreationRequestDTO.class);
         //then
-        assertThat(projects).hasSize(extectedNumberOfProjects);
+        assertThat(projects).hasSize(expectedNumberOfProjects);
+    }
+
+    @Test
+    void shouldCreateNewProjectReturnsProjectDataAndStatus201() {
     }
 }
