@@ -19,7 +19,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectDTO'
+                  $ref: '#/components/schemas/ProjectCreationRequestDTO'
     post:
       tags:
       - project-controller
@@ -28,7 +28,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectDTO'
+              $ref: '#/components/schemas/ProjectCreationRequestDTO'
         required: true
       responses:
         "200":
@@ -36,7 +36,47 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ProjectDTO'
+                $ref: '#/components/schemas/ProjectCreationResponseDTO'
+  /externallink/single:
+    post:
+      tags:
+      - external-link-controller
+      operationId: createExternalLink
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
+  /externallink/:
+    post:
+      tags:
+      - external-link-controller
+      operationId: createExternalLinks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
   /data/supervisors:
     post:
       tags:
@@ -87,13 +127,119 @@ paths:
       responses:
         "200":
           description: OK
+  /user/supervisor:
+    get:
+      tags:
+      - user-controller
+      operationId: getSupervisors
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupervisorDTO'
+  /user/student:
+    get:
+      tags:
+      - user-controller
+      operationId: getStudents
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentDTO'
 components:
   schemas:
-    ProjectDTO:
+    ProjectCreationRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        technologies:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        acceptanceStatus:
+          type: string
+          enum:
+          - PENDING
+          - CONFIRMED
+          - ACCEPTED
+        supervisorId:
+          type: integer
+          format: int64
+        studyYear:
+          type: string
+    ProjectCreationResponseDTO:
       type: object
       properties:
         id:
           type: integer
           format: int64
-        projectName:
+        name:
           type: string
+        description:
+          type: string
+        technologies:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        acceptanceStatus:
+          type: string
+          enum:
+          - PENDING
+          - CONFIRMED
+          - ACCEPTED
+        supervisor:
+          $ref: '#/components/schemas/SupervisorDTO'
+        studyYear:
+          $ref: '#/components/schemas/StudyYearDTO'
+    StudyYearDTO:
+      type: object
+      properties:
+        studyYear:
+          type: string
+    SupervisorDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userData:
+          $ref: '#/components/schemas/UserDataDTO'
+    UserDataDTO:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+    ExternalLinkCreationRequestDTO:
+      type: object
+      properties:
+        externalLinkDefinitionId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        link:
+          type: string
+    StudentDTO:
+      type: object
+      properties:
+        userData:
+          $ref: '#/components/schemas/UserDataDTO'

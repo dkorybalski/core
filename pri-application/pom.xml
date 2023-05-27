@@ -28,6 +28,11 @@
             <artifactId>project-management</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>pl.edu.amu.wmi</groupId>
+            <artifactId>user-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!--        -->
         <dependency>

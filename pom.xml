@@ -10,6 +10,7 @@
         <module>data-feed</module>
         <module>pri-application</module>
         <module>project-management</module>
+        <module>user-management</module>
     </modules>
 
     <parent>
