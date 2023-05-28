@@ -22,6 +22,7 @@ public class Project extends AbstractEntity {
 
     private Set<String> technologies;
 
+    @Enumerated(EnumType.STRING)
     private AcceptanceStatus acceptanceStatus;
 
     @ManyToOne

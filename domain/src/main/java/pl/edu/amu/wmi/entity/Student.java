@@ -23,6 +23,7 @@ public class Student extends AbstractEntity {
 
     private String pesel;
 
+    @Enumerated(EnumType.STRING)
     private ProjectRole projectRole;
 
     private boolean isProjectAdmin;

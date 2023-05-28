@@ -1,8 +1,6 @@
 package pl.edu.amu.wmi.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +22,7 @@ public class StudyYear extends AbstractEntity {
     private String year;
 
     @Column(name = "`STUDY_TYPE`")
+    @Enumerated(EnumType.STRING)
     private StudyType studyType;
 
     @Column(name = "`IS_ACTIVE`")
