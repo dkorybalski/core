@@ -19,16 +19,27 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectCreationRequestDTO'
+                  $ref: '#/components/schemas/ProjectDetailsDTO'
     post:
       tags:
       - project-controller
       operationId: createProject
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
+        required: true
+        schema:
+          type: string
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProjectCreationRequestDTO'
+              $ref: '#/components/schemas/ProjectDetailsDTO'
         required: true
       responses:
         "200":
@@ -36,47 +47,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ProjectCreationResponseDTO'
-  /externallink/single:
-    post:
-      tags:
-      - external-link-controller
-      operationId: createExternalLink
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
-  /externallink/:
-    post:
-      tags:
-      - external-link-controller
-      operationId: createExternalLinks
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLinkCreationRequestDTO'
+                $ref: '#/components/schemas/ProjectDetailsDTO'
   /data/supervisors:
     post:
       tags:
@@ -157,30 +128,13 @@ paths:
                   $ref: '#/components/schemas/StudentDTO'
 components:
   schemas:
-    ProjectCreationRequestDTO:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        technologies:
-          uniqueItems: true
-          type: array
-          items:
-            type: string
-        acceptanceStatus:
-          type: string
-          enum:
-          - PENDING
-          - CONFIRMED
-          - ACCEPTED
-        supervisorId:
-          type: integer
-          format: int64
-        studyYear:
-          type: string
-    ProjectCreationResponseDTO:
+    ProjectDetailsDTO:
+      required:
+      - description
+      - name
+      - students
+      - supervisor
+      - technologies
       type: object
       properties:
         id:
@@ -195,20 +149,31 @@ components:
           type: array
           items:
             type: string
-        acceptanceStatus:
-          type: string
-          enum:
-          - PENDING
-          - CONFIRMED
-          - ACCEPTED
+        accepted:
+          type: boolean
         supervisor:
           $ref: '#/components/schemas/SupervisorDTO'
-        studyYear:
-          $ref: '#/components/schemas/StudyYearDTO'
-    StudyYearDTO:
+        students:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentDTO'
+        admin:
+          type: string
+    StudentDTO:
       type: object
       properties:
-        studyYear:
+        indexNumber:
+          type: string
+        role:
+          type: string
+          enum:
+          - FRONTEND
+          - BACKEND
+          - FULLSTACK
+        name:
+          type: string
+        email:
           type: string
     SupervisorDTO:
       type: object
@@ -227,19 +192,3 @@ components:
           type: string
         email:
           type: string
-    ExternalLinkCreationRequestDTO:
-      type: object
-      properties:
-        externalLinkDefinitionId:
-          type: integer
-          format: int64
-        projectId:
-          type: integer
-          format: int64
-        link:
-          type: string
-    StudentDTO:
-      type: object
-      properties:
-        userData:
-          $ref: '#/components/schemas/UserDataDTO'

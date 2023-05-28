@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +11,6 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "EXTERNAL_LINK_DEFINITION")
 public class ExternalLinkDefinition extends AbstractEntity {

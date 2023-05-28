@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-1">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-1">
         <createTable tableName="external_link">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_pkey"/>
@@ -21,7 +21,7 @@
             <column name="project_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-2">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-2">
         <createTable tableName="external_link_definition">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_definition_pkey"/>
@@ -40,15 +40,17 @@
             <column name="study_year" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-3">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-3">
         <createTable tableName="privilege">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="privilege_pkey"/>
             </column>
-            <column name="name" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-4">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-4">
         <createTable tableName="project">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="project_pkey"/>
@@ -70,15 +72,17 @@
             <column name="supervisor_id" type="BIGINT"/>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-5">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-5">
         <createTable tableName="role">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="role_pkey"/>
             </column>
-            <column name="name" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-6">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-6">
         <createTable tableName="roles_privileges">
             <column name="role_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="roles_privileges_pkey"/>
@@ -88,7 +92,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-7">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-7">
         <createTable tableName="student">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="student_pkey"/>
@@ -116,17 +120,24 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-8">
-        <createTable tableName="student_assigned_projects">
-            <column name="student_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="student_assigned_projects_pkey"/>
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-8">
+        <createTable tableName="student_project">
+            <column name="is_project_admin" type="BOOLEAN">
+                <constraints nullable="false"/>
             </column>
+            <column name="is_project_confirmed" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_role" type="VARCHAR(255)"/>
             <column name="project_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="student_assigned_projects_pkey"/>
+                <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-9">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-9">
         <createTable tableName="study_year">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="study_year_pkey"/>
@@ -150,7 +161,7 @@
             <column name="year" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-10">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-10">
         <createTable tableName="supervisor">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="supervisor_pkey"/>
@@ -171,7 +182,7 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-11">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-11">
         <createTable tableName="user_data">
             <column autoIncrement="true" name="id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="user_data_pkey"/>
@@ -193,7 +204,7 @@
             <column name="study_year" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-12">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-12">
         <createTable tableName="users_roles">
             <column name="user_data_id" type="BIGINT">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="users_roles_pkey"/>
@@ -203,52 +214,52 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-13">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-13">
         <addUniqueConstraint columnNames="study_year" constraintName="uk_rsx78kjf2dl232i4xd1onxx6i" tableName="study_year"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-14">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-14">
         <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="supervisor" constraintName="fk4jn5kbua0okb63po1g2t3s9pp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-15">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-15">
         <addForeignKeyConstraint baseColumnNames="privilege_id" baseTableName="roles_privileges" constraintName="fk5yjwxw2gvfyu76j3rgqwo685u" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="privilege" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-16">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-16">
         <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="external_link_definition" constraintName="fk643p6wcr83unkod5o2471yvos" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-17">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-17">
         <addForeignKeyConstraint baseColumnNames="external_link_definition_id" baseTableName="external_link" constraintName="fk7g7srntbaps7rrirn2ttfmurj" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="external_link_definition" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-18">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-18">
         <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="roles_privileges" constraintName="fk9h2vewsqh8luhfq71xokh4who" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-19">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-19">
         <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="project" constraintName="fkbaa8pb9y334aol7an0rrbln35" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-20">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-20">
         <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="student" constraintName="fkbnjvvedj3pq63vyakm3gibcdq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-21">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student_assigned_projects" constraintName="fkfxoja8rxa756e91r3tlkbq409" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-22">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-21">
         <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="users_roles" constraintName="fkhkob4aolu9n58vec7oxvwl8rc" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-23">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-22">
         <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="user_data" constraintName="fkjan3r73o04o3u1y2uvlr8uuq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-24">
-        <addForeignKeyConstraint baseColumnNames="student_id" baseTableName="student_assigned_projects" constraintName="fkk2qdrnnph7hwjmydow71uyfy" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="student" validate="true"/>
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-23">
+        <addForeignKeyConstraint baseColumnNames="student_id" baseTableName="student_project" constraintName="fkl37sau7p5bk28p0v29vhoja4e" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="student" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-25">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-24">
+        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student_project" constraintName="fklmwp7mytxvlna99s526lfvgcp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-25">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="external_link" constraintName="fkpk6tmi9vawd609a856ncr9r0c" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-26">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-26">
         <addForeignKeyConstraint baseColumnNames="supervisor_id" baseTableName="project" constraintName="fkqcjb2k6p87r2ngcggtxnacuam" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="supervisor" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-27">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-27">
         <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student" constraintName="fkr6av6arpoy7wpbqipg41id1mn" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
     </changeSet>
-    <changeSet author="katarzyna.jaroszewska (generated)" id="1685219142707-28">
+    <changeSet author="katarzyna.jaroszewska (generated)" id="1685285979956-28">
         <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="users_roles" constraintName="fkt4v0rrweyk393bdgt107vdx0x" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
     </changeSet>
 </databaseChangeLog>
