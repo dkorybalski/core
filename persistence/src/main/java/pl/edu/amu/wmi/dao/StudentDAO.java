@@ -6,4 +6,9 @@ import pl.edu.amu.wmi.entity.Student;
 
 @Repository
 public interface StudentDAO extends JpaRepository<Student, Long> {
+
+    Student findByUserData_IndexNumber(String indexNumber);
+
+//    Student findByUserData_IndexNumberAndUserData_StudyYear_StudyYear(String indexNumber);
+
 }

@@ -1,7 +1,6 @@
 package pl.edu.amu.wmi.entity;
 
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,7 +8,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "USER_DATA")
 public class UserData extends AbstractEntity {

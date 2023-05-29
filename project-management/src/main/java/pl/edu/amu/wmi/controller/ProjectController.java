@@ -1,11 +1,11 @@
 package pl.edu.amu.wmi.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.amu.wmi.model.ProjectCreationRequestDTO;
-import pl.edu.amu.wmi.model.ProjectCreationResponseDTO;
+import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.util.List;
@@ -22,14 +22,17 @@ public class ProjectController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<ProjectCreationRequestDTO>> getProjects() {
+    public ResponseEntity<List<ProjectDetailsDTO>> getProjects() {
         return ResponseEntity.ok()
                 .body(projectService.findAll());
     }
 
     @PostMapping("/")
-    public ResponseEntity<ProjectCreationResponseDTO> createProject(@RequestBody ProjectCreationRequestDTO project) {
+    public ResponseEntity<ProjectDetailsDTO> createProject(
+            @RequestHeader("study-year") String studyYear,
+            @RequestHeader("user-index-number") String userIndexNumber,
+            @Valid @RequestBody ProjectDetailsDTO project) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(projectService.saveProject(project));
+                .body(projectService.saveProject(project, studyYear, userIndexNumber));
     }
 }

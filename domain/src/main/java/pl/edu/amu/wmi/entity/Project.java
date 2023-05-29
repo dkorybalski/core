@@ -3,12 +3,13 @@ package pl.edu.amu.wmi.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
+import pl.edu.amu.wmi.enumerations.ProjectRole;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @Entity
 @Table(name = "PROJECT")
 public class Project extends AbstractEntity {
@@ -39,5 +40,19 @@ public class Project extends AbstractEntity {
             referencedColumnName = "STUDY_YEAR"
     )
     private StudyYear studyYear;
+
+    @OneToMany(
+            mappedBy = "project",
+            cascade = CascadeType.ALL
+    )
+    private Set<StudentProject> assignedStudents = new HashSet<>();
+
+    public void addStudent(Student student, ProjectRole projectRole, boolean isProjectAdmin) {
+        StudentProject studentProject = new StudentProject(student, this);
+        studentProject.setProjectRole(projectRole);
+        studentProject.setProjectAdmin(isProjectAdmin);
+        assignedStudents.add(studentProject);
+//        student.getAssignedProjects().add(studentProject);
+    }
 
 }

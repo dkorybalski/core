@@ -12,5 +12,6 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <include file="classpath:config/liquibase/2023-05-27-create_tables.xml"/>
+    <include file="classpath:config/liquibase/configuration_studyYear_ExternalLink.xml"/>
 
 </databaseChangeLog>

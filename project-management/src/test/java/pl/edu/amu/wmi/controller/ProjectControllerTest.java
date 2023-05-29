@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import pl.edu.amu.wmi.model.ProjectCreationRequestDTO;
+import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.util.List;
@@ -36,10 +36,10 @@ class ProjectControllerTest {
         //given
         int expectedNumberOfProjects = 0;
         //when
-        List<ProjectCreationRequestDTO> projects = RestAssured.get(uri + "/project/")
+        List<ProjectDetailsDTO> projects = RestAssured.get(uri + "/project/")
                 .then()
                 .statusCode(200)
-                .extract().body().jsonPath().getList(".", ProjectCreationRequestDTO.class);
+                .extract().body().jsonPath().getList(".", ProjectDetailsDTO.class);
         //then
         assertThat(projects).hasSize(expectedNumberOfProjects);
     }
