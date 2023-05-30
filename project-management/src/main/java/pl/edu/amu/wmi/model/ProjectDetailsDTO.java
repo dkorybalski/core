@@ -31,5 +31,6 @@ public class ProjectDetailsDTO {
 
     private String admin;
 
-//    ExternalLinkDTO
+    private Set<ExternalLinkDTO> externalLinks;
+
 }

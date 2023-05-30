@@ -32,7 +32,7 @@ public class Project extends AbstractEntity {
 
     @OneToMany
     @JoinColumn(name = "PROJECT_ID")
-    private Set<ExternalLink> externalLinks;
+    private Set<ExternalLink> externalLinks = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(
@@ -53,6 +53,10 @@ public class Project extends AbstractEntity {
         studentProject.setProjectAdmin(isProjectAdmin);
         assignedStudents.add(studentProject);
 //        student.getAssignedProjects().add(studentProject);
+    }
+
+    public void addExternalLink(ExternalLink externalLink) {
+        externalLinks.add(externalLink);
     }
 
 }
