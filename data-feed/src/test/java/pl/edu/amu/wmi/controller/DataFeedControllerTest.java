@@ -2,6 +2,7 @@ package pl.edu.amu.wmi.controller;
 
 import io.restassured.RestAssured;
 import io.restassured.builder.MultiPartSpecBuilder;
+import io.restassured.http.Header;
 import io.restassured.specification.MultiPartSpecification;
 import jakarta.annotation.PostConstruct;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,22 @@ class DataFeedControllerTest {
                 .multiPart(getMultiPart())
                 .param("studyYear", "2023#FullTime")
                 .when()
-                .post(uri + "/data/students")
+                .post(uri + "/data/import/student")
+                .then()
+                .statusCode(200);
+        //then
+    }
+
+    @Test
+    void shouldDataExportStudentsDataReturn200() {
+        //given
+        //when
+        RestAssured
+                .given()
+                .multiPart(getMultiPart())
+                .header(new Header("study-year", "2023#FullTime"))
+                .when()
+                .get(uri + "/data/export/student")
                 .then()
                 .statusCode(200);
         //then
