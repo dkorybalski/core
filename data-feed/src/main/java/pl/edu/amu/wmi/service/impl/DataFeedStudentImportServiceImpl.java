@@ -10,7 +10,7 @@ import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.mapper.StudentMapper;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
-import pl.edu.amu.wmi.service.DataFeedService;
+import pl.edu.amu.wmi.service.DataFeedImportService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,13 +21,13 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class DataFeedStudentServiceImpl implements DataFeedService {
+public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
 
     private final StudentMapper studentMapper;
 
     private final StudentDAO studentDAO;
 
-    public DataFeedStudentServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO) {
+    public DataFeedStudentImportServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO) {
         this.studentMapper = studentMapper;
         this.studentDAO = studentDAO;
     }
