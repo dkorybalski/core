@@ -10,7 +10,7 @@ import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.mapper.SupervisorMapper;
 import pl.edu.amu.wmi.model.NewSupervisorDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
-import pl.edu.amu.wmi.service.DataFeedService;
+import pl.edu.amu.wmi.service.DataFeedImportService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,13 +21,13 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class DataFeedSupervisorServiceImpl implements DataFeedService {
+public class DataFeedSupervisorImportServiceImpl implements DataFeedImportService {
 
     private final SupervisorMapper supervisorMapper;
 
     private final SupervisorDAO supervisorDAO;
 
-    public DataFeedSupervisorServiceImpl(SupervisorMapper supervisorMapper, SupervisorDAO supervisorDAO) {
+    public DataFeedSupervisorImportServiceImpl(SupervisorMapper supervisorMapper, SupervisorDAO supervisorDAO) {
         this.supervisorMapper = supervisorMapper;
         this.supervisorDAO = supervisorDAO;
     }
