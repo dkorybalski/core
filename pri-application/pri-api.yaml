@@ -102,7 +102,7 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ExternalLinkDataDTO'
-  /data/supervisors:
+  /data/import/supervisor:
     post:
       tags:
       - data-feed-controller
@@ -127,7 +127,7 @@ paths:
       responses:
         "200":
           description: OK
-  /data/students:
+  /data/import/student:
     post:
       tags:
       - data-feed-controller
@@ -180,6 +180,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StudentDTO'
+  /data/export/student:
+    get:
+      tags:
+      - data-feed-controller
+      operationId: exportStudentsData
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
 components:
   schemas:
     ExternalLinkDTO:
