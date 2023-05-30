@@ -17,6 +17,8 @@ public class ExternalLinkDefinition extends AbstractEntity {
 
     private String name;
 
+    private String columnHeader;
+
     private LocalDate deadline;
 
     @ManyToOne

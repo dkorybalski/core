@@ -19,6 +19,6 @@ public class ExternalLink extends AbstractEntity {
     @JoinColumn(name = "EXTERNAL_LINK_DEFINITION_ID")
     private ExternalLinkDefinition externalLinkDefinition;
 
-    private String link;
+    private String url;
 
 }
