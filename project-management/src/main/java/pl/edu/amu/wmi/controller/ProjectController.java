@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
+import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.util.List;
@@ -16,23 +18,44 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    private final ExternalLinkService externalLinkService;
+
     @Autowired
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService) {
         this.projectService = projectService;
+        this.externalLinkService = externalLinkService;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<List<ProjectDetailsDTO>> getProjects() {
         return ResponseEntity.ok()
                 .body(projectService.findAll());
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
             @RequestHeader("user-index-number") String userIndexNumber,
             @Valid @RequestBody ProjectDetailsDTO project) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectService.saveProject(project, studyYear, userIndexNumber));
+    }
+
+    @GetMapping("/{projectId}/external-link")
+    public ResponseEntity<ExternalLinkDataDTO> getExternalLinkDataByProjectId(@PathVariable Long projectId) {
+        return ResponseEntity.ok()
+                .body(externalLinkService.findByProjectId(projectId));
+    }
+
+    @PostMapping("/external-link")
+    public ResponseEntity<ExternalLinkDataDTO> createExternalLinkData(@RequestBody ExternalLinkDataDTO externalLinkData) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(externalLinkService.saveExternalLinkData(externalLinkData));
+    }
+
+    @PutMapping("/{projectId}/external-link")
+    public ResponseEntity<ExternalLinkDataDTO> updateExternalLinkData(@Valid @RequestBody ExternalLinkDataDTO externalLinkData) {
+        return ResponseEntity.ok()
+                .body(externalLinkService.updateExternalLinkData(externalLinkData));
     }
 }
