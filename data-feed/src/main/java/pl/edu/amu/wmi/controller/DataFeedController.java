@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.controller;
 
+import com.opencsv.exceptions.CsvException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -28,24 +29,27 @@ public class DataFeedController {
     }
 
     @PostMapping("/import/student")
-    public ResponseEntity<Void> createStudents(@RequestParam MultipartFile data, @RequestParam String studyYear) {
+    public ResponseEntity<Void> createStudents(@RequestHeader("study-year") String studyYear,
+                                               @RequestHeader("user-index-number") String userIndexNumber, @RequestParam MultipartFile data) throws CsvException {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_STUDENT);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/import/supervisor")
-    public ResponseEntity<Void> createSupervisor(@RequestParam MultipartFile data, @RequestParam String studyYear) {
+    public ResponseEntity<Void> createSupervisor(@RequestHeader("study-year") String studyYear,
+                                                 @RequestHeader("user-index-number") String userIndexNumber,@RequestParam MultipartFile data) throws CsvException {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_SUPERVISOR);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("export/student")
-    public void exportStudentsData(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws IOException {
+    public void exportStudentsData(@RequestHeader("study-year") String studyYear,
+                                   @RequestHeader("user-index-number") String userIndexNumber, HttpServletResponse servletResponse) throws IOException {
         servletResponse.setContentType("text/csv");
         servletResponse.setCharacterEncoding("UTF-8");
-        servletResponse.addHeader("Content-Disposition","attachment; filename=\"students.csv\"");
+        servletResponse.addHeader("Content-Disposition", "attachment; filename=\"students.csv\"");
         dataFeedExportService.exportData(servletResponse.getWriter(), studyYear);
     }
 

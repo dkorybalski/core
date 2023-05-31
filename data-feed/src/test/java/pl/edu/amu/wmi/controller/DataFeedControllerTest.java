@@ -17,6 +17,9 @@ class DataFeedControllerTest {
 
     private String uri;
 
+    private static final Header STUDY_YEAR_HEADER = new Header("study-year", "2023#FullTime");
+    private static final Header USER_INDEX_HEADER = new Header("user-index-number", "666");
+
     @PostConstruct
     public void init() {
         uri = "http://localhost:" + port + "/pri";
@@ -29,7 +32,8 @@ class DataFeedControllerTest {
         RestAssured
                 .given()
                 .multiPart(getMultiPart())
-                .param("studyYear", "2023#FullTime")
+                .header(STUDY_YEAR_HEADER)
+                .header(USER_INDEX_HEADER)
                 .when()
                 .post(uri + "/data/import/student")
                 .then()
@@ -44,7 +48,8 @@ class DataFeedControllerTest {
         RestAssured
                 .given()
                 .multiPart(getMultiPart())
-                .header(new Header("study-year", "2023#FullTime"))
+                .header(STUDY_YEAR_HEADER)
+                .header(USER_INDEX_HEADER)
                 .when()
                 .get(uri + "/data/export/student")
                 .then()
