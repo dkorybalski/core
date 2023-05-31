@@ -15,15 +15,9 @@ public interface StudentMapper {
     @Mapping(target = "userData.lastName", source = "dto.lastName")
     @Mapping(target = "userData.email", source = "dto.email")
     @Mapping(target = "userData.indexNumber", source = "dto.indexNumber")
-    Student mapToEntity(NewStudentDTO dto, String studyYear);
+    Student mapToEntity(NewStudentDTO dto);
 
-    default List<Student> mapToEntities(List<NewStudentDTO> dtos, String studyYear) {
-        List<Student> entities = new ArrayList<>();
-        for (NewStudentDTO dto : dtos) {
-            entities.add(mapToEntity(dto, studyYear));
-        }
-        return entities;
-    }
+    List<Student> mapToEntities(List<NewStudentDTO> dtos);
 
     @Mapping(target = "firstName", source = "userData.firstName")
     @Mapping(target = "lastName", source = "userData.lastName")

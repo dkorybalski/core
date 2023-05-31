@@ -19,6 +19,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -36,6 +42,12 @@ paths:
               $ref: '#/components/schemas/ExternalLinkDataDTO'
         required: true
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -48,6 +60,12 @@ paths:
       - project-controller
       operationId: getProjects
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -78,6 +96,12 @@ paths:
               $ref: '#/components/schemas/ProjectDetailsDTO'
         required: true
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -90,6 +114,12 @@ paths:
       - project-controller
       operationId: getExternalLinkData
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -109,6 +139,12 @@ paths:
               $ref: '#/components/schemas/ExternalLinkDataDTO'
         required: true
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -121,8 +157,13 @@ paths:
       - data-feed-controller
       operationId: createSupervisor
       parameters:
-      - name: studyYear
-        in: query
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
         required: true
         schema:
           type: string
@@ -138,6 +179,12 @@ paths:
                   type: string
                   format: binary
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
   /data/import/student:
@@ -146,8 +193,13 @@ paths:
       - data-feed-controller
       operationId: createStudents
       parameters:
-      - name: studyYear
-        in: query
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
         required: true
         schema:
           type: string
@@ -163,6 +215,12 @@ paths:
                   type: string
                   format: binary
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
   /user/supervisor:
@@ -171,6 +229,12 @@ paths:
       - user-controller
       operationId: getSupervisors
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -185,6 +249,12 @@ paths:
       - user-controller
       operationId: getStudents
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
@@ -204,11 +274,33 @@ paths:
         required: true
         schema:
           type: string
+      - name: user-index-number
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
 components:
   schemas:
+    ErrorInfo:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+        httpStatusNumber:
+          type: integer
+          format: int32
+        errorMessage:
+          type: string
     ExternalLinkDTO:
       required:
       - id
