@@ -47,6 +47,12 @@ public class ProjectController {
                 .body(externalLinkService.findByProjectId(projectId));
     }
 
+    @GetMapping("/external-link")
+    public ResponseEntity<List<ExternalLinkDataDTO>> getExternalLinkData() {
+        return ResponseEntity.ok()
+                .body(externalLinkService.findAll());
+    }
+
     @PostMapping("/external-link")
     public ResponseEntity<ExternalLinkDataDTO> createExternalLinkData(@RequestBody ExternalLinkDataDTO externalLinkData) {
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -85,6 +85,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProjectDetailsDTO'
   /project/external-link:
+    get:
+      tags:
+      - project-controller
+      operationId: getExternalLinkData
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkDataDTO'
     post:
       tags:
       - project-controller
