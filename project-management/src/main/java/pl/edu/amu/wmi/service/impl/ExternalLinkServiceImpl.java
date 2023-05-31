@@ -41,7 +41,17 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
 
     @Override
     public List<ExternalLinkDataDTO> findAll() {
-        return null;
+
+        List<Project> projectEntityList = projectDAO.findAll();
+
+        return projectEntityList.stream()
+                .map(project -> new ExternalLinkDataDTO(
+                        project.getId(),
+                        project.getName(),
+                        externalLinkMapper.mapToDto(project.getSupervisor()),
+                        externalLinkMapper.mapToDtoSet(project.getExternalLinks())))
+                .collect(Collectors.toList());
+
     }
 
     @Override
