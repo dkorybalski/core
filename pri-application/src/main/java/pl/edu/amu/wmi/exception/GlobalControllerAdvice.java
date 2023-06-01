@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.exception;
 
+import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,16 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(DuplicateKeyException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorInfo conflictExceptionHandler(final Exception exception) {
+        log.error("DuplicateKeyException occurred", exception);
         return new ErrorInfo(exception.getMessage(), 409);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(CsvException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorInfo globalExceptionHandler(final Exception exception) {
+        log.error("A CSV exception occurred", exception);
+        return new ErrorInfo(exception.getMessage(), 400);
     }
 
 }

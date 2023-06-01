@@ -1,6 +1,7 @@
 package pl.edu.amu.wmi.model;
 
 import com.opencsv.bean.CsvBindByName;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +19,11 @@ public class NewSupervisorDTO {
 
     @CsvBindByName(column = "email")
     private String email;
+
+    @CsvBindByName(column = "nr_albumu")
+    private String indexNumber;
+
+    @CsvBindByName(column = "nr_grupy")
+    private Integer groupNumber;
 
 }
