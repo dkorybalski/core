@@ -50,7 +50,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectEntityList.sort(Comparator
                 .comparing((Project p) -> p.getAssignedStudents().stream().noneMatch(studentProject -> studentProject.getStudent().equals(studentByIndexNumber)))
-                .thenComparing(p -> p.getSupervisor().getUserData().getIndexNumber().equals(userIndexNumber))
+                .thenComparing(p -> !p.getSupervisor().getUserData().getIndexNumber().equals(userIndexNumber))
                 .thenComparing(Project::getId, Comparator.naturalOrder()));
 
         return projectMapper.mapToDtoList(projectEntityList);
