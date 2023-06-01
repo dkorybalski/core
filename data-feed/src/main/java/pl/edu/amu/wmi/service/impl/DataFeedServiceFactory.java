@@ -25,11 +25,10 @@ public class DataFeedServiceFactory {
         }
     }
 
-    public static final DataFeedImportService getService(DataFeedType type) {
+    public static final DataFeedImportService getService(DataFeedType type) throws Exception {
         DataFeedImportService service = dataFeedServiceCache.get(type);
         if (service == null) {
-            // TODO: 5/12/2023 add exception 
-            throw new RuntimeException("");
+            throw new Exception("Error during DataFeedImportService");
         }
         return service;
     }

@@ -19,6 +19,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -42,6 +48,12 @@ paths:
               $ref: '#/components/schemas/ExternalLinkDataDTO'
         required: true
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -71,6 +83,12 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -107,6 +125,12 @@ paths:
               $ref: '#/components/schemas/ProjectDetailsDTO'
         required: true
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -125,6 +149,12 @@ paths:
       - project-controller
       operationId: getExternalLinkData
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -150,6 +180,12 @@ paths:
               $ref: '#/components/schemas/ExternalLinkDataDTO'
         required: true
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -166,7 +202,7 @@ paths:
     post:
       tags:
       - data-feed-controller
-      operationId: createSupervisor
+      operationId: createSupervisors
       parameters:
       - name: study-year
         in: header
@@ -190,6 +226,12 @@ paths:
                   type: string
                   format: binary
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -226,6 +268,12 @@ paths:
                   type: string
                   format: binary
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -240,6 +288,12 @@ paths:
       - user-controller
       operationId: getSupervisors
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -260,6 +314,12 @@ paths:
       - user-controller
       operationId: getStudents
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -316,6 +376,12 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:

@@ -1,6 +1,7 @@
 package pl.edu.amu.wmi.service.impl;
 
 import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
@@ -27,7 +28,7 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
     }
 
     @Override
-    public void exportData(Writer writer, String studyYearName) {
+    public void exportData(Writer writer, String studyYearName) throws CsvException {
         try (CSVWriter csvWriter = new CSVWriter(writer, ';', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);) {
 
             csvWriter.writeNext(createHeaders());
@@ -39,8 +40,8 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
                 csvWriter.writeNext(createStudentData(student, studyYear));
             }
         } catch (IOException e) {
-            // TODO: 5/30/2023 add proper error
-            e.printStackTrace();
+            log.error("Error during parsing csv file with students data", e);
+            throw new CsvException();
         }
     }
 

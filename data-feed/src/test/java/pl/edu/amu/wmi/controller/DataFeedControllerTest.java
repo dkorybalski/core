@@ -42,6 +42,22 @@ class DataFeedControllerTest {
     }
 
     @Test
+    void shouldCreateSupervisorsReturn200() {
+        //given
+        //when
+        RestAssured
+                .given()
+                .multiPart(getMultiPart())
+                .header(STUDY_YEAR_HEADER)
+                .header(USER_INDEX_HEADER)
+                .when()
+                .post(uri + "/data/import/supervisor")
+                .then()
+                .statusCode(200);
+        //then
+    }
+
+    @Test
     void shouldDataExportStudentsDataReturn200() {
         //given
         //when
