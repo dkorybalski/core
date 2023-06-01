@@ -1,6 +1,15 @@
 package pl.edu.amu.wmi.service.impl;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,17 +51,17 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectMapper = projectMapper;
     }
 
+    // TODO: 5/31/2023 Reimplement this method using Criteria Queries
     @Override
     public List<ProjectDTO> findAll(String studyYear, String userIndexNumber) {
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         List<Project> projectEntityList = projectDAO.findAllByStudyYear(studyYearEntity);
         Student studentByIndexNumber = studentDAO.findByUserData_IndexNumber(userIndexNumber);
 
-        projectEntityList.sort(Comparator.comparing((Project p) -> !(
-                        p.getAssignedStudents().stream().anyMatch(studentProject -> studentProject.getStudent().equals(studentByIndexNumber)) ||
-                        p.getSupervisor().getUserData().getIndexNumber().equals(userIndexNumber)
-                )
-        ).thenComparing(Project::getId, Comparator.naturalOrder()));
+        projectEntityList.sort(Comparator
+                .comparing((Project p) -> p.getAssignedStudents().stream().noneMatch(studentProject -> studentProject.getStudent().equals(studentByIndexNumber)))
+                .thenComparing(p -> p.getSupervisor().getUserData().getIndexNumber().equals(userIndexNumber))
+                .thenComparing(Project::getId, Comparator.naturalOrder()));
 
         return projectMapper.mapToDtoList(projectEntityList);
     }
