@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
+import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
@@ -27,9 +28,11 @@ public class ProjectController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<ProjectDetailsDTO>> getProjects() {
+    public ResponseEntity<List<ProjectDTO>> getProjects(
+            @RequestHeader("study-year") String studyYear,
+            @RequestHeader("user-index-number") String userIndexNumber) {
         return ResponseEntity.ok()
-                .body(projectService.findAll());
+                .body(projectService.findAll(studyYear, userIndexNumber));
     }
 
     @GetMapping("/{id}")

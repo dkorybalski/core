@@ -11,12 +11,13 @@ import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
+import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.StudentDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
 
 @Slf4j
 @Service
@@ -46,9 +47,18 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.mapToDto(projectDAO.findById(id).get());
     }
 
+    // TODO: 5/31/2023 Reimplement this method using Criteria Queries
     @Override
-    public List<ProjectDetailsDTO> findAll() {
-        return projectMapper.mapToDtoList(projectDAO.findAll());
+    public List<ProjectDTO> findAll(String studyYear, String userIndexNumber) {
+        List<Project> projectEntityList = projectDAO.findAllByStudyYear_StudyYear(studyYear);
+        Student studentByIndexNumber = studentDAO.findByUserData_IndexNumber(userIndexNumber);
+
+        projectEntityList.sort(Comparator
+                .comparing((Project p) -> p.getAssignedStudents().stream().noneMatch(studentProject -> studentProject.getStudent().equals(studentByIndexNumber)))
+                .thenComparing(p -> !p.getSupervisor().getUserData().getIndexNumber().equals(userIndexNumber))
+                .thenComparing(Project::getId, Comparator.naturalOrder()));
+
+        return projectMapper.mapToDtoList(projectEntityList);
     }
 
     @Override
