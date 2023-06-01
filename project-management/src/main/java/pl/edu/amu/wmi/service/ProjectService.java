@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface ProjectService {
 
+    ProjectDetailsDTO findById(Long id);
+
     List<ProjectDetailsDTO> findAll();
 
     ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber);

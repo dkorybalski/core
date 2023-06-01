@@ -42,6 +42,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    public ProjectDetailsDTO findById(Long id) {
+        return projectMapper.mapToDto(projectDAO.findById(id).get());
+    }
+
+    @Override
     public List<ProjectDetailsDTO> findAll() {
         return projectMapper.mapToDtoList(projectDAO.findAll());
     }
