@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface ProjectDAO extends JpaRepository<Project, Long> {
 
-    List<Project> findAllByStudyYear(StudyYear studyYear);
+    List<Project> findAllByStudyYear_StudyYear(String studyYear);
 
 }
