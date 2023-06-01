@@ -42,6 +42,11 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectMapper = projectMapper;
     }
 
+    @Override
+    public ProjectDetailsDTO findById(Long id) {
+        return projectMapper.mapToDto(projectDAO.findById(id).get());
+    }
+
     // TODO: 5/31/2023 Reimplement this method using Criteria Queries
     @Override
     public List<ProjectDTO> findAll(String studyYear, String userIndexNumber) {

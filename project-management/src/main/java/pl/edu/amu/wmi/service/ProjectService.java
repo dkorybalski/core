@@ -9,6 +9,8 @@ public interface ProjectService {
 
     List<ProjectDTO> findAll(String studyYear, String userIndexNumber);
 
+    ProjectDetailsDTO findById(Long id);
+
     ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber);
 
 }

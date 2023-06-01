@@ -35,6 +35,12 @@ public class ProjectController {
                 .body(projectService.findAll(studyYear, userIndexNumber));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ProjectDetailsDTO> getProjectById(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .body(projectService.findById(id));
+    }
+
     @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
@@ -43,6 +49,7 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectService.saveProject(project, studyYear, userIndexNumber));
     }
+
 
     @GetMapping("/{projectId}/external-link")
     public ResponseEntity<ExternalLinkDataDTO> getExternalLinkDataByProjectId(@PathVariable Long projectId) {
