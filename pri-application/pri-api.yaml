@@ -59,6 +59,17 @@ paths:
       tags:
       - project-controller
       operationId: getProjects
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
         "409":
           description: Conflict
@@ -73,7 +84,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectDetailsDTO'
+                  $ref: '#/components/schemas/ProjectDTO'
     post:
       tags:
       - project-controller
@@ -413,3 +424,15 @@ components:
           type: string
         email:
           type: string
+    ProjectDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        supervisor:
+          $ref: '#/components/schemas/SupervisorDTO'
+        accepted:
+          type: boolean
