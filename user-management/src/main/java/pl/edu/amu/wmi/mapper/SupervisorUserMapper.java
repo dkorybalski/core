@@ -3,8 +3,8 @@ package pl.edu.amu.wmi.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.edu.amu.wmi.entity.Supervisor;
-import pl.edu.amu.wmi.model.SupervisorCreationRequestDTO;
-import pl.edu.amu.wmi.model.SupervisorDTO;
+import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
+import pl.edu.amu.wmi.model.user.SupervisorDTO;
 
 import java.util.List;
 

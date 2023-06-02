@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.amu.wmi.model.StudentDTO;
-import pl.edu.amu.wmi.model.SupervisorCreationRequestDTO;
-import pl.edu.amu.wmi.model.SupervisorDTO;
+import pl.edu.amu.wmi.model.user.StudentDTO;
+import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
+import pl.edu.amu.wmi.model.user.SupervisorDTO;
 import pl.edu.amu.wmi.service.StudentService;
 import pl.edu.amu.wmi.service.SupervisorService;
 

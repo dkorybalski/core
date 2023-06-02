@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.model;
+package pl.edu.amu.wmi.model.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
