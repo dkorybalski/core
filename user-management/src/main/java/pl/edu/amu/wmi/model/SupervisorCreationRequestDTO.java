@@ -1,13 +1,15 @@
 package pl.edu.amu.wmi.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class SupervisorDTO {
+public class SupervisorCreationRequestDTO {
 
     private String surname;
 
@@ -16,5 +18,7 @@ public class SupervisorDTO {
     private String email;
 
     private String indexNumber;
+
+    private Integer groupNumber;
 
 }

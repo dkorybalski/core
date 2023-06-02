@@ -66,6 +66,72 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ExternalLinkDataDTO'
+  /user/supervisor:
+    get:
+      tags:
+      - user-controller
+      operationId: getSupervisors
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupervisorDTO'
+    post:
+      tags:
+      - user-controller
+      operationId: createSupervisor
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupervisorCreationRequestDTO'
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SupervisorDTO'
   /project:
     get:
       tags:
@@ -282,32 +348,6 @@ paths:
                 $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
-  /user/supervisor:
-    get:
-      tags:
-      - user-controller
-      operationId: getSupervisors
-      responses:
-        "400":
-          description: Bad Request
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SupervisorDTO'
   /user/student:
     get:
       tags:
@@ -347,6 +387,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
@@ -463,6 +509,20 @@ components:
           type: string
         email:
           type: string
+    SupervisorCreationRequestDTO:
+      type: object
+      properties:
+        surname:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        indexNumber:
+          type: string
+        groupNumber:
+          type: integer
+          format: int32
     ProjectDetailsDTO:
       required:
       - description
