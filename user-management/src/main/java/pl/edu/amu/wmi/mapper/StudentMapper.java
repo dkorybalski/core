@@ -3,7 +3,7 @@ package pl.edu.amu.wmi.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import pl.edu.amu.wmi.entity.Student;
-import pl.edu.amu.wmi.model.StudentDTO;
+import pl.edu.amu.wmi.model.user.StudentDTO;
 
 import java.util.List;
 

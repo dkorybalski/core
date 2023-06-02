@@ -1,7 +1,7 @@
 package pl.edu.amu.wmi.service;
 
 import pl.edu.amu.wmi.entity.AbstractEntity;
-import pl.edu.amu.wmi.model.StudentDTO;
+import pl.edu.amu.wmi.model.user.StudentDTO;
 
 import java.util.List;
 

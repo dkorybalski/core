@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.mapper.StudentMapper;
-import pl.edu.amu.wmi.model.StudentDTO;
+import pl.edu.amu.wmi.model.user.StudentDTO;
 import pl.edu.amu.wmi.service.StudentService;
 
 import java.util.List;

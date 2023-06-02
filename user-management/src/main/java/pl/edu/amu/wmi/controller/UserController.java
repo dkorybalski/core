@@ -3,11 +3,10 @@ package pl.edu.amu.wmi.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import pl.edu.amu.wmi.model.StudentDTO;
-import pl.edu.amu.wmi.model.SupervisorDTO;
+import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.model.user.StudentDTO;
+import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
+import pl.edu.amu.wmi.model.user.SupervisorDTO;
 import pl.edu.amu.wmi.service.StudentService;
 import pl.edu.amu.wmi.service.SupervisorService;
 
@@ -32,6 +31,13 @@ public class UserController {
     public ResponseEntity<List<SupervisorDTO>> getSupervisors() {
         return ResponseEntity.ok()
                 .body(supervisorService.findAll());
+    }
+
+    @PostMapping("/supervisor")
+    public ResponseEntity<SupervisorDTO> createSupervisor(@RequestHeader("study-year") String studyYear,
+                                                          @RequestHeader("user-index-number") String userIndexNumber,@RequestBody SupervisorCreationRequestDTO supervisor) {
+        return ResponseEntity.ok()
+                .body(supervisorService.create(supervisor, studyYear));
     }
 
     @GetMapping("/student")
