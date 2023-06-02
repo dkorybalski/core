@@ -88,6 +88,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @Transactional
     public ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex) {
 
         Project projectEntity = projectDAO.findById(projectId).get();
