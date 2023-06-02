@@ -74,4 +74,12 @@ public class ProjectController {
         return ResponseEntity.ok()
                 .body(externalLinkService.updateExternalLinkData(externalLinkData));
     }
+
+    @PatchMapping("/{projectId}/admin-change/{studentIndex}")
+    public ResponseEntity<ProjectDetailsDTO> updateProjectAdmin(
+            @PathVariable Long projectId,
+            @PathVariable String studentIndex) {
+        return ResponseEntity.ok()
+                .body(projectService.updateProjectAdmin(projectId, studentIndex));
+    }
 }

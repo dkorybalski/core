@@ -13,4 +13,6 @@ public interface ProjectService {
 
     ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber);
 
+    ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex);
+
 }
