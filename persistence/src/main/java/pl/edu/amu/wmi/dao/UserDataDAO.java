@@ -6,4 +6,7 @@ import pl.edu.amu.wmi.entity.UserData;
 
 @Repository
 public interface UserDataDAO extends JpaRepository<UserData, Long> {
+
+    UserData findByIndexNumber(String index);
+
 }

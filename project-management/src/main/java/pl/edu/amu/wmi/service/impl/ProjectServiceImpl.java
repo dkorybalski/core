@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
+import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
@@ -15,6 +16,8 @@ import pl.edu.amu.wmi.service.ProjectService;
 import java.util.*;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.*;
+import static pl.edu.amu.wmi.enumerations.UserRole.STUDENT;
+import static pl.edu.amu.wmi.enumerations.UserRole.SUPERVISOR;
 
 
 @Slf4j
@@ -27,6 +30,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final SupervisorDAO supervisorDAO;
 
+    private final UserDataDAO userDataDAO;
+
     private final StudyYearDAO studyYearDAO;
 
     private final StudentProjectDAO studentProjectDAO;
@@ -34,10 +39,11 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, ProjectMapper projectMapper) {
+    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, ProjectMapper projectMapper) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
+        this.userDataDAO = userDataDAO;
         this.studyYearDAO = studyYearDAO;
         this.studentProjectDAO = studentProjectDAO;
         this.projectMapper = projectMapper;
@@ -49,7 +55,7 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.mapToDto(projectDAO.findById(id).get());
     }
 
-    // TODO: 5/31/2023 Reimplement this method using Criteria Queries
+    // TODO: 5/31/2023 Reimplement this method using Criteria Queries; use user roles
     @Override
     public List<ProjectDTO> findAll(String studyYear, String userIndexNumber) {
         List<Project> projectEntityList = projectDAO.findAllByStudyYear_StudyYear(studyYear);
@@ -116,6 +122,47 @@ public class ProjectServiceImpl implements ProjectService {
 
         return projectDetailsDTO;
 
+    }
+
+    @Override
+    @Transactional
+    public ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId) {
+
+        Project projectEntity = projectDAO.findById(projectId).get();
+
+        if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+            StudentProject studentProjectEntity = getStudentProjectByStudentIndex(projectEntity, userIndexNumber);
+            studentProjectEntity.setProjectConfirmed(true);
+            studentProjectEntity.getStudent().setProjectConfirmed(true);
+            studentProjectEntity.getStudent().setConfirmedProject(projectEntity);
+
+            if (isProjectConfirmedByAllStudents(projectEntity)) {
+                projectEntity.setAcceptanceStatus(CONFIRMED);
+            }
+
+            studentProjectDAO.save(studentProjectEntity);
+
+        } else if (getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
+            projectEntity.setAcceptanceStatus(ACCEPTED);
+        } else {
+            // TODO: 6/3/2023 handle wrong role exception
+            log.error("Wrong user role - role must be a {} or {}.", STUDENT, SUPERVISOR);
+        }
+
+        projectDAO.save(projectEntity);
+
+        return projectMapper.mapToDto(projectEntity);
+
+    }
+
+    private boolean isProjectConfirmedByAllStudents(Project project) {
+        return project.getAssignedStudents().stream().allMatch(StudentProject::isProjectConfirmed);
+    }
+
+    private UserRole getUserRoleByUserIndex(String index) {
+        return userDataDAO.findByIndexNumber(index).getRoles().stream()
+                .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
+                .findFirst().get().getName();
     }
 
     private boolean isProjectAdmin(Student entity, String userIndexNumber) {

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import pl.edu.amu.wmi.enumerations.UserRole;
 
 import java.util.Set;
 
@@ -14,7 +15,8 @@ import java.util.Set;
 public class Role extends BaseAbstractEntity {
 
     @NotNull
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private UserRole name;
 
     @ManyToMany(mappedBy = "roles")
     private Set<UserData> users;

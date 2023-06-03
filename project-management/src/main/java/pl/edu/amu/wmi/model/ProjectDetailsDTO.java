@@ -21,6 +21,8 @@ public class ProjectDetailsDTO {
     @NotEmpty
     private Set<String> technologies;
 
+    private boolean confirmed;
+
     private boolean accepted;
 
     @NotNull

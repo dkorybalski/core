@@ -348,6 +348,83 @@ paths:
                 $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
+  /project/{projectId}/admin-change/{studentIndex}:
+    patch:
+      tags:
+      - project-controller
+      operationId: updateProjectAdmin
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: studentIndex
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProjectDetailsDTO'
+  /project/{projectId}/accept:
+    patch:
+      tags:
+      - project-controller
+      operationId: acceptProject
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: user-index-number
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProjectDetailsDTO'
   /user/student:
     get:
       tags:
@@ -544,6 +621,8 @@ components:
           type: array
           items:
             type: string
+        confirmed:
+          type: boolean
         accepted:
           type: boolean
         supervisor:
