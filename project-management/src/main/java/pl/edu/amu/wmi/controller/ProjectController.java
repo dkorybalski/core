@@ -82,4 +82,13 @@ public class ProjectController {
         return ResponseEntity.ok()
                 .body(projectService.updateProjectAdmin(projectId, studentIndex));
     }
+
+    @PatchMapping("/{projectId}/accept")
+    public ResponseEntity<ProjectDetailsDTO> acceptProject(
+            @RequestHeader("study-year") String studyYear,
+            @RequestHeader("user-index-number") String userIndexNumber,
+            @PathVariable Long projectId) {
+        return ResponseEntity.ok()
+                .body(projectService.acceptProject(studyYear, userIndexNumber, projectId));
+    }
 }

@@ -15,4 +15,6 @@ public interface ProjectService {
 
     ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex);
 
+    ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId);
+
 }
