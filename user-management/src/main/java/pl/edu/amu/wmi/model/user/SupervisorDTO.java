@@ -9,8 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class SupervisorDTO {
 
-    private String surname;
-
     private String name;
 
     private String email;

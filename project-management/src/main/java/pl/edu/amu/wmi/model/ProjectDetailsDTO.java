@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -29,7 +30,7 @@ public class ProjectDetailsDTO {
     private SupervisorDTO supervisor;
 
     @NotEmpty
-    private Set<StudentDTO> students;
+    private List<StudentDTO> students;
 
     private String admin;
 

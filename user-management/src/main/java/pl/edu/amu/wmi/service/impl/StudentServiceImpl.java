@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.entity.Student;
-import pl.edu.amu.wmi.mapper.StudentMapper;
+import pl.edu.amu.wmi.mapper.StudentUserMapper;
 import pl.edu.amu.wmi.model.user.StudentDTO;
 import pl.edu.amu.wmi.service.StudentService;
 
@@ -13,19 +13,20 @@ import java.util.List;
 @Service
 public class StudentServiceImpl implements StudentService {
 
-    private final StudentMapper studentMapper;
+    private final StudentUserMapper studentUserMapper;
 
     private final StudentDAO studentDAO;
 
     @Autowired
-    public StudentServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO) {
-        this.studentMapper = studentMapper;
+    public StudentServiceImpl(StudentUserMapper studentUserMapper, StudentDAO studentDAO) {
+        this.studentUserMapper = studentUserMapper;
         this.studentDAO = studentDAO;
     }
 
     @Override
     public List<StudentDTO> findAll() {
-        return studentMapper.mapToDtoList(studentDAO.findAll());
+        // TODO: 6/4/2023 add search by study year
+        return studentUserMapper.mapToDtoList(studentDAO.findAll());
     }
 
     @Override

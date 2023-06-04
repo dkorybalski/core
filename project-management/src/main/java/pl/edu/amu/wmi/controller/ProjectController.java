@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.model.ProjectDTO;
@@ -34,10 +36,12 @@ public class ProjectController {
 
     @GetMapping("")
     public ResponseEntity<List<ProjectDTO>> getProjects(
-            @RequestHeader("study-year") String studyYear,
-            @RequestHeader("user-index-number") String userIndexNumber) {
+            @RequestHeader("study-year") String studyYear) {
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         return ResponseEntity.ok()
-                .body(projectService.findAll(studyYear, userIndexNumber));
+                .body(projectService.findAll(studyYear, userDetails.getUsername()));
     }
 
     @GetMapping("/{id}")
@@ -49,10 +53,14 @@ public class ProjectController {
     @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
-            @RequestHeader("user-index-number") String userIndexNumber,
+            @RequestHeader("index-number") String userIndexNumber,
             @Valid @RequestBody ProjectDetailsDTO project) {
+
+        ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
+        projectService.acceptProject(studyYear, userIndexNumber, projectDetailsDTO.getId());
+        projectService.updateProjectAdmin(projectDetailsDTO.getId(), userIndexNumber);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(projectService.saveProject(project, studyYear, userIndexNumber));
+                .body(projectDetailsDTO);
     }
 
 
@@ -91,7 +99,7 @@ public class ProjectController {
     @PatchMapping("/{projectId}/accept")
     public ResponseEntity<ProjectDetailsDTO> acceptProject(
             @RequestHeader("study-year") String studyYear,
-            @RequestHeader("user-index-number") String userIndexNumber,
+            @RequestHeader("index-number") String userIndexNumber,
             @PathVariable Long projectId) {
         return ResponseEntity.ok()
                 .body(projectService.acceptProject(studyYear, userIndexNumber, projectId));

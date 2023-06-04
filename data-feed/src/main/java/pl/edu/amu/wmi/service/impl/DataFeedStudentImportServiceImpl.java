@@ -8,10 +8,12 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import pl.edu.amu.wmi.dao.RoleDAO;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.entity.StudyYear;
+import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.StudentMapper;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
@@ -23,6 +25,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,10 +38,13 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
 
     private final StudyYearDAO studyYearDAO;
 
-    public DataFeedStudentImportServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO, StudyYearDAO studyYearDAO) {
+    private final RoleDAO roleDAO;
+
+    public DataFeedStudentImportServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO, StudyYearDAO studyYearDAO, RoleDAO roleDAO) {
         this.studentMapper = studentMapper;
         this.studentDAO = studentDAO;
         this.studyYearDAO = studyYearDAO;
+        this.roleDAO = roleDAO;
     }
 
     @Override
@@ -94,6 +100,7 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Student student : entities) {
             student.getUserData().setStudyYear(studyYearEntity);
+            student.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.STUDENT)));
         }
         List<Student> students = studentDAO.saveAll(entities);
         return studentMapper.mapToDTOs(students);

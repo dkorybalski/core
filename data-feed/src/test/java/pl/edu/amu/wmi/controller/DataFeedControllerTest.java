@@ -18,7 +18,7 @@ class DataFeedControllerTest {
     private String uri;
 
     private static final Header STUDY_YEAR_HEADER = new Header("study-year", "2023#FullTime");
-    private static final Header USER_INDEX_HEADER = new Header("user-index-number", "666");
+    private static final Header USER_INDEX_HEADER = new Header("index-number", "666");
 
     @PostConstruct
     public void init() {

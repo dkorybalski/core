@@ -8,6 +8,7 @@ import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
+import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.StudentDTO;
@@ -16,8 +17,7 @@ import pl.edu.amu.wmi.service.ProjectService;
 import java.util.*;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.*;
-import static pl.edu.amu.wmi.enumerations.UserRole.STUDENT;
-import static pl.edu.amu.wmi.enumerations.UserRole.SUPERVISOR;
+import static pl.edu.amu.wmi.enumerations.UserRole.*;
 
 
 @Slf4j
@@ -36,23 +36,40 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final StudentProjectDAO studentProjectDAO;
 
+    private final RoleDAO roleDAO;
+
     private final ProjectMapper projectMapper;
 
+    private final StudentFromProjectMapper studentMapper;
+
     @Autowired
-    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, ProjectMapper projectMapper) {
+    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ProjectMapper projectMapper, StudentFromProjectMapper studentMapper) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
         this.userDataDAO = userDataDAO;
         this.studyYearDAO = studyYearDAO;
         this.studentProjectDAO = studentProjectDAO;
+        this.roleDAO = roleDAO;
         this.projectMapper = projectMapper;
+        this.studentMapper = studentMapper;
     }
 
     // TODO: 6/3/2023 handle optional .get()
     @Override
     public ProjectDetailsDTO findById(Long id) {
-        return projectMapper.mapToDto(projectDAO.findById(id).get());
+        Project project = projectDAO.findById(id).get();
+        List<StudentDTO> studentDTOs = new ArrayList<>();
+        project.getAssignedStudents().stream()
+                .forEach(studentProject -> {
+                    StudentDTO studentDTO = studentMapper.mapToDto(studentProject.getStudent());
+                    studentDTO.setRole(studentProject.getProjectRole());
+                    studentDTOs.add(studentDTO);
+                });
+        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(project);
+        projectDetailsDTO.setStudents(studentDTOs);
+        projectDetailsDTO.setAdmin(getStudentProjectOfAdmin(project).getStudent().getUserData().getIndexNumber());
+        return projectDetailsDTO;
     }
 
     // TODO: 5/31/2023 Reimplement this method using Criteria Queries; use user roles
@@ -74,17 +91,22 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber) {
         Project projectEntity = projectMapper.mapToEntity(project);
-        // TODO: 5/28/2023 change to find by indexNumber after adjustments in data feed
-        Supervisor supervisorEntity = supervisorDAO.findById(project.getSupervisor().getId()).get();
+        Supervisor supervisorEntity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
 
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);
-        projectEntity.setAcceptanceStatus(PENDING);
+
+        if (project.getStudents().size() == 1)
+            projectEntity.setAcceptanceStatus(CONFIRMED);
+        else
+            projectEntity.setAcceptanceStatus(PENDING);
 
         for (StudentDTO student : project.getStudents()) {
 //            todo exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
             Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
+            if (isProjectAdmin(entity, userIndexNumber))
+                entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
 
@@ -98,6 +120,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex) {
 
         Project projectEntity = projectDAO.findById(projectId).get();
+        Role role = roleDAO.findByName(PROJECT_ADMIN);
 
         StudentProject currentAdminStudentProjectEntity = getStudentProjectOfAdmin(projectEntity);
         currentAdminStudentProjectEntity.setProjectAdmin(false);
@@ -112,7 +135,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (isProjectConfirmedOrAccepted(projectEntity)) {
             currentAdminStudentEntity.setProjectAdmin(false);
+            currentAdminStudentEntity.getUserData().getRoles().remove(role);
             newAdminStudentEntity.setProjectAdmin(true);
+            newAdminStudentEntity.getUserData().getRoles().add(role);
             studentDAO.save(currentAdminStudentEntity);
             studentDAO.save(newAdminStudentEntity);
         }
@@ -160,7 +185,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private UserRole getUserRoleByUserIndex(String index) {
-        return userDataDAO.findByIndexNumber(index).getRoles().stream()
+        // TODO: 6/4/2023 implement logic for optional
+        return userDataDAO.findByIndexNumber(index).get().getRoles().stream()
                 .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
                 .findFirst().get().getName();
     }

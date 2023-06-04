@@ -25,6 +25,7 @@ public interface ProjectMapper {
 
 
     @Mapping(target = "supervisor", source = "entity.supervisor")
+    @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
     ProjectDTO mapToProjectDto(Project entity);
 
     List<ProjectDTO> mapToDtoList(List<Project> entityList);

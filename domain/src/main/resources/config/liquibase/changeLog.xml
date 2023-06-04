@@ -14,5 +14,7 @@
     <include file="classpath:config/liquibase/2023-05-27-create_tables.xml"/>
     <include file="classpath:config/liquibase/configuration_studyYear.xml"/>
     <include file="classpath:config/liquibase/configuration_externalLinkDefinition.xml"/>
+    <include file="classpath:config/liquibase/configuration_role.xml"/>
+    <include file="classpath:config/liquibase/configuration_coordinator.xml"/>
 
 </databaseChangeLog>
