@@ -11,5 +11,6 @@ public interface SupervisorDAO extends JpaRepository<Supervisor, Long> {
 
     List<Supervisor> findByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(String studyYear, List<String> indexNumbers);
 
+    List<Supervisor> findAllByUserData_StudyYear_StudyYear(String studyYear);
 
 }

@@ -12,6 +12,7 @@ import pl.edu.amu.wmi.entity.ExternalLink;
 import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.mapper.ExternalLinkMapper;
+import pl.edu.amu.wmi.mapper.SupervisorProjectMapper;
 import pl.edu.amu.wmi.model.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.service.ExternalLinkService;
@@ -31,12 +32,15 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
 
     private final ExternalLinkMapper externalLinkMapper;
 
+    private final SupervisorProjectMapper supervisorMapper;
+
     @Autowired
-    public ExternalLinkServiceImpl(ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO externalLinkDefinitionDAO, ProjectDAO projectDAO, ExternalLinkMapper externalLinkMapper) {
+    public ExternalLinkServiceImpl(ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO externalLinkDefinitionDAO, ProjectDAO projectDAO, ExternalLinkMapper externalLinkMapper, SupervisorProjectMapper supervisorMapper) {
         this.externalLinkDAO = externalLinkDAO;
         this.externalLinkDefinitionDAO = externalLinkDefinitionDAO;
         this.projectDAO = projectDAO;
         this.externalLinkMapper = externalLinkMapper;
+        this.supervisorMapper = supervisorMapper;
     }
 
     @Override
@@ -48,7 +52,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
                 .map(project -> new ExternalLinkDataDTO(
                         project.getId(),
                         project.getName(),
-                        externalLinkMapper.mapToDto(project.getSupervisor()),
+                        supervisorMapper.mapToDto(project.getSupervisor()),
                         externalLinkMapper.mapToDtoSet(project.getExternalLinks())))
                 .collect(Collectors.toList());
 
@@ -72,7 +76,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
         return new ExternalLinkDataDTO(
                 projectId,
                 projectName,
-                externalLinkMapper.mapToDto(supervisor),
+                supervisorMapper.mapToDto(supervisor),
                 externalLinkDTOs
         );
 
@@ -102,7 +106,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
         return new ExternalLinkDataDTO(
                 projectId,
                 projectName,
-                externalLinkMapper.mapToDto(supervisor),
+                supervisorMapper.mapToDto(supervisor),
                 externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks())
         );
 
@@ -131,7 +135,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
         return new ExternalLinkDataDTO(
                 projectId,
                 projectName,
-                externalLinkMapper.mapToDto(supervisor),
+                supervisorMapper.mapToDto(supervisor),
                 externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks())
         );
 

@@ -40,6 +40,7 @@ public class UserController {
                 .body(supervisorService.create(supervisor, studyYear));
     }
 
+
     @GetMapping("/student")
     public ResponseEntity<List<StudentDTO>> getStudents() {
         return ResponseEntity.ok()
