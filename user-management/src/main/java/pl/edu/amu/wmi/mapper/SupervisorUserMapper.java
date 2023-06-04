@@ -11,8 +11,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SupervisorUserMapper {
 
-    @Mapping(target = "surname", source = "userData.lastName")
-    @Mapping(target = "name", source = "userData.firstName")
+    @Mapping(target = "name", expression = "java(String.format(\"%s %s\", entity.getUserData().getFirstName(), entity.getUserData().getLastName()))")
     @Mapping(target = "email", source = "userData.email")
     @Mapping(target = "indexNumber", source = "userData.indexNumber")
     SupervisorDTO mapToDto(Supervisor entity);

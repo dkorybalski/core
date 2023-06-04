@@ -3,15 +3,20 @@ package pl.edu.amu.wmi.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.user.StudentDTO;
 import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
 import pl.edu.amu.wmi.model.user.SupervisorDTO;
+import pl.edu.amu.wmi.model.user.UserDTO;
 import pl.edu.amu.wmi.service.StudentService;
 import pl.edu.amu.wmi.service.SupervisorService;
+import pl.edu.amu.wmi.service.UserService;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/user")
 @Slf4j
@@ -21,14 +26,25 @@ public class UserController {
 
     private final StudentService studentService;
 
+    private final UserService userService;
+
     @Autowired
-    public UserController(SupervisorService supervisorService, StudentService studentService) {
+    public UserController(SupervisorService supervisorService, StudentService studentService, UserService userService) {
         this.supervisorService = supervisorService;
         this.studentService = studentService;
+        this.userService = userService;
+    }
+
+    @GetMapping("")
+    public ResponseEntity<UserDTO> getUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return ResponseEntity.ok(userService.getUser(userDetails.getUsername()));
     }
 
     @GetMapping("/supervisor")
     public ResponseEntity<List<SupervisorDTO>> getSupervisors() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok()
                 .body(supervisorService.findAll());
     }

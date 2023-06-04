@@ -3,6 +3,7 @@ package pl.edu.amu.wmi.controller;
 import com.opencsv.exceptions.CsvException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,9 +29,9 @@ public class DataFeedController {
         this.dataFeedExportService = dataFeedExportService;
     }
 
-    @PostMapping("/import/student")
+    @PostMapping(value = "/import/student", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createStudents(@RequestHeader("study-year") String studyYear,
-                                               @RequestHeader("user-index-number") String userIndexNumber, @RequestParam MultipartFile data) throws Exception {
+                                               @RequestHeader("index-number") String userIndexNumber, @RequestParam MultipartFile data) throws Exception {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_STUDENT);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
@@ -38,7 +39,7 @@ public class DataFeedController {
 
     @PostMapping("/import/supervisor")
     public ResponseEntity<Void> createSupervisors(@RequestHeader("study-year") String studyYear,
-                                                 @RequestHeader("user-index-number") String userIndexNumber,@RequestParam MultipartFile data) throws Exception {
+                                                 @RequestHeader("index-number") String userIndexNumber,@RequestParam MultipartFile data) throws Exception {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_SUPERVISOR);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
@@ -46,7 +47,7 @@ public class DataFeedController {
 
     @GetMapping("export/student")
     public void exportStudentsData(@RequestHeader("study-year") String studyYear,
-                                   @RequestHeader("user-index-number") String userIndexNumber, HttpServletResponse servletResponse) throws IOException, CsvException {
+                                   @RequestHeader("index-number") String userIndexNumber, HttpServletResponse servletResponse) throws IOException, CsvException {
         servletResponse.setContentType("text/csv");
         servletResponse.setCharacterEncoding("UTF-8");
         servletResponse.addHeader("Content-Disposition", "attachment; filename=\"students.csv\"");

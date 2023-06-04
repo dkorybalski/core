@@ -11,6 +11,7 @@
         <module>pri-application</module>
         <module>project-management</module>
         <module>user-management</module>
+        <module>auth</module>
     </modules>
 
     <parent>

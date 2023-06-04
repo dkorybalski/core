@@ -17,7 +17,6 @@ public interface SupervisorProjectMapper {
     SupervisorDTO mapToDto(Supervisor entity);
 
     @Mapping(target = "supervisor", source = "entity")
-    @Mapping(target = "assigned", expression = "java(entity.getProjects() != null ? entity.getProjects().size():0)")
     @Mapping(target = "max", source = "maxNumberOfProjects")
     SupervisorAvailabilityDTO mapToAvailabilityDto(Supervisor entity);
 

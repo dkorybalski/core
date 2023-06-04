@@ -5,17 +5,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.edu.amu.wmi.dao.RoleDAO;
 import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.entity.StudyYear;
 import pl.edu.amu.wmi.entity.Supervisor;
 
+import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.SupervisorUserMapper;
 import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
 import pl.edu.amu.wmi.model.user.SupervisorDTO;
 import pl.edu.amu.wmi.service.SupervisorService;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -27,11 +30,14 @@ public class SupervisorServiceImpl implements SupervisorService {
 
     private final StudyYearDAO studyYearDAO;
 
+    private final RoleDAO roleDAO;
+
     @Autowired
-    public SupervisorServiceImpl(SupervisorUserMapper supervisorUserMapper, SupervisorDAO supervisorDAO, StudyYearDAO studyYearDAO) {
+    public SupervisorServiceImpl(SupervisorUserMapper supervisorUserMapper, SupervisorDAO supervisorDAO, StudyYearDAO studyYearDAO, RoleDAO roleDAO) {
         this.supervisorUserMapper = supervisorUserMapper;
         this.supervisorDAO = supervisorDAO;
         this.studyYearDAO = studyYearDAO;
+        this.roleDAO = roleDAO;
     }
 
     @Transactional
@@ -42,6 +48,7 @@ public class SupervisorServiceImpl implements SupervisorService {
 
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         entity.getUserData().setStudyYear(studyYearEntity);
+        entity.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.SUPERVISOR)));
 
         return supervisorUserMapper.mapToDto(supervisorDAO.save(entity));
     }

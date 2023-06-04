@@ -6,12 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.Supervisor;
+import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.mapper.SupervisorProjectMapper;
 import pl.edu.amu.wmi.model.SupervisorAvailabilityDTO;
 import pl.edu.amu.wmi.service.SupervisorProjectService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -30,7 +32,16 @@ public class SupervisorProjectProjectServiceImpl implements SupervisorProjectSer
     @Override
     public List<SupervisorAvailabilityDTO> getSupervisorsAvailability(String studyYear) {
         List<Supervisor> supervisorEntities = supervisorDAO.findAllByUserData_StudyYear_StudyYear(studyYear);
-        return supervisorProjectMapper.mapToAvailabilityDtoList(supervisorEntities);
+        List<SupervisorAvailabilityDTO> supervisorAvailabilityDTOS = new ArrayList<>();
+        supervisorEntities
+                .forEach(supervisor -> {
+                    SupervisorAvailabilityDTO dto = supervisorProjectMapper.mapToAvailabilityDto(supervisor);
+                    dto.setAssigned((int) supervisor.getProjects().stream()
+                            .filter(p -> Objects.equals(AcceptanceStatus.ACCEPTED, p.getAcceptanceStatus()))
+                            .count());
+                    supervisorAvailabilityDTOS.add(dto);
+                });
+        return supervisorAvailabilityDTOS;
     }
 
     @Override
