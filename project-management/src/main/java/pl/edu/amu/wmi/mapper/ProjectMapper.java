@@ -13,7 +13,7 @@ import java.util.List;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.ACCEPTED;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.CONFIRMED;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = SupervisorProjectMapper.class)
 public interface ProjectMapper {
 
     @Mapping(target = "supervisor", ignore = true)
@@ -22,6 +22,10 @@ public interface ProjectMapper {
     @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
     @Mapping(target = "confirmed", source = "acceptanceStatus", qualifiedByName = "ConfirmedToBoolean")
     ProjectDetailsDTO mapToDto(Project project);
+
+
+    @Mapping(target = "supervisor", source = "entity.supervisor")
+    ProjectDTO mapToProjectDto(Project entity);
 
     List<ProjectDTO> mapToDtoList(List<Project> entityList);
 

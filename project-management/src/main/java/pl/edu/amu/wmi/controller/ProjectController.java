@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
+import pl.edu.amu.wmi.model.SupervisorAvailabilityDTO;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
+import pl.edu.amu.wmi.service.SupervisorService;
 
 import java.util.List;
 
@@ -21,10 +23,13 @@ public class ProjectController {
 
     private final ExternalLinkService externalLinkService;
 
+    private final SupervisorService supervisorService;
+
     @Autowired
-    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService) {
+    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorService supervisorService) {
         this.projectService = projectService;
         this.externalLinkService = externalLinkService;
+        this.supervisorService = supervisorService;
     }
 
     @GetMapping("")
@@ -90,5 +95,11 @@ public class ProjectController {
             @PathVariable Long projectId) {
         return ResponseEntity.ok()
                 .body(projectService.acceptProject(studyYear, userIndexNumber, projectId));
+    }
+
+    @GetMapping("/supervisor/availability")
+    public ResponseEntity<List<SupervisorAvailabilityDTO>> getSupervisorsAvailability(@RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(supervisorService.getSupervisorsAvailability(studyYear));
     }
 }
