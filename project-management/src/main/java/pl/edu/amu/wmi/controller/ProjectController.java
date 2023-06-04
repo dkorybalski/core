@@ -11,7 +11,7 @@ import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.SupervisorAvailabilityDTO;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
-import pl.edu.amu.wmi.service.SupervisorService;
+import pl.edu.amu.wmi.service.SupervisorProjectService;
 
 import java.util.List;
 
@@ -23,13 +23,13 @@ public class ProjectController {
 
     private final ExternalLinkService externalLinkService;
 
-    private final SupervisorService supervisorService;
+    private final SupervisorProjectService supervisorProjectService;
 
     @Autowired
-    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorService supervisorService) {
+    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorProjectService supervisorProjectService) {
         this.projectService = projectService;
         this.externalLinkService = externalLinkService;
-        this.supervisorService = supervisorService;
+        this.supervisorProjectService = supervisorProjectService;
     }
 
     @GetMapping("")
@@ -100,6 +100,12 @@ public class ProjectController {
     @GetMapping("/supervisor/availability")
     public ResponseEntity<List<SupervisorAvailabilityDTO>> getSupervisorsAvailability(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
-                .body(supervisorService.getSupervisorsAvailability(studyYear));
+                .body(supervisorProjectService.getSupervisorsAvailability(studyYear));
+    }
+
+    @PutMapping("/supervisor/availability")
+    public ResponseEntity<List<SupervisorAvailabilityDTO>> updateSupervisorsAvailability(@RequestHeader("study-year") String studyYear, @RequestBody List<SupervisorAvailabilityDTO> supervisorAvailabilityList) {
+        return ResponseEntity.ok()
+                .body(supervisorProjectService.updateSupervisorsAvailability(studyYear, supervisorAvailabilityList));
     }
 }

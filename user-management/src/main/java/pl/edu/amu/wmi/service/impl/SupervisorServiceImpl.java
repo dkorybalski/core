@@ -47,7 +47,7 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
     private void validateData(String indexNumber, String studyYear) {
-        List<Supervisor> existingSupervisorForStudyYear = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
+        List<Supervisor> existingSupervisorForStudyYear = supervisorDAO.findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
         if (!existingSupervisorForStudyYear.isEmpty()) {
             log.error("Duplicated data - supervisor assigned to studyYear {} already exist in the database.", studyYear);
             throw new DuplicateKeyException("Duplicated supervisor data");

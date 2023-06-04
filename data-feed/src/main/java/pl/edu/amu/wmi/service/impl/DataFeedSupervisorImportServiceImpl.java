@@ -59,7 +59,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         List<String> supervisorIndexNumbers = newSupervisors.stream()
                 .map(NewSupervisorDTO::getIndexNumber)
                 .collect(Collectors.toList());
-        List<Supervisor> existingSupervisorsForStudyYear = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, supervisorIndexNumbers);
+        List<Supervisor> existingSupervisorsForStudyYear = supervisorDAO.findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, supervisorIndexNumbers);
         if (!existingSupervisorsForStudyYear.isEmpty()) {
             log.error("Duplicated data - {} supervisors assigned to studyYear {} already exist in the database.", existingSupervisorsForStudyYear.size(), studyYear);
             throw new DuplicateKeyException("Duplicated supervisor data");

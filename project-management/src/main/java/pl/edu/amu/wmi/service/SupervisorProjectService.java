@@ -4,8 +4,10 @@ import pl.edu.amu.wmi.model.SupervisorAvailabilityDTO;
 
 import java.util.List;
 
-public interface SupervisorService {
+public interface SupervisorProjectService {
 
     List<SupervisorAvailabilityDTO> getSupervisorsAvailability(String studyYear);
+
+    List<SupervisorAvailabilityDTO> updateSupervisorsAvailability(String studyYear, List<SupervisorAvailabilityDTO> supervisorAvailabilityList);
 
 }
