@@ -19,11 +19,11 @@ public class StudyYear extends AbstractEntity {
     @Column(name = "`YEAR`")
     private String year;
 
-    @Column(name = "`STUDY_TYPE`")
+    @Column(name = "STUDY_TYPE")
     @Enumerated(EnumType.STRING)
     private StudyType studyType;
 
-    @Column(name = "`IS_ACTIVE`")
+    @Column(name = "IS_ACTIVE")
     private boolean isActive;
 
     /**

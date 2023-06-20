@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.amu.wmi.model.user.StudentDTO;
-import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
-import pl.edu.amu.wmi.model.user.SupervisorDTO;
-import pl.edu.amu.wmi.model.user.UserDTO;
+import pl.edu.amu.wmi.model.user.*;
 import pl.edu.amu.wmi.service.StudentService;
 import pl.edu.amu.wmi.service.SupervisorService;
 import pl.edu.amu.wmi.service.UserService;
@@ -50,8 +47,7 @@ public class UserController {
     }
 
     @PostMapping("/supervisor")
-    public ResponseEntity<SupervisorDTO> createSupervisor(@RequestHeader("study-year") String studyYear,
-                                                          @RequestHeader("user-index-number") String userIndexNumber,@RequestBody SupervisorCreationRequestDTO supervisor) {
+    public ResponseEntity<SupervisorDTO> createSupervisor(@RequestHeader("study-year") String studyYear ,@RequestBody SupervisorCreationRequestDTO supervisor) {
         return ResponseEntity.ok()
                 .body(supervisorService.create(supervisor, studyYear));
     }
@@ -61,5 +57,11 @@ public class UserController {
     public ResponseEntity<List<StudentDTO>> getStudents() {
         return ResponseEntity.ok()
                 .body(studentService.findAll());
+    }
+
+    @PostMapping("/student")
+    public ResponseEntity<StudentDTO> createStudent(@RequestHeader("study-year") String studyYear, @RequestBody StudentCreationRequestDTO student) {
+        return ResponseEntity.ok()
+                .body(studentService.create(student, studyYear));
     }
 }
