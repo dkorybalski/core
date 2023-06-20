@@ -63,7 +63,7 @@ public class ProjectController {
 
 
     @GetMapping("/{projectId}/external-link")
-    public ResponseEntity<Set<ExternalLinkDTO>> getExternalLinkDataByProjectId(@PathVariable Long projectId) {
+    public ResponseEntity<Set<ExternalLinkDTO>> getExternalLinksByProjectId(@PathVariable Long projectId) {
         return ResponseEntity.ok()
                 .body(externalLinkService.findByProjectId(projectId));
     }
