@@ -13,4 +13,5 @@ public interface StudentDAO extends JpaRepository<Student, Long> {
 
     List<Student> findByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(String studyYear, List<String> indexNumbers);
 
+    List<Student> findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(String studyYear, List<String> indexNumbers);
 }
