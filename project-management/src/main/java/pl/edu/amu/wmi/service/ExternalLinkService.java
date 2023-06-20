@@ -1,17 +1,17 @@
 package pl.edu.amu.wmi.service;
 
+import pl.edu.amu.wmi.model.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 
 import java.util.List;
+import java.util.Set;
 
 public interface ExternalLinkService {
 
     List<ExternalLinkDataDTO> findAll();
 
-    ExternalLinkDataDTO findByProjectId(Long id);
+    Set<ExternalLinkDTO> findByProjectId(Long id);
 
-    ExternalLinkDataDTO updateExternalLinkData(ExternalLinkDataDTO externalLinkData);
-
-    ExternalLinkDataDTO saveExternalLinkData(ExternalLinkDataDTO externalLinkData);
+    Set<ExternalLinkDTO> updateExternalLinks(Long projectId, Set<ExternalLinkDTO> externalLinks);
 
 }

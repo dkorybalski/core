@@ -7,10 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.ExternalLinkDAO;
 import pl.edu.amu.wmi.dao.ExternalLinkDefinitionDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
-import pl.edu.amu.wmi.entity.BaseAbstractEntity;
-import pl.edu.amu.wmi.entity.ExternalLink;
-import pl.edu.amu.wmi.entity.Project;
-import pl.edu.amu.wmi.entity.Supervisor;
+import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.mapper.ExternalLinkMapper;
 import pl.edu.amu.wmi.mapper.SupervisorProjectMapper;
 import pl.edu.amu.wmi.model.ExternalLinkDTO;
@@ -59,86 +56,41 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
     }
 
     @Override
-    public ExternalLinkDataDTO findByProjectId(Long projectId) {
+    public Set<ExternalLinkDTO> findByProjectId(Long projectId) {
 
         Project projectEntity = projectDAO.findById(projectId).get();
-        String projectName = projectEntity.getName();
-        Supervisor supervisor = projectEntity.getSupervisor();
 
         Set<Long> projectLinksIds = projectEntity.getExternalLinks().stream()
                 .map(BaseAbstractEntity::getId)
                 .collect(Collectors.toSet());
 
-        Set<ExternalLinkDTO> externalLinkDTOs = externalLinkDAO.findAllById(projectLinksIds).stream()
+        return externalLinkDAO.findAllById(projectLinksIds).stream()
                 .map(externalLinkMapper::mapToDto)
                 .collect(Collectors.toSet());
-
-        return new ExternalLinkDataDTO(
-                projectId,
-                projectName,
-                supervisorMapper.mapToDto(supervisor),
-                externalLinkDTOs
-        );
-
     }
 
+    @Transactional
     @Override
-    public ExternalLinkDataDTO updateExternalLinkData(ExternalLinkDataDTO externalLinkData) {
+    public Set<ExternalLinkDTO> updateExternalLinks(Long projectId, Set<ExternalLinkDTO> externalLinks) {
 
-        Long projectId = externalLinkData.getProjectId();
         Project projectEntity = projectDAO.findById(projectId).get();
-        String projectName = projectEntity.getName();
-        Supervisor supervisor = projectEntity.getSupervisor();
 
         Set<ExternalLink> externalLinkEntities = new HashSet<>();
 
-        externalLinkData.getExternalLinks().forEach(externalLinkDTO -> {
-            ExternalLink externalLinkEntity = externalLinkDAO.findById(externalLinkDTO.getId()).get();
-            externalLinkEntity.setUrl(externalLinkDTO.getUrl());
-            externalLinkEntities.add(externalLinkEntity);
-            // TODO: Remove save method when Cascades are configured.
-            externalLinkDAO.save(externalLinkEntity);
+        // TODO: Handle optional
+        externalLinks.forEach(externalLinkDto -> {
+            ExternalLink externalLink = externalLinkDAO.findById(externalLinkDto.getId()).get();
+            externalLink.setUrl(externalLinkDto.getUrl());
+            externalLinkEntities.add(externalLink);
         });
+
+        externalLinkDAO.saveAll(externalLinkEntities);
 
         projectEntity.setExternalLinks(externalLinkEntities);
-        projectDAO.save(projectEntity);
-
-        return new ExternalLinkDataDTO(
-                projectId,
-                projectName,
-                supervisorMapper.mapToDto(supervisor),
-                externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks())
-        );
-
-    }
-
-    @Override
-    @Transactional
-    public ExternalLinkDataDTO saveExternalLinkData(ExternalLinkDataDTO externalLinkData) {
-
-        Long projectId = externalLinkData.getProjectId();
-        Project projectEntity = projectDAO.findById(projectId).get();
-        String projectName = projectEntity.getName();
-        Supervisor supervisor = projectEntity.getSupervisor();
-
-
-        externalLinkData.getExternalLinks().forEach(externalLinkDTO -> {
-            ExternalLink externalLinkEntity = externalLinkMapper.mapToEntity(externalLinkDTO);
-            externalLinkEntity.setExternalLinkDefinition(externalLinkDefinitionDAO.findById(externalLinkDTO.getExternalLinkDefinition().getId()).get());
-            // TODO: Remove save method when Cascades are configured.
-            externalLinkDAO.save(externalLinkEntity);
-            projectEntity.addExternalLink(externalLinkEntity);
-        });
 
         projectDAO.save(projectEntity);
 
-        return new ExternalLinkDataDTO(
-                projectId,
-                projectName,
-                supervisorMapper.mapToDto(supervisor),
-                externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks())
-        );
-
+        return externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks());
     }
 
 }

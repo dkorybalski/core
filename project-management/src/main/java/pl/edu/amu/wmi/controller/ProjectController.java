@@ -7,15 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
-import pl.edu.amu.wmi.model.ProjectDTO;
-import pl.edu.amu.wmi.model.ProjectDetailsDTO;
-import pl.edu.amu.wmi.model.SupervisorAvailabilityDTO;
+import pl.edu.amu.wmi.model.*;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
 import pl.edu.amu.wmi.service.SupervisorProjectService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/project")
@@ -65,7 +63,7 @@ public class ProjectController {
 
 
     @GetMapping("/{projectId}/external-link")
-    public ResponseEntity<ExternalLinkDataDTO> getExternalLinkDataByProjectId(@PathVariable Long projectId) {
+    public ResponseEntity<Set<ExternalLinkDTO>> getExternalLinksByProjectId(@PathVariable Long projectId) {
         return ResponseEntity.ok()
                 .body(externalLinkService.findByProjectId(projectId));
     }
@@ -76,17 +74,14 @@ public class ProjectController {
                 .body(externalLinkService.findAll());
     }
 
-    @PostMapping("/external-link")
-    public ResponseEntity<ExternalLinkDataDTO> createExternalLinkData(@RequestBody ExternalLinkDataDTO externalLinkData) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(externalLinkService.saveExternalLinkData(externalLinkData));
+    @PutMapping("/{projectId}/external-link")
+    public ResponseEntity<Set<ExternalLinkDTO>> updateExternalLinkData(
+             @PathVariable Long projectId,
+             @Valid @RequestBody Set<ExternalLinkDTO> externalLinks) {
+        return ResponseEntity.ok()
+                .body(externalLinkService.updateExternalLinks(projectId, externalLinks));
     }
 
-    @PutMapping("/{projectId}/external-link")
-    public ResponseEntity<ExternalLinkDataDTO> updateExternalLinkData(@Valid @RequestBody ExternalLinkDataDTO externalLinkData) {
-        return ResponseEntity.ok()
-                .body(externalLinkService.updateExternalLinkData(externalLinkData));
-    }
 
     @PatchMapping("/{projectId}/admin-change/{studentIndex}")
     public ResponseEntity<ProjectDetailsDTO> updateProjectAdmin(
