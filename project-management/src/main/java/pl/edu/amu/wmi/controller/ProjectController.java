@@ -74,6 +74,12 @@ public class ProjectController {
                 .body(externalLinkService.findAll());
     }
 
+    @GetMapping("/external-link/column-header")
+    public ResponseEntity<Set<String>> getExternalLinkDefinitionColumnHeaders(@RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(externalLinkService.findDefinitionHeadersByStudyYear(studyYear));
+    }
+
     @PutMapping("/{projectId}/external-link")
     public ResponseEntity<Set<ExternalLinkDTO>> updateExternalLinkData(
              @PathVariable Long projectId,
@@ -81,7 +87,6 @@ public class ProjectController {
         return ResponseEntity.ok()
                 .body(externalLinkService.updateExternalLinks(projectId, externalLinks));
     }
-
 
     @PatchMapping("/{projectId}/admin-change/{studentIndex}")
     public ResponseEntity<ProjectDetailsDTO> updateProjectAdmin(

@@ -14,4 +14,6 @@ public interface ExternalLinkService {
 
     Set<ExternalLinkDTO> updateExternalLinks(Long projectId, Set<ExternalLinkDTO> externalLinks);
 
+    Set<String> findDefinitionHeadersByStudyYear(String studyYear);
+
 }
