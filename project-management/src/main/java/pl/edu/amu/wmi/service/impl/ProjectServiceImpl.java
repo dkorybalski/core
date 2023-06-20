@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.mapper.ExternalLinkMapper;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
 import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
@@ -36,6 +37,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final StudentProjectDAO studentProjectDAO;
 
+    private final ExternalLinkDAO externalLinkDAO;
+
+    private final ExternalLinkDefinitionDAO definitionDAO;
+
     private final RoleDAO roleDAO;
 
     private final ProjectMapper projectMapper;
@@ -43,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final StudentFromProjectMapper studentMapper;
 
     @Autowired
-    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ProjectMapper projectMapper, StudentFromProjectMapper studentMapper) {
+    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO definitionDAO, ProjectMapper projectMapper, StudentFromProjectMapper studentMapper) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
@@ -51,6 +56,8 @@ public class ProjectServiceImpl implements ProjectService {
         this.studyYearDAO = studyYearDAO;
         this.studentProjectDAO = studentProjectDAO;
         this.roleDAO = roleDAO;
+        this.externalLinkDAO = externalLinkDAO;
+        this.definitionDAO = definitionDAO;
         this.projectMapper = projectMapper;
         this.studentMapper = studentMapper;
     }
@@ -93,6 +100,8 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectMapper.mapToEntity(project);
         Supervisor supervisorEntity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
+        Set<ExternalLinkDefinition> definitionEntities = definitionDAO.findAllByStudyYear_StudyYear(studyYear);
+        Set<ExternalLink> externalLinkEntities = new HashSet<>();
 
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);
@@ -109,6 +118,17 @@ public class ProjectServiceImpl implements ProjectService {
                 entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
+
+        // External Links without URL creation
+        definitionEntities.forEach(entity -> {
+            ExternalLink externalLink = new ExternalLink();
+            externalLink.setExternalLinkDefinition(entity);
+            externalLink.setUrl(null);
+            externalLinkDAO.save(externalLink);
+            externalLinkEntities.add(externalLink);
+        });
+
+        projectEntity.setExternalLinks(externalLinkEntities);
 
         projectEntity = projectDAO.save(projectEntity);
 

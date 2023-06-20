@@ -13,7 +13,7 @@ import java.util.List;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.ACCEPTED;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.CONFIRMED;
 
-@Mapper(componentModel = "spring", uses = SupervisorProjectMapper.class)
+@Mapper(componentModel = "spring", uses = { SupervisorProjectMapper.class, ExternalLinkMapper.class })
 public interface ProjectMapper {
 
     @Mapping(target = "supervisor", ignore = true)
