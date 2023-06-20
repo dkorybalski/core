@@ -93,4 +93,12 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
         return externalLinkMapper.mapToDtoSet(projectEntity.getExternalLinks());
     }
 
+    @Override
+    public Set<String> findDefinitionHeadersByStudyYear(String studyYear) {
+        return externalLinkDefinitionDAO.findAllByStudyYear_StudyYear(studyYear)
+                .stream()
+                .map(ExternalLinkDefinition::getColumnHeader)
+                .collect(Collectors.toSet());
+    }
+
 }
