@@ -71,6 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .forEach(studentProject -> {
                     StudentDTO studentDTO = studentMapper.mapToDto(studentProject.getStudent());
                     studentDTO.setRole(studentProject.getProjectRole());
+                    studentDTO.setAccepted(studentProject.isProjectConfirmed());
                     studentDTOs.add(studentDTO);
                 });
         ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(project);

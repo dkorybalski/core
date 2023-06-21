@@ -16,4 +16,6 @@ public class StudentDTO {
 
     private String email;
 
+    private boolean accepted;
+
 }
