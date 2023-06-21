@@ -30,7 +30,10 @@ public class Project extends AbstractEntity {
     @JoinColumn(name = "SUPERVISOR_ID")
     private Supervisor supervisor;
 
-    @OneToMany
+    // TODO: 6/21/2023 validate cascade type | liquibase changes?
+    @OneToMany(
+            cascade = CascadeType.REMOVE
+    )
     @JoinColumn(name = "PROJECT_ID")
     private Set<ExternalLink> externalLinks = new HashSet<>();
 

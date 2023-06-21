@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +47,14 @@ public class ProjectController {
     public ResponseEntity<ProjectDetailsDTO> getProjectById(@PathVariable Long id) {
         return ResponseEntity.ok()
                 .body(projectService.findById(id));
+    }
+
+    @Secured({"PROJECT_ADMIN", "COORDINATOR"})
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProjectById(@PathVariable Long id) throws Exception {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        projectService.delete(id, userDetails.getUsername());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("")

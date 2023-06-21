@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -7,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.UserRole;
-import pl.edu.amu.wmi.mapper.ExternalLinkMapper;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
 import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
@@ -16,6 +16,7 @@ import pl.edu.amu.wmi.model.StudentDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.*;
 import static pl.edu.amu.wmi.enumerations.UserRole.*;
@@ -200,6 +201,58 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.mapToDto(projectEntity);
 
     }
+
+    @Transactional
+    @Override
+    public void delete(Long projectId, String userIndexNumber) throws Exception {
+        Optional<Project> project = projectDAO.findById(projectId);
+        if (project.isEmpty()) {
+            throw new EntityNotFoundException("Project not found: " + projectId);
+        }
+        Project projectEntity = project.get();
+
+        if (!validateDeletionPermission(userIndexNumber, projectEntity)) {
+            // TODO: 6/21/2023 add custom exception
+            throw new Exception("Missing permission to delete project");
+        }
+
+        removeConfirmedProjectFromStudents(projectEntity);
+        projectDAO.delete(projectEntity);
+    }
+
+    private void removeConfirmedProjectFromStudents (Project projectEntity) {
+        Set<Student> students = projectEntity.getStudents();
+        for (Student student : students) {
+            if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
+                student.setConfirmedProject(null);
+                student.setProjectAdmin(false);
+                student.setProjectConfirmed(false);
+                student.setProjectRole(null);
+                studentDAO.save(student);
+            }
+        }
+    }
+
+    private boolean validateDeletionPermission(String userIndexNumber, Project project) {
+        List<UserRole> userRoles = userDataDAO.findByIndexNumber(userIndexNumber).get().getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        if (userRoles.contains(COORDINATOR)) {
+            return true;
+        } else if (userRoles.contains(PROJECT_ADMIN)) {
+            if (ACCEPTED == project.getAcceptanceStatus()) {
+                return false;
+            } else return isStudentAnAdminOfTheProject(userIndexNumber, project.getId());
+        }
+        return false;
+    }
+
+    private boolean isStudentAnAdminOfTheProject(String userIndexNumber, Long projectId) {
+        Student student = studentDAO.findByUserData_IndexNumber(userIndexNumber);
+        return Objects.equals(student.getConfirmedProject().getId(), projectId) &&
+                student.isProjectAdmin();
+    }
+
 
     private boolean isProjectConfirmedByAllStudents(Project project) {
         return project.getAssignedStudents().stream().allMatch(StudentProject::isProjectConfirmed);

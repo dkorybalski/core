@@ -18,7 +18,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity(
+        securedEnabled = true
+)
 public class WebSecurityConfig {
 
     @Autowired

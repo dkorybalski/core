@@ -17,4 +17,5 @@ public interface ProjectService {
 
     ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId);
 
+    void delete(Long projectId, String userIndexNumber) throws Exception;
 }
