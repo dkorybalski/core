@@ -18,6 +18,7 @@ public interface StudentUserMapper {
     @Mapping(target = "indexNumber", source = "userData.indexNumber")
     // TODO: 6/19/2023 should we return a single role or a list ?
     @Mapping(target = "role", expression = "java(entity.getUserData().getRoles().iterator().next().getName().name())")
+    @Mapping(target = "accepted", expression = "java(entity.isProjectConfirmed())")
     StudentDTO mapToDto(Student entity);
 
     List<StudentDTO> mapToDtoList(List<Student> entityList);
