@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
 
+    private static final String INDEX_REGEX_PATTERN = "^s\\d{6}";
+
     private final StudentMapper studentMapper;
 
     private final StudentDAO studentDAO;
@@ -99,10 +101,22 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
         List<Student> entities = studentMapper.mapToEntities(newStudents);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Student student : entities) {
+            if (!validateIndexNumber(student.getUserData().getIndexNumber())) {
+                String indexNumberWithPrefix = addPrefixToIndex(student.getUserData().getIndexNumber());
+                student.getUserData().setIndexNumber(indexNumberWithPrefix);
+            }
             student.getUserData().setStudyYear(studyYearEntity);
             student.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.STUDENT)));
         }
         List<Student> students = studentDAO.saveAll(entities);
         return studentMapper.mapToDTOs(students);
+    }
+
+    private String addPrefixToIndex(String indexNumber) {
+        return "s" + indexNumber;
+    }
+
+    private boolean validateIndexNumber(String indexNumber) {
+        return indexNumber.matches(INDEX_REGEX_PATTERN);
     }
 }

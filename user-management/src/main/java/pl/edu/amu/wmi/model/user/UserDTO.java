@@ -20,8 +20,8 @@ public class UserDTO {
 
     private List<String> studyYears = new ArrayList<>();
 
-    private List<String> projects = new ArrayList<>();
+    private List<Long> projects = new ArrayList<>();
 
-    private List<String> acceptedProjects = new ArrayList<>();
+    private List<Long> acceptedProjects = new ArrayList<>();
 
 }

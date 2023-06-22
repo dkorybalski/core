@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface StudentService {
 
-    List<StudentDTO> findAll();
+    List<StudentDTO> findAll(String studyYear);
 
     AbstractEntity findById(Long id);
 

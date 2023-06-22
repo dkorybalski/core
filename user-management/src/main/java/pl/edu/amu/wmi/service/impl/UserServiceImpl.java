@@ -50,27 +50,27 @@ public class UserServiceImpl implements UserService {
         String roleWithTheHighestPermissions = findRoleWithTheHighestPermissions(userData.get().getRoles());
         userDTO.setRole(roleWithTheHighestPermissions);
 
-        List<String> acceptedProjects = new ArrayList<>();
-        List<String> assignedProjects = new ArrayList<>();
+        List<Long> acceptedProjects = new ArrayList<>();
+        List<Long> assignedProjects = new ArrayList<>();
 
         if (hasRoleStudent(userData.get().getRoles())) {
             Student entity = studentDAO.findByUserData_IndexNumber(indexNumber);
             Project acceptedProject = entity.getConfirmedProject();
 
             if (acceptedProject != null)
-                acceptedProjects.add(acceptedProject.getId().toString());
+                acceptedProjects.add(acceptedProject.getId());
 
             assignedProjects = entity.getAssignedProjects().stream()
-                    .map(studentProject -> studentProject.getProject().getId().toString()).toList();
+                    .map(studentProject -> studentProject.getProject().getId()).toList();
         }
 
         if (hasRoleSupervisor(userData.get().getRoles())) {
             Supervisor entity = supervisorDAO.findByUserData_IndexNumber(indexNumber);
             acceptedProjects = entity.getProjects().stream()
                     .filter(project -> project.getAcceptanceStatus().equals(AcceptanceStatus.ACCEPTED))
-                    .map(project -> project.getId().toString()).toList();
+                    .map(BaseAbstractEntity::getId).toList();
             assignedProjects = entity.getProjects().stream()
-                    .map(project -> project.getId().toString()).toList();
+                    .map(BaseAbstractEntity::getId).toList();
         }
 
         userDTO.setAcceptedProjects(acceptedProjects);

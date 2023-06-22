@@ -54,9 +54,9 @@ public class UserController {
 
 
     @GetMapping("/student")
-    public ResponseEntity<List<StudentDTO>> getStudents() {
+    public ResponseEntity<List<StudentDTO>> getStudents(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
-                .body(studentService.findAll());
+                .body(studentService.findAll(studyYear));
     }
 
     @PostMapping("/student")

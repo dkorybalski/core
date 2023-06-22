@@ -117,6 +117,7 @@ public class ProjectServiceImpl implements ProjectService {
 //            todo exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
             Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
             if (isProjectAdmin(entity, userIndexNumber))
+                entity.setProjectAdmin(true);
                 entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
@@ -215,7 +216,6 @@ public class ProjectServiceImpl implements ProjectService {
             // TODO: 6/21/2023 add custom exception
             throw new Exception("Missing permission to delete project");
         }
-
         removeConfirmedProjectFromStudents(projectEntity);
         projectDAO.delete(projectEntity);
     }
@@ -224,8 +224,11 @@ public class ProjectServiceImpl implements ProjectService {
         Set<Student> students = projectEntity.getStudents();
         for (Student student : students) {
             if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
+                if (student.isProjectAdmin()) {
+                    removeAdminRoleFromStudent(student);
+                    student.setProjectAdmin(false);
+                }
                 student.setConfirmedProject(null);
-                student.setProjectAdmin(false);
                 student.setProjectConfirmed(false);
                 student.setProjectRole(null);
                 studentDAO.save(student);
@@ -233,8 +236,18 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    private void removeAdminRoleFromStudent(Student student) {
+        student.getUserData().getRoles().remove(roleDAO.findByName(PROJECT_ADMIN));
+
+    }
+
     private boolean validateDeletionPermission(String userIndexNumber, Project project) {
-        List<UserRole> userRoles = userDataDAO.findByIndexNumber(userIndexNumber).get().getRoles().stream()
+        Optional<UserData> userData = userDataDAO.findByIndexNumber(userIndexNumber);
+        if (userData.isEmpty()) {
+            throw new EntityNotFoundException("User not found: " + userIndexNumber);
+        }
+        UserData userDataEntity = userData.get();
+        List<UserRole> userRoles = userDataEntity.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList());
         if (userRoles.contains(COORDINATOR)) {

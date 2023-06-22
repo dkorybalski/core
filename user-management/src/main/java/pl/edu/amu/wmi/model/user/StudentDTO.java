@@ -17,4 +17,6 @@ public class StudentDTO {
 
     private String role;
 
+    private boolean accepted;
+
 }

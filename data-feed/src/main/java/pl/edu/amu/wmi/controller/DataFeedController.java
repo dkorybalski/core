@@ -46,8 +46,7 @@ public class DataFeedController {
     }
 
     @GetMapping("export/student")
-    public void exportStudentsData(@RequestHeader("study-year") String studyYear,
-                                   @RequestHeader("index-number") String userIndexNumber, HttpServletResponse servletResponse) throws IOException, CsvException {
+    public void exportStudentsData(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws IOException, CsvException {
         servletResponse.setContentType("text/csv");
         servletResponse.setCharacterEncoding("UTF-8");
         servletResponse.addHeader("Content-Disposition", "attachment; filename=\"students.csv\"");

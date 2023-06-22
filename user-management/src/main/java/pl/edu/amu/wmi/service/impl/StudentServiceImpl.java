@@ -40,9 +40,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<StudentDTO> findAll() {
-        // TODO: 6/4/2023 add search by study year
-        return studentUserMapper.mapToDtoList(studentDAO.findAll());
+    public List<StudentDTO> findAll(String studyYear) {
+        return studentUserMapper.mapToDtoList(studentDAO.findAllByUserData_StudyYear_StudyYear(studyYear));
     }
 
     @Override
