@@ -13,6 +13,8 @@ public interface ProjectService {
 
     ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber);
 
+    ProjectDetailsDTO updateProject(String studyYear, String userIndexNumber, Long projectId, ProjectDetailsDTO projectDTO);
+
     ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex);
 
     ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId);
