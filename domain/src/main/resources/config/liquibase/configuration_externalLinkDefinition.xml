@@ -1,26 +1,62 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="dawid.gorkiewicz" id="externalLinkDefinition_1">
+    <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_1">
         <insert tableName="external_link_definition">
             <column name="id" value="1"/>
             <column name="creation_date" value="2023-05-28 00:00:00.00"/>
             <column name="modification_date" value="2023-05-28 00:00:00.00"/>
             <column name="version" value="0"/>
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
-            <column name="name" value="Repozytorium Git"/>
+            <column name="name" value="Git Repository"/>
             <column name="column_header" value="Git"/>
             <column name="study_year" value="PART_TIME#2023"/>
         </insert>
     </changeSet>
-    <changeSet author="dawid.gorkiewicz" id="externalLinkDefinition_2">
+    <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_2">
         <insert tableName="external_link_definition">
             <column name="id" value="2"/>
             <column name="creation_date" value="2023-05-28 00:00:00.00"/>
             <column name="modification_date" value="2023-05-28 00:00:00.00"/>
             <column name="version" value="0"/>
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
-            <column name="name" value="Zarządzanie zadaniami"/>
-            <column name="column_header" value="Jira"/>
+            <column name="name" value="Tasks Management"/>
+            <column name="column_header" value="PM Tools"/>
+            <column name="study_year" value="PART_TIME#2023"/>
+        </insert>
+    </changeSet>
+    <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_3">
+        <insert tableName="external_link_definition">
+            <column name="id" value="3"/>
+            <column name="creation_date" value="2023-05-28 00:00:00.00"/>
+            <column name="modification_date" value="2023-05-28 00:00:00.00"/>
+            <column name="version" value="0"/>
+            <column name="deadline" value="2023-05-28 00:00:00.00"/>
+            <column name="name" value="Documentation"/>
+            <column name="column_header" value="Documentation"/>
+            <column name="study_year" value="PART_TIME#2023"/>
+        </insert>
+    </changeSet>
+    <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_4">
+        <insert tableName="external_link_definition">
+            <column name="id" value="4"/>
+            <column name="creation_date" value="2023-05-28 00:00:00.00"/>
+            <column name="modification_date" value="2023-05-28 00:00:00.00"/>
+            <column name="version" value="0"/>
+            <column name="deadline" value="2023-05-28 00:00:00.00"/>
+            <column name="name" value="MS Teams Space"/>
+            <column name="column_header" value="MS Teams"/>
+            <column name="study_year" value="PART_TIME#2023"/>
+        </insert>
+    </changeSet>
+    <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_5">
+        <insert tableName="external_link_definition">
+            <column name="id" value="5"/>
+            <column name="creation_date" value="2023-05-28 00:00:00.00"/>
+            <column name="modification_date" value="2023-05-28 00:00:00.00"/>
+            <column name="version" value="0"/>
+            <column name="deadline" value="2023-05-28 00:00:00.00"/>
+            <column name="name" value="UI UX"/>
+            <column name="column_header" value="UI/UX Tools"/>
             <column name="study_year" value="PART_TIME#2023"/>
         </insert>
     </changeSet>
