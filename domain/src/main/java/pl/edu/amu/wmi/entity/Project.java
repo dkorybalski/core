@@ -2,12 +2,14 @@ package pl.edu.amu.wmi.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.ProjectRole;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Getter
 @Setter
 @Entity
@@ -58,8 +60,8 @@ public class Project extends AbstractEntity {
 //        student.getAssignedProjects().add(studentProject);
     }
 
-    public void addExternalLink(ExternalLink externalLink) {
-        externalLinks.add(externalLink);
+    public void removeStudentProject(Set<StudentProject> studentProjectSet) {
+        this.assignedStudents.removeAll(studentProjectSet);
     }
 
 }

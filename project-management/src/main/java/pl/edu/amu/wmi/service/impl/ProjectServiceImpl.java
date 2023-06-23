@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
+import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
 import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
@@ -107,11 +108,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);
-
-        if (project.getStudents().size() == 1)
-            projectEntity.setAcceptanceStatus(CONFIRMED);
-        else
-            projectEntity.setAcceptanceStatus(PENDING);
+        projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(project));
 
         for (StudentDTO student : project.getStudents()) {
 //            todo exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
@@ -122,6 +119,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
 
+        // TODO: New method
         // External Links without URL creation
         definitionEntities.forEach(entity -> {
             ExternalLink externalLink = new ExternalLink();
@@ -135,6 +133,37 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectEntity = projectDAO.save(projectEntity);
 
+        return projectMapper.mapToDto(projectEntity);
+    }
+
+    @Override
+    @Transactional
+    public ProjectDetailsDTO updateProject(String studyYear, String userIndexNumber, Long projectId, ProjectDetailsDTO projectDetailsDTO) {
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+        Supervisor supervisorEntity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, projectDetailsDTO.getSupervisor().getIndexNumber());
+        StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
+        projectEntity.setSupervisor(supervisorEntity);
+        projectEntity.setStudyYear(studyYearEntity);
+        projectEntity.setName(projectDetailsDTO.getName());
+        projectEntity.setDescription(projectDetailsDTO.getDescription());
+        projectEntity.setTechnologies(projectDetailsDTO.getTechnologies());
+        projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(projectDetailsDTO));
+
+        Set<StudentProject> currentAssignedStudents = projectEntity.getAssignedStudents();
+        Set<StudentProject> newAssignedStudents = getAssignedStudentsToUpdate(projectDetailsDTO);
+        Set<StudentProject> assignedStudentsToRemove = getAssignedStudentsToRemove(currentAssignedStudents, newAssignedStudents);
+
+        studentProjectDAO.deleteAll(assignedStudentsToRemove);
+        projectEntity.removeStudentProject(assignedStudentsToRemove);
+
+        for (StudentDTO student : projectDetailsDTO.getStudents()) {
+            // TODO: exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
+            Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
+            if (!entity.getUserData().getIndexNumber().equals(userIndexNumber))
+                projectEntity.addStudent(entity, student.getRole(), false);
+        }
+
+        projectDAO.save(projectEntity);
         return projectMapper.mapToDto(projectEntity);
     }
 
@@ -220,7 +249,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDAO.delete(projectEntity);
     }
 
-    private void removeConfirmedProjectFromStudents (Project projectEntity) {
+    private void removeConfirmedProjectFromStudents(Project projectEntity) {
         Set<Student> students = projectEntity.getStudents();
         for (Student student : students) {
             if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
@@ -299,4 +328,28 @@ public class ProjectServiceImpl implements ProjectService {
                 .filter(studentProject -> studentProject.getStudent().getUserData().getIndexNumber().equals(index))
                 .findFirst().get();
     }
+
+    private AcceptanceStatus acceptanceStatusByStudentsAmount(ProjectDetailsDTO projectDetailsDTO) {
+        if (projectDetailsDTO.getStudents().size() == 1)
+            return CONFIRMED;
+        else
+            return PENDING;
+    }
+
+    private Set<StudentProject> getAssignedStudentsToUpdate(ProjectDetailsDTO projectDetailsDTO) {
+        Set<StudentProject> studentProjectsForUpdate = new HashSet<>();
+        projectDetailsDTO.getStudents().forEach(studentDTO -> {
+            Student student = studentDAO.findByUserData_IndexNumber(studentDTO.getIndexNumber());
+            StudentProject studentProject = studentProjectDAO.findByStudent_IdAndProject_Id(student.getId(), projectDetailsDTO.getId());
+            studentProjectsForUpdate.add(studentProject);
+        });
+        return studentProjectsForUpdate;
+    }
+
+    private Set<StudentProject> getAssignedStudentsToRemove(Set<StudentProject> currentAssignedStudents, Set<StudentProject> newAssignedStudents) {
+        return currentAssignedStudents.stream()
+                .filter(element -> !newAssignedStudents.contains(element))
+                .collect(Collectors.toSet());
+    }
+
 }

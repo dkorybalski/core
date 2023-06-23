@@ -57,6 +57,16 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ProjectDetailsDTO> updateProject(
+            @RequestHeader("study-year") String studyYear,
+            @RequestHeader("index-number") String userIndexNumber,
+            @PathVariable Long id,
+            @Valid @RequestBody ProjectDetailsDTO project) {
+        return ResponseEntity.ok()
+                .body(projectService.updateProject(studyYear, userIndexNumber, id, project));
+    }
+
     @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
