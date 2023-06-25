@@ -18,6 +18,7 @@ public class Project extends AbstractEntity {
 
     private String name;
 
+    @Column(length = 2000)
     private String description;
 
     @OneToMany(mappedBy = "confirmedProject")

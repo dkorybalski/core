@@ -113,9 +113,11 @@ public class ProjectServiceImpl implements ProjectService {
         for (StudentDTO student : project.getStudents()) {
 //            todo exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
             Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
-            if (isProjectAdmin(entity, userIndexNumber))
+            if (isProjectAdmin(entity, userIndexNumber)) {
                 entity.setProjectAdmin(true);
                 entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
+            }
+
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
 
@@ -147,14 +149,49 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setName(projectDetailsDTO.getName());
         projectEntity.setDescription(projectDetailsDTO.getDescription());
         projectEntity.setTechnologies(projectDetailsDTO.getTechnologies());
-        projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(projectDetailsDTO));
 
         Set<StudentProject> currentAssignedStudents = projectEntity.getAssignedStudents();
         Set<StudentProject> newAssignedStudents = getAssignedStudentsToUpdate(projectDetailsDTO);
         Set<StudentProject> assignedStudentsToRemove = getAssignedStudentsToRemove(currentAssignedStudents, newAssignedStudents);
 
+        // TODO: 6/23/2023 Extract students removing to a new method
+        if (isUserRoleCoordinator(userIndexNumber)) {
+            assignedStudentsToRemove.forEach(assignedStudent -> {
+                Long studentId = assignedStudent.getStudent().getId();
+                Student student = studentDAO.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Student not found: " + studentId));
+                if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
+                    if (student.isProjectAdmin()) {
+                        removeAdminRoleFromStudent(student);
+                        student.setProjectAdmin(false);
+                    }
+                    student.setConfirmedProject(null);
+                    student.setProjectConfirmed(false);
+                    student.setProjectRole(null);
+                    studentDAO.save(student);
+                }
+            });
+            // TODO: 6/23/2023 Temporary workaround, need to be handled in a different way
+            projectDetailsDTO.setAdmin(projectDetailsDTO.getStudents().get(0).getIndexNumber());
+        } else {
+            assignedStudentsToRemove.forEach(assignedStudent -> {
+                Long studentId = assignedStudent.getStudent().getId();
+                Student student = studentDAO.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Student not found: " + studentId));
+                if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
+                    student.setConfirmedProject(null);
+                    student.setProjectConfirmed(false);
+                    student.setProjectRole(null);
+                    studentDAO.save(student);
+                }
+            });
+        }
+
+        // TODO: 6/23/2023 refactor needed
+        updateProjectAdmin(projectId, projectDetailsDTO.getAdmin());
+
         studentProjectDAO.deleteAll(assignedStudentsToRemove);
         projectEntity.removeStudentProject(assignedStudentsToRemove);
+
+        updateCurrentStudentRole(projectEntity.getAssignedStudents(), projectDetailsDTO.getStudents());
 
         for (StudentDTO student : projectDetailsDTO.getStudents()) {
             // TODO: exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
@@ -163,8 +200,41 @@ public class ProjectServiceImpl implements ProjectService {
                 projectEntity.addStudent(entity, student.getRole(), false);
         }
 
+        if (isUserRoleCoordinator(userIndexNumber)) {
+            projectEntity.getAssignedStudents().forEach(assignedStudent -> {
+                assignedStudent.setProjectConfirmed(true);
+                assignedStudent.getStudent().setProjectConfirmed(true);
+                assignedStudent.getStudent().setConfirmedProject(projectEntity);
+            });
+        }
+
+        updateProjectStatus(projectEntity);
+
         projectDAO.save(projectEntity);
         return projectMapper.mapToDto(projectEntity);
+    }
+
+    private void updateProjectStatus(Project project) {
+        boolean isProjectNotConfirmed = project.getAssignedStudents().stream()
+                .anyMatch(s -> Objects.equals(Boolean.FALSE, s.isProjectConfirmed()));
+        if (isProjectNotConfirmed && project.getAcceptanceStatus() != PENDING) {
+            project.setAcceptanceStatus(PENDING);
+        } else if (!isProjectNotConfirmed && project.getAcceptanceStatus() == PENDING) {
+            project.setAcceptanceStatus(CONFIRMED);
+        }
+    }
+
+    private boolean isUserRoleCoordinator(String index) {
+        return userDataDAO.findByIndexNumber(index).get().getRoles().stream().anyMatch(role -> role.getName().equals(COORDINATOR));
+    }
+
+    private void updateCurrentStudentRole(Set<StudentProject> assignedStudents, List<StudentDTO> students) {
+        for (StudentProject studentProject : assignedStudents) {
+            students.stream()
+                    .filter(s -> Objects.equals(s.getIndexNumber(), studentProject.getStudent().getUserData().getIndexNumber()))
+                    .map(StudentDTO::getRole)
+                    .findFirst().ifPresent(studentProject::setProjectRole);
+        }
     }
 
     @Override
@@ -185,14 +255,12 @@ public class ProjectServiceImpl implements ProjectService {
         Student currentAdminStudentEntity = currentAdminStudentProjectEntity.getStudent();
         Student newAdminStudentEntity = newAdminStudentProjectEntity.getStudent();
 
-        if (isProjectConfirmedOrAccepted(projectEntity)) {
-            currentAdminStudentEntity.setProjectAdmin(false);
-            currentAdminStudentEntity.getUserData().getRoles().remove(role);
-            newAdminStudentEntity.setProjectAdmin(true);
-            newAdminStudentEntity.getUserData().getRoles().add(role);
-            studentDAO.save(currentAdminStudentEntity);
-            studentDAO.save(newAdminStudentEntity);
-        }
+        currentAdminStudentEntity.setProjectAdmin(false);
+        currentAdminStudentEntity.getUserData().getRoles().remove(role);
+        newAdminStudentEntity.setProjectAdmin(true);
+        newAdminStudentEntity.getUserData().getRoles().add(role);
+        studentDAO.save(currentAdminStudentEntity);
+        studentDAO.save(newAdminStudentEntity);
 
         ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(projectEntity);
         projectDetailsDTO.setAdmin(newAdminStudentEntity.getUserData().getIndexNumber());
@@ -230,6 +298,25 @@ public class ProjectServiceImpl implements ProjectService {
 
         return projectMapper.mapToDto(projectEntity);
 
+    }
+
+    @Override
+    public ProjectDetailsDTO unAcceptProject(String studyYear, String userIndexNumber, Long projectId) {
+        Project projectEntity = projectDAO.findById(projectId).get();
+
+        if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+            if (isProjectConfirmedByAllStudents(projectEntity)) {
+                projectEntity.setAcceptanceStatus(PENDING);
+            }
+            StudentProject studentProjectEntity = getStudentProjectByStudentIndex(projectEntity, userIndexNumber);
+            studentProjectEntity.setProjectConfirmed(false);
+            studentProjectEntity.getStudent().setProjectConfirmed(false);
+            studentProjectEntity.getStudent().setConfirmedProject(null);
+
+            studentProjectDAO.save(studentProjectEntity);
+
+        }
+        return projectMapper.mapToDto(projectEntity);
     }
 
     @Transactional

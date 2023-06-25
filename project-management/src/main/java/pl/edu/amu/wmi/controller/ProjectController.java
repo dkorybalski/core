@@ -124,6 +124,15 @@ public class ProjectController {
                 .body(projectService.acceptProject(studyYear, userIndexNumber, projectId));
     }
 
+    @PatchMapping("/{projectId}/unaccept")
+    public ResponseEntity<ProjectDetailsDTO> unAcceptProject(
+            @RequestHeader("study-year") String studyYear,
+            @RequestHeader("index-number") String userIndexNumber,
+            @PathVariable Long projectId) {
+        return ResponseEntity.ok()
+                .body(projectService.unAcceptProject(studyYear, userIndexNumber, projectId));
+    }
+
     @GetMapping("/supervisor/availability")
     public ResponseEntity<List<SupervisorAvailabilityDTO>> getSupervisorsAvailability(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()

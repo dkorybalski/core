@@ -56,9 +56,17 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
                 studyYear.getSubjectCode(),
                 studyYear.getSubjectType(),
                 // TODO: 5/30/2023 implement the group number
-                "",
+                getGroupNumber(student),
                 ""
         };
+    }
+
+    private String getGroupNumber(Student student) {
+        // TODO: 6/23/2023 use better method from performance point of view
+        if (student.getConfirmedProject() != null) {
+            return student.getConfirmedProject().getSupervisor().getGroupNumber().toString();
+        }
+        return "";
     }
 
     private String[] createHeaders() {
