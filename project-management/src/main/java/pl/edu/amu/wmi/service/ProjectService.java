@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ProjectService {
 
-    List<ProjectDTO> findAll(String studyYear, String userIndexNumber);
+    List<ProjectDTO> findAllWithSorting(String studyYear, String userIndexNumber);
 
     ProjectDetailsDTO findById(Long id);
 
