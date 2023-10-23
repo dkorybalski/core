@@ -47,14 +47,14 @@ public class SupervisorServiceImpl implements SupervisorService {
         Supervisor entity = supervisorUserMapper.createEntity(dto);
 
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
-        entity.getUserData().setStudyYear(studyYearEntity);
+        entity.setStudyYear(studyYearEntity.getStudyYear());
         entity.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.SUPERVISOR)));
 
         return supervisorUserMapper.mapToDto(supervisorDAO.save(entity));
     }
 
     private void validateData(String indexNumber, String studyYear) {
-        List<Supervisor> existingSupervisorForStudyYear = supervisorDAO.findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
+        List<Supervisor> existingSupervisorForStudyYear = supervisorDAO.findAllByStudyYearAndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
         if (!existingSupervisorForStudyYear.isEmpty()) {
             log.error("Duplicated data - supervisor assigned to studyYear {} already exist in the database.", studyYear);
             throw new DuplicateKeyException("Duplicated supervisor data");

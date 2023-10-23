@@ -16,7 +16,7 @@ import java.util.Set;
 public class Student extends AbstractEntity {
 
     @NotNull
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "USER_DATA_ID")
     private UserData userData;
 
@@ -47,5 +47,7 @@ public class Student extends AbstractEntity {
             cascade = CascadeType.ALL
     )
     private Set<StudentProject> assignedProjects = new HashSet<>();
+
+    private String studyYear;
 
 }

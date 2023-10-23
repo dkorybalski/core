@@ -31,7 +31,7 @@ public class SupervisorProjectProjectServiceImpl implements SupervisorProjectSer
 
     @Override
     public List<SupervisorAvailabilityDTO> getSupervisorsAvailability(String studyYear) {
-        List<Supervisor> supervisorEntities = supervisorDAO.findAllByUserData_StudyYear_StudyYear(studyYear);
+        List<Supervisor> supervisorEntities = supervisorDAO.findAllByStudyYear(studyYear);
         List<SupervisorAvailabilityDTO> supervisorAvailabilityDTOS = new ArrayList<>();
         supervisorEntities
                 .forEach(supervisor -> {
@@ -49,7 +49,7 @@ public class SupervisorProjectProjectServiceImpl implements SupervisorProjectSer
     public List<SupervisorAvailabilityDTO> updateSupervisorsAvailability(String studyYear, List<SupervisorAvailabilityDTO> supervisorAvailabilityList) {
         List<Supervisor> supervisorEntities = new ArrayList<>();
         supervisorAvailabilityList.forEach(supervisorAvailabilityDTO -> {
-            Supervisor entity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, supervisorAvailabilityDTO.getSupervisor().getIndexNumber());
+            Supervisor entity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, supervisorAvailabilityDTO.getSupervisor().getIndexNumber());
             entity.setMaxNumberOfProjects(supervisorAvailabilityDTO.getMax());
             supervisorEntities.add(entity);
         });

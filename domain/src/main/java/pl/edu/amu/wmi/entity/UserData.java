@@ -33,11 +33,4 @@ public class UserData extends AbstractEntity {
     )
     private Set<Role> roles;
 
-    @ManyToOne
-    @JoinColumn(
-            name = "STUDY_YEAR",
-            referencedColumnName = "STUDY_YEAR"
-    )
-    private StudyYear studyYear;
-
 }

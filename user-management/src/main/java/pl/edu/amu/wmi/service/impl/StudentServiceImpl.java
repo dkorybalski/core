@@ -41,7 +41,7 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentDTO> findAll(String studyYear) {
-        return studentUserMapper.mapToDtoList(studentDAO.findAllByUserData_StudyYear_StudyYear(studyYear));
+        return studentUserMapper.mapToDtoList(studentDAO.findAllByStudyYear(studyYear));
     }
 
     @Override
@@ -56,13 +56,13 @@ public class StudentServiceImpl implements StudentService {
         Student entity = studentUserMapper.createEntity(dto);
 
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
-        entity.getUserData().setStudyYear(studyYearEntity);
+        entity.setStudyYear(studyYearEntity.getStudyYear());
         entity.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.STUDENT)));
         return studentUserMapper.mapToDto(studentDAO.save(entity));
     }
 
     private void validateData(String indexNumber, String studyYear) {
-        List<Student> existingStudentForStudyYear = studentDAO.findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
+        List<Student> existingStudentForStudyYear = studentDAO.findAllByStudyYear_AndUserData_IndexNumberIn(studyYear, List.of(indexNumber));
         if (!existingStudentForStudyYear.isEmpty()) {
             log.error("Duplicated data - student assigned to studyYear {} already exist in the database.", studyYear);
             throw new DuplicateKeyException("Duplicated student data");

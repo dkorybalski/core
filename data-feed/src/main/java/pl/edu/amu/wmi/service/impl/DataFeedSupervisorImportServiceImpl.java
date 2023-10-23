@@ -67,7 +67,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         List<String> supervisorIndexNumbers = newSupervisors.stream()
                 .map(NewSupervisorDTO::getIndexNumber)
                 .collect(Collectors.toList());
-        List<Supervisor> existingSupervisorsForStudyYear = supervisorDAO.findAllByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, supervisorIndexNumbers);
+        List<Supervisor> existingSupervisorsForStudyYear = supervisorDAO.findAllByStudyYearAndUserData_IndexNumberIn(studyYear, supervisorIndexNumbers);
         if (!existingSupervisorsForStudyYear.isEmpty()) {
             log.error("Duplicated data - {} supervisors assigned to studyYear {} already exist in the database.", existingSupervisorsForStudyYear.size(), studyYear);
             throw new DuplicateKeyException("Duplicated supervisor data");
@@ -106,7 +106,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
                 String indexNumberWithPrefix = addPrefixToIndex(supervisor.getUserData().getIndexNumber());
                 supervisor.getUserData().setIndexNumber(indexNumberWithPrefix);
             }
-            supervisor.getUserData().setStudyYear(studyYearEntity);
+            supervisor.setStudyYear(studyYearEntity.getStudyYear());
             supervisor.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.SUPERVISOR)));
         }
         List<Supervisor> supervisors = supervisorDAO.saveAll(entities);
