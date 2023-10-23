@@ -12,6 +12,9 @@ import pl.edu.amu.wmi.enumerations.StudyType;
 @Table(name = "STUDY_YEAR")
 public class StudyYear extends AbstractEntity {
 
+    /**
+     * it is a combination of study type and year, e.g. PART_TIME#2023
+     */
     @Column(name = "STUDY_YEAR")
     @NaturalId
     private String studyYear;

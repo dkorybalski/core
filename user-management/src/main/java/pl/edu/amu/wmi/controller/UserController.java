@@ -33,10 +33,10 @@ public class UserController {
     }
 
     @GetMapping("")
-    public ResponseEntity<UserDTO> getUser() {
+    public ResponseEntity<UserDTO> getUser(@RequestHeader("study-year") String studyYear) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return ResponseEntity.ok(userService.getUser(userDetails.getUsername()));
+        return ResponseEntity.ok(userService.getUser(userDetails.getUsername(), studyYear));
     }
 
     @GetMapping("/supervisor")

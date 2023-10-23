@@ -1,266 +1,284 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="gorki (generated)" id="1685396094134-1">
-        <createTable tableName="external_link">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="url" type="VARCHAR(255)"/>
-            <column name="external_link_definition_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="project_id" type="BIGINT"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-2">
-        <createTable tableName="external_link_definition">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_definition_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="deadline" type="date"/>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="column_header" type="VARCHAR(20)"/>
-            <column name="study_year" type="VARCHAR(255)"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-3">
-        <createTable tableName="privilege">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="privilege_pkey"/>
-            </column>
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-4">
-        <createTable tableName="project">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="project_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="acceptance_status" type="VARCHAR(255)"/>
-            <column name="description" type="VARCHAR(2000)"/>
-            <column name="name" type="VARCHAR(255)"/>
-            <column name="technologies" type="VARCHAR[]"/>
-            <column name="study_year" type="VARCHAR(255)"/>
-            <column name="supervisor_id" type="BIGINT"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-5">
-        <createTable tableName="role">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="role_pkey"/>
-            </column>
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-6">
-        <createTable tableName="roles_privileges">
-            <column name="role_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="roles_privileges_pkey"/>
-            </column>
-            <column name="privilege_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="roles_privileges_pkey"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-7">
-        <createTable tableName="student">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="student_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="is_project_admin" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="is_project_confirmed" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="pesel" type="VARCHAR(255)"/>
-            <column name="project_role" type="VARCHAR(255)"/>
-            <column name="project_id" type="BIGINT"/>
-            <column name="user_data_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-8">
-        <createTable tableName="student_project">
-            <column name="is_project_admin" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="is_project_confirmed" type="BOOLEAN">
-                <constraints nullable="false"/>
-            </column>
-            <column name="project_role" type="VARCHAR(255)"/>
-            <column name="project_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
-            </column>
-            <column name="student_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-9">
-        <createTable tableName="study_year">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="study_year_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="first_semester_code" type="VARCHAR(255)"/>
-            <column name="is_active" type="BOOLEAN"/>
-            <column name="second_semester_code" type="VARCHAR(255)"/>
-            <column name="study_type" type="VARCHAR(255)"/>
-            <column name="study_year" type="VARCHAR(255)"/>
-            <column name="subject_code" type="VARCHAR(255)"/>
-            <column name="subject_type" type="VARCHAR(255)"/>
-            <column name="year" type="VARCHAR(255)"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-10">
-        <createTable tableName="supervisor">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="supervisor_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="group_number" type="INTEGER"/>
-            <column name="max_number_of_projects" type="INTEGER"/>
-            <column name="user_data_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-11">
-        <createTable tableName="user_data">
-            <column autoIncrement="true" name="id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="user_data_pkey"/>
-            </column>
-            <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
-                <constraints nullable="false"/>
-            </column>
-            <column name="version" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="email" type="VARCHAR(255)"/>
-            <column name="first_name" type="VARCHAR(255)"/>
-            <column name="index_number" type="VARCHAR(255)"/>
-            <column name="last_name" type="VARCHAR(255)"/>
-            <column name="password" type="VARCHAR(255)"/>
-            <column name="study_year" type="VARCHAR(255)"/>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-12">
-        <createTable tableName="users_roles">
-            <column name="user_data_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="users_roles_pkey"/>
-            </column>
-            <column name="role_id" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="users_roles_pkey"/>
-            </column>
-        </createTable>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-13">
-        <addUniqueConstraint columnNames="study_year" constraintName="uk_rsx78kjf2dl232i4xd1onxx6i" tableName="study_year"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-14">
-        <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="supervisor" constraintName="fk4jn5kbua0okb63po1g2t3s9pp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-15">
-        <addForeignKeyConstraint baseColumnNames="privilege_id" baseTableName="roles_privileges" constraintName="fk5yjwxw2gvfyu76j3rgqwo685u" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="privilege" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-16">
-        <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="external_link_definition" constraintName="fk643p6wcr83unkod5o2471yvos" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-17">
-        <addForeignKeyConstraint baseColumnNames="external_link_definition_id" baseTableName="external_link" constraintName="fk7g7srntbaps7rrirn2ttfmurj" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="external_link_definition" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-18">
-        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="roles_privileges" constraintName="fk9h2vewsqh8luhfq71xokh4who" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-19">
-        <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="project" constraintName="fkbaa8pb9y334aol7an0rrbln35" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-20">
-        <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="student" constraintName="fkbnjvvedj3pq63vyakm3gibcdq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-21">
-        <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="users_roles" constraintName="fkhkob4aolu9n58vec7oxvwl8rc" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-22">
-        <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="user_data" constraintName="fkjan3r73o04o3u1y2uvlr8uuq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-23">
-        <addForeignKeyConstraint baseColumnNames="student_id" baseTableName="student_project" constraintName="fkl37sau7p5bk28p0v29vhoja4e" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="student" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-24">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student_project" constraintName="fklmwp7mytxvlna99s526lfvgcp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-25">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="external_link" constraintName="fkpk6tmi9vawd609a856ncr9r0c" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-26">
-        <addForeignKeyConstraint baseColumnNames="supervisor_id" baseTableName="project" constraintName="fkqcjb2k6p87r2ngcggtxnacuam" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="supervisor" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-27">
-        <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student" constraintName="fkr6av6arpoy7wpbqipg41id1mn" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
-    </changeSet>
-    <changeSet author="gorki (generated)" id="1685396094134-28">
-        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="users_roles" constraintName="fkt4v0rrweyk393bdgt107vdx0x" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
-    </changeSet>
+<changeSet author="katar (generated)" id="1697578945937-1">
+    <createTable tableName="external_link">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="url" type="VARCHAR(255)"/>
+        <column name="external_link_definition_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="project_id" type="BIGINT"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-2">
+    <createTable tableName="external_link_definition">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="external_link_definition_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="column_header" type="VARCHAR(20)"/>
+        <column name="deadline" type="date"/>
+        <column name="name" type="VARCHAR(255)"/>
+        <column name="study_year" type="VARCHAR(255)"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-3">
+    <createTable tableName="privilege">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="privilege_pkey"/>
+        </column>
+        <column name="name" type="VARCHAR(255)">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-4">
+    <createTable tableName="project">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="project_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="acceptance_status" type="VARCHAR(255)"/>
+        <column name="description" type="VARCHAR(2000)"/>
+        <column name="name" type="VARCHAR(255)"/>
+        <column name="technologies" type="VARCHAR[]"/>
+        <column name="study_year" type="VARCHAR(255)"/>
+        <column name="supervisor_id" type="BIGINT"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-5">
+    <createTable tableName="refresh_token">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="refresh_token_pkey"/>
+        </column>
+        <column name="expiry_date" type="TIMESTAMP WITH TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="token" type="VARCHAR(255)">
+            <constraints nullable="false"/>
+        </column>
+        <column name="user_data_id" type="BIGINT"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-6">
+    <createTable tableName="role">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="role_pkey"/>
+        </column>
+        <column name="name" type="VARCHAR(255)">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-7">
+    <createTable tableName="roles_privileges">
+        <column name="role_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="roles_privileges_pkey"/>
+        </column>
+        <column name="privilege_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="roles_privileges_pkey"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-8">
+    <createTable tableName="student">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="student_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="is_project_admin" type="BOOLEAN">
+            <constraints nullable="false"/>
+        </column>
+        <column name="is_project_confirmed" type="BOOLEAN">
+            <constraints nullable="false"/>
+        </column>
+        <column name="pesel" type="VARCHAR(255)"/>
+        <column name="project_role" type="VARCHAR(255)"/>
+        <column name="study_year" type="VARCHAR(255)"/>
+        <column name="project_id" type="BIGINT"/>
+        <column name="user_data_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-9">
+    <createTable tableName="student_project">
+        <column name="is_project_admin" type="BOOLEAN">
+            <constraints nullable="false"/>
+        </column>
+        <column name="is_project_confirmed" type="BOOLEAN">
+            <constraints nullable="false"/>
+        </column>
+        <column name="project_role" type="VARCHAR(255)"/>
+        <column name="project_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
+        </column>
+        <column name="student_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="student_project_pkey"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-10">
+    <createTable tableName="study_year">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="study_year_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="first_semester_code" type="VARCHAR(255)"/>
+        <column name="is_active" type="BOOLEAN"/>
+        <column name="second_semester_code" type="VARCHAR(255)"/>
+        <column name="study_type" type="VARCHAR(255)"/>
+        <column name="study_year" type="VARCHAR(255)"/>
+        <column name="subject_code" type="VARCHAR(255)"/>
+        <column name="subject_type" type="VARCHAR(255)"/>
+        <column name="year" type="VARCHAR(255)"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-11">
+    <createTable tableName="supervisor">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="supervisor_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="group_number" type="INTEGER"/>
+        <column name="max_number_of_projects" type="INTEGER"/>
+        <column name="study_year" type="VARCHAR(255)"/>
+        <column name="user_data_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-12">
+    <createTable tableName="user_data">
+        <column autoIncrement="true" name="id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="user_data_pkey"/>
+        </column>
+        <column name="creation_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="modification_date" type="TIMESTAMP WITHOUT TIME ZONE">
+            <constraints nullable="false"/>
+        </column>
+        <column name="version" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="email" type="VARCHAR(255)"/>
+        <column name="first_name" type="VARCHAR(255)"/>
+        <column name="index_number" type="VARCHAR(255)"/>
+        <column name="last_name" type="VARCHAR(255)"/>
+        <column name="password" type="VARCHAR(255)"/>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-13">
+    <createTable tableName="users_roles">
+        <column name="user_data_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="users_roles_pkey"/>
+        </column>
+        <column name="role_id" type="BIGINT">
+            <constraints nullable="false" primaryKey="true" primaryKeyName="users_roles_pkey"/>
+        </column>
+    </createTable>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-14">
+    <addUniqueConstraint columnNames="token" constraintName="uk_r4k4edos30bx9neoq81mdvwph" tableName="refresh_token"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-15">
+    <addUniqueConstraint columnNames="study_year" constraintName="uk_rsx78kjf2dl232i4xd1onxx6i" tableName="study_year"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-16">
+    <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="supervisor" constraintName="fk4jn5kbua0okb63po1g2t3s9pp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-17">
+    <addForeignKeyConstraint baseColumnNames="privilege_id" baseTableName="roles_privileges" constraintName="fk5yjwxw2gvfyu76j3rgqwo685u" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="privilege" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-18">
+    <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="external_link_definition" constraintName="fk643p6wcr83unkod5o2471yvos" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-19">
+    <addForeignKeyConstraint baseColumnNames="external_link_definition_id" baseTableName="external_link" constraintName="fk7g7srntbaps7rrirn2ttfmurj" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="external_link_definition" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-20">
+    <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="refresh_token" constraintName="fk8gcisudbeh7vrccr26w8odsc8" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-21">
+    <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="roles_privileges" constraintName="fk9h2vewsqh8luhfq71xokh4who" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-22">
+    <addForeignKeyConstraint baseColumnNames="study_year" baseTableName="project" constraintName="fkbaa8pb9y334aol7an0rrbln35" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="study_year" referencedTableName="study_year" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-23">
+    <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="student" constraintName="fkbnjvvedj3pq63vyakm3gibcdq" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-24">
+    <addForeignKeyConstraint baseColumnNames="user_data_id" baseTableName="users_roles" constraintName="fkhkob4aolu9n58vec7oxvwl8rc" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="user_data" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-25">
+    <addForeignKeyConstraint baseColumnNames="student_id" baseTableName="student_project" constraintName="fkl37sau7p5bk28p0v29vhoja4e" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="student" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-26">
+    <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student_project" constraintName="fklmwp7mytxvlna99s526lfvgcp" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-27">
+    <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="external_link" constraintName="fkpk6tmi9vawd609a856ncr9r0c" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-28">
+    <addForeignKeyConstraint baseColumnNames="supervisor_id" baseTableName="project" constraintName="fkqcjb2k6p87r2ngcggtxnacuam" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="supervisor" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-29">
+    <addForeignKeyConstraint baseColumnNames="project_id" baseTableName="student" constraintName="fkr6av6arpoy7wpbqipg41id1mn" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="project" validate="true"/>
+</changeSet>
+<changeSet author="katar (generated)" id="1697578945937-30">
+    <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="users_roles" constraintName="fkt4v0rrweyk393bdgt107vdx0x" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="role" validate="true"/>
+</changeSet>
 </databaseChangeLog>

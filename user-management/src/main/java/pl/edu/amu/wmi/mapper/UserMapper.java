@@ -12,7 +12,6 @@ import java.util.List;
 public interface UserMapper {
 
     @Mapping(target = "name", expression = "java(entity.getFirstName() +\" \" + entity.getLastName())")
-    @Mapping(target = "studyYears", expression = "java(List.of(entity.getStudyYear().getStudyYear()))")
     UserDTO mapToDto(UserData entity);
 
 }

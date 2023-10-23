@@ -112,7 +112,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber) {
         Project projectEntity = projectMapper.mapToEntity(project);
-        Supervisor supervisorEntity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
+        Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         Set<ExternalLinkDefinition> definitionEntities = definitionDAO.findAllByStudyYear_StudyYear(studyYear);
         Set<ExternalLink> externalLinkEntities = new HashSet<>();
@@ -153,7 +153,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDetailsDTO updateProject(String studyYear, String userIndexNumber, Long projectId, ProjectDetailsDTO projectDetailsDTO) {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
-        Supervisor supervisorEntity = supervisorDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumber(studyYear, projectDetailsDTO.getSupervisor().getIndexNumber());
+        Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, projectDetailsDTO.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);

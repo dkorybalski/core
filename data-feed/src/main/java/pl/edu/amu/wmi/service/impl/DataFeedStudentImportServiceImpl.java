@@ -66,7 +66,7 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
         List<String> studentIndexNumbers = newStudents.stream()
                 .map(NewStudentDTO::getIndexNumber)
                 .collect(Collectors.toList());
-        List<Student> existingStudentsForStudyYear = studentDAO.findByUserData_StudyYear_StudyYearAndUserData_IndexNumberIn(studyYear, studentIndexNumbers);
+        List<Student> existingStudentsForStudyYear = studentDAO.findByStudyYearAndUserData_IndexNumberIn(studyYear, studentIndexNumbers);
         if (!existingStudentsForStudyYear.isEmpty()) {
             log.error("Duplicated data - {} students assigned to studyYear {} already exist in the database.", existingStudentsForStudyYear.size(), studyYear);
             throw new DuplicateKeyException("Duplicated student data");
@@ -105,7 +105,7 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
                 String indexNumberWithPrefix = addPrefixToIndex(student.getUserData().getIndexNumber());
                 student.getUserData().setIndexNumber(indexNumberWithPrefix);
             }
-            student.getUserData().setStudyYear(studyYearEntity);
+            student.setStudyYear(studyYearEntity.getStudyYear());
             student.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.STUDENT)));
         }
         List<Student> students = studentDAO.saveAll(entities);

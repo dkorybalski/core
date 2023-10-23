@@ -13,8 +13,9 @@ import java.util.Set;
 @Table(name = "SUPERVISOR")
 public class Supervisor extends AbstractEntity {
 
+    // TODO: 8/21/2023 verify cascade
     @NotNull
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "USER_DATA_ID")
     private UserData userData;
 
@@ -25,5 +26,7 @@ public class Supervisor extends AbstractEntity {
     private Integer maxNumberOfProjects;
 
     private Integer groupNumber;
+
+    private String studyYear;
 
 }
