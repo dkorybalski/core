@@ -85,21 +85,19 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<ProjectDTO> findAllWithSorting(String studyYear, String userIndexNumber) {
         List<Project> projectEntityList = projectDAO.findAllByStudyYear_StudyYear(studyYear);
-        // TODO: 10/20/2023: Extend following entities search by year of study -
-        //  fix after implementing DB schema improvements
-        Student student = studentDAO.findByUserData_IndexNumber(userIndexNumber);
-        Supervisor supervisor = supervisorDAO.findByUserData_IndexNumber(userIndexNumber);
+        Student student = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
+        Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
 
         if (student != null) {
             List<Long> studentProjectsIds = student.getAssignedProjects().stream()
                     .map(sp -> sp.getProject().getId()).toList();
             Comparator<Project> byStudentAssignedAndConfirmedProjects = Comparator
                     .comparing((Project p) -> !studentProjectsIds.contains(p.getId()))
-                    .thenComparing((Project p) -> !student.getConfirmedProject().getId().equals(p.getId()));
+                    .thenComparing((Project p) -> !isProjectEqualToStudentsConfirmed(p, student));
             projectEntityList.sort(byStudentAssignedAndConfirmedProjects);
         } else {
             Comparator<Project> bySupervisorAssignedAndAcceptedProjects = Comparator
-                    .comparing((Project p) -> !p.getSupervisor().getId().equals(supervisor.getId()))
+                    .comparing((Project p) -> !p.getSupervisor().equals(supervisor))
                     .thenComparing((Project p) -> !p.getAcceptanceStatus().equals(ACCEPTED));
             projectEntityList.sort(bySupervisorAssignedAndAcceptedProjects);
         }
@@ -107,6 +105,14 @@ public class ProjectServiceImpl implements ProjectService {
         return projectMapper.mapToDtoList(projectEntityList);
     }
 
+    private boolean isProjectEqualToStudentsConfirmed(Project project, Student student) {
+        Project studentConfirmedProject = student.getConfirmedProject();
+        if (studentConfirmedProject != null) {
+            return studentConfirmedProject.equals(project);
+        } else {
+            return false;
+        }
+    }
 
     @Override
     @Transactional

@@ -9,6 +9,8 @@ import java.util.List;
 @Repository
 public interface StudentDAO extends JpaRepository<Student, Long> {
 
+    Student findByStudyYearAndUserData_IndexNumber(String studyYear, String indexNumber);
+
     Student findByUserData_IndexNumber(String indexNumber);
 
     List<Student> findByStudyYearAndUserData_IndexNumberIn(String studyYear, List<String> indexNumbers);
