@@ -31,7 +31,7 @@ It is necessary to define secret values in the file secrets.properties
 [//]: # (todo)
 
 #### Profile
-[//]: # (todo)
+Run application with the profile `local`
 
 ### Starting the application
 To run the application use an IDE build in option (e.g. in IntelliJ) or execute in command line:
