@@ -1,6 +1,5 @@
 package pl.edu.amu.wmi.service.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,8 @@ import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.exception.BusinessException;
+import pl.edu.amu.wmi.exception.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.ProjectMapper;
 import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
@@ -16,6 +17,7 @@ import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.StudentDTO;
 import pl.edu.amu.wmi.service.ProjectService;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,10 +66,10 @@ public class ProjectServiceImpl implements ProjectService {
         this.studentMapper = studentMapper;
     }
 
-    // TODO: 6/3/2023 handle optional .get()
     @Override
     public ProjectDetailsDTO findById(Long id) {
-        Project project = projectDAO.findById(id).get();
+        Project project = projectDAO.findById(id).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", id)));
         List<StudentDTO> studentDTOs = new ArrayList<>();
         project.getAssignedStudents().stream()
                 .forEach(studentProject -> {
@@ -78,8 +80,13 @@ public class ProjectServiceImpl implements ProjectService {
                 });
         ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(project);
         projectDetailsDTO.setStudents(studentDTOs);
-        projectDetailsDTO.setAdmin(getStudentProjectOfAdmin(project).getStudent().getUserData().getIndexNumber());
+        projectDetailsDTO.setAdmin(getIndexNumberOfProjectAdmin(project));
         return projectDetailsDTO;
+    }
+
+    private String getIndexNumberOfProjectAdmin(Project project) {
+        Student projectAdmin = getStudentProjectOfAdmin(project).getStudent();
+        return projectAdmin.getIndexNumber();
     }
 
     @Override
@@ -158,7 +165,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDetailsDTO updateProject(String studyYear, String userIndexNumber, Long projectId, ProjectDetailsDTO projectDetailsDTO) {
-        Project projectEntity = projectDAO.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found: " + projectId));
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project not found: {0}", projectId)));
         Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, projectDetailsDTO.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         projectEntity.setSupervisor(supervisorEntity);
@@ -175,7 +183,8 @@ public class ProjectServiceImpl implements ProjectService {
         if (isUserRoleCoordinator(userIndexNumber)) {
             assignedStudentsToRemove.forEach(assignedStudent -> {
                 Long studentId = assignedStudent.getStudent().getId();
-                Student student = studentDAO.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Student not found: " + studentId));
+                Student student = studentDAO.findById(studentId).orElseThrow(()
+                        -> new ProjectManagementException(MessageFormat.format("Student not found: {0}", studentId)));
                 if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
                     if (student.isProjectAdmin()) {
                         removeAdminRoleFromStudent(student);
@@ -192,7 +201,8 @@ public class ProjectServiceImpl implements ProjectService {
         } else {
             assignedStudentsToRemove.forEach(assignedStudent -> {
                 Long studentId = assignedStudent.getStudent().getId();
-                Student student = studentDAO.findById(studentId).orElseThrow(() -> new EntityNotFoundException("Student not found: " + studentId));
+                Student student = studentDAO.findById(studentId).orElseThrow(()
+                        -> new ProjectManagementException(MessageFormat.format("Student not found: {0}", studentId)));
                 if (Objects.nonNull(student.getConfirmedProject()) && Objects.equals(student.getConfirmedProject().getId(), projectEntity.getId())) {
                     student.setConfirmedProject(null);
                     student.setProjectConfirmed(false);
@@ -213,7 +223,7 @@ public class ProjectServiceImpl implements ProjectService {
         for (StudentDTO student : projectDetailsDTO.getStudents()) {
             // TODO: exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
             Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
-            if (!entity.getUserData().getIndexNumber().equals(userIndexNumber))
+            if (!entity.getIndexNumber().equals(userIndexNumber))
                 projectEntity.addStudent(entity, student.getRole(), false);
         }
 
@@ -242,13 +252,15 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private boolean isUserRoleCoordinator(String index) {
-        return userDataDAO.findByIndexNumber(index).get().getRoles().stream().anyMatch(role -> role.getName().equals(COORDINATOR));
+        UserData userData = userDataDAO.findByIndexNumber(index).orElseThrow(()
+                -> new BusinessException(MessageFormat.format("User with index: {0} not found.", index)));
+        return userData.getRoles().stream().anyMatch(role -> role.getName().equals(COORDINATOR));
     }
 
     private void updateCurrentStudentRole(Set<StudentProject> assignedStudents, List<StudentDTO> students) {
         for (StudentProject studentProject : assignedStudents) {
             students.stream()
-                    .filter(s -> Objects.equals(s.getIndexNumber(), studentProject.getStudent().getUserData().getIndexNumber()))
+                    .filter(s -> Objects.equals(s.getIndexNumber(), studentProject.getStudent().getIndexNumber()))
                     .map(StudentDTO::getRole)
                     .findFirst().ifPresent(studentProject::setProjectRole);
         }
@@ -258,7 +270,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex) {
 
-        Project projectEntity = projectDAO.findById(projectId).get();
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
         Role role = roleDAO.findByName(PROJECT_ADMIN);
 
         StudentProject currentAdminStudentProjectEntity = getStudentProjectOfAdmin(projectEntity);
@@ -280,7 +293,7 @@ public class ProjectServiceImpl implements ProjectService {
         studentDAO.save(newAdminStudentEntity);
 
         ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(projectEntity);
-        projectDetailsDTO.setAdmin(newAdminStudentEntity.getUserData().getIndexNumber());
+        projectDetailsDTO.setAdmin(newAdminStudentEntity.getIndexNumber());
 
         return projectDetailsDTO;
 
@@ -319,7 +332,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDetailsDTO unAcceptProject(String studyYear, String userIndexNumber, Long projectId) {
-        Project projectEntity = projectDAO.findById(projectId).get();
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
             if (isProjectConfirmedByAllStudents(projectEntity)) {
@@ -338,16 +352,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Transactional
     @Override
-    public void delete(Long projectId, String userIndexNumber) throws Exception {
-        Optional<Project> project = projectDAO.findById(projectId);
-        if (project.isEmpty()) {
-            throw new EntityNotFoundException("Project not found: " + projectId);
-        }
-        Project projectEntity = project.get();
+    public void delete(Long projectId, String userIndexNumber) throws ProjectManagementException {
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         if (!validateDeletionPermission(userIndexNumber, projectEntity)) {
-            // TODO: 6/21/2023 add custom exception
-            throw new Exception("Missing permission to delete project");
+            log.error("Missing permission to delete project for user with index number: {}", userIndexNumber);
+            throw new ProjectManagementException("Missing permission to delete project");
         }
         removeConfirmedProjectFromStudents(projectEntity);
         projectDAO.delete(projectEntity);
@@ -375,14 +386,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private boolean validateDeletionPermission(String userIndexNumber, Project project) {
-        Optional<UserData> userData = userDataDAO.findByIndexNumber(userIndexNumber);
-        if (userData.isEmpty()) {
-            throw new EntityNotFoundException("User not found: " + userIndexNumber);
-        }
-        UserData userDataEntity = userData.get();
+        UserData userDataEntity = userDataDAO.findByIndexNumber(userIndexNumber).orElseThrow(()
+                -> new BusinessException(MessageFormat.format("User with index: {0} not found", userIndexNumber)));
         List<UserRole> userRoles = userDataEntity.getRoles().stream()
                 .map(Role::getName)
-                .collect(Collectors.toList());
+                .toList();
         if (userRoles.contains(COORDINATOR)) {
             return true;
         } else if (userRoles.contains(PROJECT_ADMIN)) {
@@ -405,32 +413,36 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private UserRole getUserRoleByUserIndex(String index) {
-        // TODO: 6/4/2023 implement logic for optional
-        return userDataDAO.findByIndexNumber(index).get().getRoles().stream()
+        UserData userData = userDataDAO.findByIndexNumber(index).orElseThrow(()
+                -> new BusinessException(MessageFormat.format("User with index: {0} not found.", index)));
+        Role userRole = userData.getRoles().stream()
                 .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
-                .findFirst().get().getName();
+                .findFirst().orElseThrow(()
+                        -> new BusinessException(MessageFormat.format("User with index: {0} does not have required role.", index)));
+        return userRole.getName();
     }
 
     private boolean isProjectAdmin(Student entity, String userIndexNumber) {
-        return Objects.equals(userIndexNumber, entity.getUserData().getIndexNumber());
+        return Objects.equals(userIndexNumber, entity.getIndexNumber());
     }
 
-    private boolean isProjectConfirmedOrAccepted(Project project) {
-        return project.getAcceptanceStatus().equals(CONFIRMED) || project.getAcceptanceStatus().equals(ACCEPTED);
-    }
-
-    // TODO: 6/3/2023 handle optional .get()
     private StudentProject getStudentProjectOfAdmin(Project project) {
         return project.getAssignedStudents().stream()
                 .filter(StudentProject::isProjectAdmin)
-                .findFirst().get();
+                .findFirst().orElseThrow(()
+                        -> new ProjectManagementException(MessageFormat.format("Admin of project with id: {0} not found", project.getId())));
     }
 
-    // TODO: 6/3/2023 handle optional .get()
     private StudentProject getStudentProjectByStudentIndex(Project project, String index) {
         return project.getAssignedStudents().stream()
-                .filter(studentProject -> studentProject.getStudent().getUserData().getIndexNumber().equals(index))
-                .findFirst().get();
+                .filter(studentProject -> isStudentProjectConnectedWithStudent(index, studentProject))
+                .findFirst().orElseThrow(()
+                        -> new ProjectManagementException(MessageFormat.format("Project with id: {0} is not connected with student: {1}",
+                                                                                project.getId(), index)));
+    }
+
+    private static boolean isStudentProjectConnectedWithStudent(String index, StudentProject studentProject) {
+        return studentProject.getStudent().getIndexNumber().equals(index);
     }
 
     private AcceptanceStatus acceptanceStatusByStudentsAmount(ProjectDetailsDTO projectDetailsDTO) {

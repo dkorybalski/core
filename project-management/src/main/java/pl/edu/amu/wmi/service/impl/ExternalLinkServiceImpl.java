@@ -7,14 +7,22 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.ExternalLinkDAO;
 import pl.edu.amu.wmi.dao.ExternalLinkDefinitionDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
-import pl.edu.amu.wmi.entity.*;
+import pl.edu.amu.wmi.entity.BaseAbstractEntity;
+import pl.edu.amu.wmi.entity.ExternalLink;
+import pl.edu.amu.wmi.entity.ExternalLinkDefinition;
+import pl.edu.amu.wmi.entity.Project;
+import pl.edu.amu.wmi.exception.ExternalLinkException;
+import pl.edu.amu.wmi.exception.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.ExternalLinkMapper;
 import pl.edu.amu.wmi.mapper.SupervisorProjectMapper;
 import pl.edu.amu.wmi.model.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,14 +59,15 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
                         project.getName(),
                         supervisorMapper.mapToDto(project.getSupervisor()),
                         externalLinkMapper.mapToDtoSet(project.getExternalLinks())))
-                .collect(Collectors.toList());
+                .toList();
 
     }
 
     @Override
     public Set<ExternalLinkDTO> findByProjectId(Long projectId) {
 
-        Project projectEntity = projectDAO.findById(projectId).get();
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         Set<Long> projectLinksIds = projectEntity.getExternalLinks().stream()
                 .map(BaseAbstractEntity::getId)
@@ -73,13 +82,15 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
     @Override
     public Set<ExternalLinkDTO> updateExternalLinks(Long projectId, Set<ExternalLinkDTO> externalLinks) {
 
-        Project projectEntity = projectDAO.findById(projectId).get();
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         Set<ExternalLink> externalLinkEntities = new HashSet<>();
 
-        // TODO: Handle optional
         externalLinks.forEach(externalLinkDto -> {
-            ExternalLink externalLink = externalLinkDAO.findById(externalLinkDto.getId()).get();
+            ExternalLink externalLink = externalLinkDAO.findById(
+                    externalLinkDto.getId()).orElseThrow(()
+                    -> new ExternalLinkException(MessageFormat.format("External link with id: {0} not found.",  externalLinkDto.getId())));
             externalLink.setUrl(externalLinkDto.getUrl());
             externalLinkEntities.add(externalLink);
         });

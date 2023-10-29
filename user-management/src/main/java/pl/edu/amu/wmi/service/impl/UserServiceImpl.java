@@ -2,7 +2,6 @@ package pl.edu.amu.wmi.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
@@ -15,8 +14,8 @@ import pl.edu.amu.wmi.mapper.UserMapper;
 import pl.edu.amu.wmi.model.user.UserDTO;
 import pl.edu.amu.wmi.service.UserService;
 
+import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -40,20 +39,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUser(String indexNumber, String studyYear) {
         try {
-            final Optional<UserData> userData = this.userDataDAO.findByIndexNumber(indexNumber);
-            if (userData.isEmpty()) {
-                throw new UsernameNotFoundException("User with indexNumber not found: " + indexNumber);
-            }
+            UserData userData = this.userDataDAO.findByIndexNumber(indexNumber).orElseThrow(()
+                    -> new UserManagementException(MessageFormat.format("User with index: {0} not found", indexNumber)));
 
-            final UserDTO userDTO = this.userMapper.mapToDto(userData.get());
-            final String roleWithTheHighestPermissions = findRoleWithTheHighestPermissions(userData.get().getRoles());
+            final UserDTO userDTO = this.userMapper.mapToDto(userData);
+            final String roleWithTheHighestPermissions = findRoleWithTheHighestPermissions(userData.getRoles());
             userDTO.setRole(roleWithTheHighestPermissions);
 
             final List<Long> acceptedProjects = new ArrayList<>();
             final List<Long> assignedProjects = new ArrayList<>();
             final List<String> studyYears = new ArrayList<>();
 
-            if (hasRoleStudent(userData.get().getRoles())) {
+            if (hasRoleStudent(userData.getRoles())) {
                 final List<Student> students = this.studentDAO.findAllByUserData_IndexNumber(indexNumber);
 
                 final List<String> studentStudyYears = getStudyYearsForStudent(students);
@@ -74,7 +71,7 @@ public class UserServiceImpl implements UserService {
                 assignedProjects.addAll(getStudentAssignedProjects(entity));
             }
 
-            if (hasRoleSupervisor(userData.get().getRoles())) {
+            if (hasRoleSupervisor(userData.getRoles())) {
                 final List<Supervisor> supervisors = this.supervisorDAO.findAllByUserData_IndexNumber(indexNumber);
 
                 final List<String> supervisorStudyYears = getStudyYearsForSupervisor(supervisors);
@@ -183,7 +180,7 @@ public class UserServiceImpl implements UserService {
     private List<UserRole> extractRoleNames(Set<Role> roles) {
         return roles.stream()
                 .map(Role::getName)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 }

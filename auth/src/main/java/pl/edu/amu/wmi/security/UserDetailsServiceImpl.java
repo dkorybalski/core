@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.UserData;
 
+import java.text.MessageFormat;
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
@@ -19,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String indexNumber) throws UsernameNotFoundException {
         UserData user = userDataDAO.findByIndexNumber(indexNumber)
-                .orElseThrow(() -> new UsernameNotFoundException("User with index number not found: " + indexNumber));
+                .orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format("User with index number not found: {0}", indexNumber)));
         return UserDetailsImpl.build(user);
     }
 }

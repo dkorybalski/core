@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.service.impl;
 
+import exception.DataFeedConfigurationException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,10 +26,10 @@ public class DataFeedServiceFactory {
         }
     }
 
-    public static final DataFeedImportService getService(DataFeedType type) throws Exception {
+    public static DataFeedImportService getService(DataFeedType type) throws DataFeedConfigurationException {
         DataFeedImportService service = dataFeedServiceCache.get(type);
         if (service == null) {
-            throw new Exception("Error during DataFeedImportService");
+            throw new DataFeedConfigurationException("Error during DataFeedImportService");
         }
         return service;
     }

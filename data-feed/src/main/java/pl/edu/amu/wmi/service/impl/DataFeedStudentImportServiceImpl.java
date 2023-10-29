@@ -26,7 +26,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -65,7 +64,7 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
     private void validateData(List<NewStudentDTO> newStudents, String studyYear) {
         List<String> studentIndexNumbers = newStudents.stream()
                 .map(NewStudentDTO::getIndexNumber)
-                .collect(Collectors.toList());
+                .toList();
         List<Student> existingStudentsForStudyYear = studentDAO.findByStudyYearAndUserData_IndexNumberIn(studyYear, studentIndexNumbers);
         if (!existingStudentsForStudyYear.isEmpty()) {
             log.error("Duplicated data - {} students assigned to studyYear {} already exist in the database.", existingStudentsForStudyYear.size(), studyYear);
@@ -101,8 +100,8 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
         List<Student> entities = studentMapper.mapToEntities(newStudents);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Student student : entities) {
-            if (!validateIndexNumber(student.getUserData().getIndexNumber())) {
-                String indexNumberWithPrefix = addPrefixToIndex(student.getUserData().getIndexNumber());
+            if (!validateIndexNumber(student.getIndexNumber())) {
+                String indexNumberWithPrefix = addPrefixToIndex(student.getIndexNumber());
                 student.getUserData().setIndexNumber(indexNumberWithPrefix);
             }
             student.setStudyYear(studyYearEntity.getStudyYear());

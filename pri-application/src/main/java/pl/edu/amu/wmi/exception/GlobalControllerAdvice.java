@@ -1,7 +1,6 @@
 package pl.edu.amu.wmi.exception;
 
 import com.opencsv.exceptions.CsvException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -41,11 +40,11 @@ public class GlobalControllerAdvice {
     }
 
     @ResponseBody
-    @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorInfo entityNotFoundExceptionHandler(final Exception exception) {
-        log.error("EntityNotFoundException exception occurred", exception);
-        return new ErrorInfo(exception.getMessage(), 404);
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorInfo businessExceptionHandler(final Exception exception) {
+        log.error("Business exception occurred", exception);
+        return new ErrorInfo(exception.getMessage(), 500);
     }
 
     @ResponseBody

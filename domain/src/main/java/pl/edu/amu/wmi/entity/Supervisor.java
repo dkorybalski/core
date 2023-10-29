@@ -29,4 +29,8 @@ public class Supervisor extends AbstractEntity {
 
     private String studyYear;
 
+    public String getIndexNumber() {
+        return userData != null ? userData.getIndexNumber() : null;
+    }
+
 }

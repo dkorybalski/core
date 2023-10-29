@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.service;
 
+import pl.edu.amu.wmi.exception.ProjectManagementException;
 import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 
@@ -21,5 +22,5 @@ public interface ProjectService {
 
     ProjectDetailsDTO unAcceptProject(String studyYear, String userIndexNumber, Long projectId);
 
-    void delete(Long projectId, String userIndexNumber) throws Exception;
+    void delete(Long projectId, String userIndexNumber) throws ProjectManagementException;
 }

@@ -26,7 +26,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -66,7 +65,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
     private void validateRecords(List<NewSupervisorDTO> newSupervisors, String studyYear) {
         List<String> supervisorIndexNumbers = newSupervisors.stream()
                 .map(NewSupervisorDTO::getIndexNumber)
-                .collect(Collectors.toList());
+                .toList();
         List<Supervisor> existingSupervisorsForStudyYear = supervisorDAO.findAllByStudyYearAndUserData_IndexNumberIn(studyYear, supervisorIndexNumbers);
         if (!existingSupervisorsForStudyYear.isEmpty()) {
             log.error("Duplicated data - {} supervisors assigned to studyYear {} already exist in the database.", existingSupervisorsForStudyYear.size(), studyYear);
@@ -102,8 +101,8 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         List<Supervisor> entities = supervisorMapper.mapToEntities(newSupervisors);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Supervisor supervisor : entities) {
-            if (!validateIndexNumber(supervisor.getUserData().getIndexNumber())) {
-                String indexNumberWithPrefix = addPrefixToIndex(supervisor.getUserData().getIndexNumber());
+            if (!validateIndexNumber(supervisor.getIndexNumber())) {
+                String indexNumberWithPrefix = addPrefixToIndex(supervisor.getIndexNumber());
                 supervisor.getUserData().setIndexNumber(indexNumberWithPrefix);
             }
             supervisor.setStudyYear(studyYearEntity.getStudyYear());
