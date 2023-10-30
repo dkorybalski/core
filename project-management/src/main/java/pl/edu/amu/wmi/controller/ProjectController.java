@@ -8,6 +8,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.exception.ProjectManagementException;
 import pl.edu.amu.wmi.model.*;
 import pl.edu.amu.wmi.service.ExternalLinkService;
 import pl.edu.amu.wmi.service.ProjectService;
@@ -51,7 +52,7 @@ public class ProjectController {
 
     @Secured({"PROJECT_ADMIN", "COORDINATOR"})
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProjectById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Void> deleteProjectById(@PathVariable Long id) throws ProjectManagementException {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         projectService.delete(id, userDetails.getUsername());
         return ResponseEntity.ok().build();

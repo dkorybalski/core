@@ -1,6 +1,7 @@
 package pl.edu.amu.wmi.service.impl;
 
 import com.opencsv.CSVWriter;
+import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
 
     @Override
     public void exportData(Writer writer, String studyYearName) throws CsvException {
-        try (CSVWriter csvWriter = new CSVWriter(writer, ';', CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);) {
+        try (CSVWriter csvWriter = new CSVWriter(writer, ';', ICSVWriter.NO_QUOTE_CHARACTER, ICSVWriter.DEFAULT_ESCAPE_CHARACTER, ICSVWriter.DEFAULT_LINE_END);) {
 
             csvWriter.writeNext(createHeaders());
 
@@ -47,7 +48,7 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
 
     private String[] createStudentData(Student student, StudyYear studyYear) {
         return new String[]{student.getPesel(),
-                student.getUserData().getIndexNumber(),
+                student.getIndexNumber(),
                 student.getUserData().getFirstName(),
                 student.getUserData().getLastName(),
                 student.getUserData().getEmail(),
@@ -83,15 +84,15 @@ public class DataFeedExportDataImpl implements DataFeedExportService {
     }
 
     private static class CSVHeaders {
-        private final static String PESEL = "PESEL";
-        private final static String INDEKS = "INDEKS";
-        private final static String IMIE = "IMIE";
-        private final static String NAZWISKO = "NAZWISKO";
-        private final static String EMAIL = "EMAIL";
-        private final static String CDYD_KOD = "CDYD_KOD";
-        private final static String PRZ_KOD = "PRZ_KOD";
-        private final static String TZAJ_KOD = "TZAJ_KOD";
-        private final static String GR_NR = "GR_NR";
-        private final static String PRG_KOD = "PRG_KOD";
+        private static final String PESEL = "PESEL";
+        private static final String INDEKS = "INDEKS";
+        private static final String IMIE = "IMIE";
+        private static final String NAZWISKO = "NAZWISKO";
+        private static final String EMAIL = "EMAIL";
+        private static final String CDYD_KOD = "CDYD_KOD";
+        private static final String PRZ_KOD = "PRZ_KOD";
+        private static final String TZAJ_KOD = "TZAJ_KOD";
+        private static final String GR_NR = "GR_NR";
+        private static final String PRG_KOD = "PRG_KOD";
     }
 }

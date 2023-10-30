@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.RefreshTokenDAO;
 import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.RefreshToken;
+import pl.edu.amu.wmi.entity.UserData;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.exception.TokenRefreshException;
 import pl.edu.amu.wmi.service.RefreshTokenService;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +42,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public RefreshToken createRefreshToken(Long userId) {
         RefreshToken refreshToken = new RefreshToken();
 
-        refreshToken.setUser(userDataDAO.findById(userId).get());
+        UserData user = userDataDAO.findById(userId).orElseThrow(()
+                -> new BusinessException(MessageFormat.format("User with id: {0} not found", userId)));
+        refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
 
@@ -60,6 +65,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     @Transactional
     public int deleteByUserId(Long userId) {
-        return refreshTokenDAO.deleteByUser(userDataDAO.findById(userId).get());
+        UserData user = userDataDAO.findById(userId).orElseThrow(()
+                -> new BusinessException(MessageFormat.format("User with id: {0} not found", userId)));
+        return refreshTokenDAO.deleteByUser(user);
     }
 }

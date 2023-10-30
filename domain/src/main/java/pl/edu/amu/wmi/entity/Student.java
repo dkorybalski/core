@@ -50,4 +50,8 @@ public class Student extends AbstractEntity {
 
     private String studyYear;
 
+    public String getIndexNumber() {
+        return userData != null ? userData.getIndexNumber() : null;
+    }
+
 }

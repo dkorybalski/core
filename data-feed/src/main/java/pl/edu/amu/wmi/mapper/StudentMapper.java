@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring")

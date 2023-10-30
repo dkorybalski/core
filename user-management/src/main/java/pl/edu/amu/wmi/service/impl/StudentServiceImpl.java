@@ -11,11 +11,13 @@ import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.entity.StudyYear;
 import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.exception.UserManagementException;
 import pl.edu.amu.wmi.mapper.StudentUserMapper;
 import pl.edu.amu.wmi.model.user.StudentCreationRequestDTO;
 import pl.edu.amu.wmi.model.user.StudentDTO;
 import pl.edu.amu.wmi.service.StudentService;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +48,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Student findById(Long id) {
-        return studentDAO.findById(id).get();
+        return studentDAO.findById(id).orElseThrow(() ->
+                new UserManagementException(MessageFormat.format("User with id: {0} not found", id)));
     }
 
     @Transactional

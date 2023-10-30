@@ -18,7 +18,6 @@ import pl.edu.amu.wmi.service.AuthService;
 import pl.edu.amu.wmi.service.RefreshTokenService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -45,7 +44,7 @@ public class AuthController {
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .toList();
 
         ResponseCookie jwtRefreshCookie = authService.createRefreshTokenCookie(userDetails);
 
