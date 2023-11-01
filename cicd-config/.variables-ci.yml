@@ -16,3 +16,5 @@ variables:
     -DdeployAtEnd=true
   DOCS_FOLDER: "pri-application"
   SPEC_TO_DISPLAY: "pri-api.yaml"
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
