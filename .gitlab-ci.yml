@@ -62,25 +62,6 @@ unit-test:
     - echo "Running unit tests..."
     - mvn $MAVEN_CLI_OPTS test
 
-build-image:
-  extends:
-    - .after-merge-rule
-  stage: build-image
-  script:
-    - echo "Building Docker Image..."
-#    - docker build -t $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA .
-#    - docker build -t $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:latest .
-
-publish-image:
-  extends:
-    - .after-merge-rule
-  stage: publish-image
-  script:
-    - echo "Publishing Docker Image..."
-#    - docker login -u our-docker -p $OUR-DOCKER_CONTAINER_REGISTRY_TOKEN $CI_REGISTRY
-#    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA
-#    - docker push $CI_REGISTRY/our-docker/$CI_PROJECT_NAME:latest
-
 pages:
   extends:
     - .after-merge-rule
@@ -100,11 +81,25 @@ pages:
     paths:
       - public
 
-# Downstream will be triggered
 deploy:
   extends:
     - .after-merge-rule
+  image: docker:latest
+  services:
+    - docker:dind
   stage: deploy
+  before_script:
+    - docker version
+    - docker compose version
   script:
-    - echo "Deployment..."
-#  trigger: our-docker/our-image
+    - "Deployment..."
+    # TODO: Necessary for final deployment stage, when server is available
+    # - echo "POSTGRES_URL=${POSTGRES_URL}" >> config.env
+    # - echo "POSTGRES_USER=${POSTGRES_USER}" >> config.env
+    # - echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> config.env
+    # - echo "POSTGRES_DB=${POSTGRES_DB}" >> config.env
+    # - echo "JWT_TOKEN=${JWT_TOKEN}" >> config.env
+    # - cat config.env
+    # - docker compose -f docker-compose-prod.yml down
+    # - docker compose -f docker-compose-prod.yml build
+    # - docker compose -f docker-compose-prod.yml up
