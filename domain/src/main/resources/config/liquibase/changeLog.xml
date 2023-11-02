@@ -1,20 +1,15 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext
-        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
-        http://www.liquibase.org/xml/ns/pro
-        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
-        http://www.liquibase.org/xml/ns/dbchangelog
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <include file="classpath:config/liquibase/2023-05-27-create_tables.xml"/>
-    <include file="classpath:config/liquibase/configuration_studyYear.xml"/>
-    <include file="classpath:config/liquibase/configuration_externalLinkDefinition.xml"/>
-    <include file="classpath:config/liquibase/configuration_role.xml"/>
-    <include file="classpath:config/liquibase/configuration_coordinator.xml"/>
+    <include file="classpath:config/liquibase/database/2023-05-27-create_tables.xml"/>
+    <include file="classpath:config/liquibase/configuration/configuration_studyYear.xml"/>
+    <include file="classpath:config/liquibase/configuration/configuration_externalLinkDefinition.xml"/>
+    <include file="classpath:config/liquibase/configuration/configuration_role.xml"/>
+    <include file="classpath:config/liquibase/configuration/configuration_coordinator.xml"/>
+    <include file="classpath:config/liquibase/database/2023-11-01-create_criteria_tables.xml"/>
 
 </databaseChangeLog>
