@@ -34,7 +34,12 @@ or provided to the IDE as e.g. ENV variables - depending on the run method.
 
 #### Liquibase
 
-[//]: # (todo)
+To autogenerate an xml file with changes (e.g. when new entities were added), first navigate to the domain module (`cd domain`), and then execute:
+`mvn liquibase:diff`
+
+(Be sure, that the database connection data are set in the `liquibase.properties` file.)
+
+This command will generate a changes in the file: `liquibase-diffChangeLog.xml`. Then the content should be reviewed and pasted in the target file in `resources.config.liquibase`. Finally, the new file should be added to 'changeLog.xml' file.
 
 #### Profile
 

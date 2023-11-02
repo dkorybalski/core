@@ -14,6 +14,12 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <spring.boot.version>3.1.5</spring.boot.version>
+        <postgresql.version>42.6.0</postgresql.version>
+        <liquibase-core.version>4.22.0</liquibase-core.version>
+        <liquibase-maven-plugin.version>4.2.2</liquibase-maven-plugin.version>
+        <liquibase-hibernate6.version>4.18.0</liquibase-hibernate6.version>
+        <jakarta.validation-api.version>3.0.2</jakarta.validation-api.version>
     </properties>
 
     <dependencies>
@@ -28,12 +34,12 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.6.0</version>
+            <version>${postgresql.version}</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>4.22.0</version>
+            <version>${liquibase-core.version}</version>
         </dependency>
     </dependencies>
 
@@ -42,15 +48,30 @@
             <plugin>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-maven-plugin</artifactId>
-                <version>${liquibase.version}</version>
+                <version>${liquibase-maven-plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.liquibase.ext</groupId>
+                        <artifactId>liquibase-hibernate6</artifactId>
+                        <version>${liquibase-hibernate6.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-data-jpa</artifactId>
+                        <version>${spring.boot.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>jakarta.validation</groupId>
+                        <artifactId>jakarta.validation-api</artifactId>
+                        <version>${jakarta.validation-api.version}</version>
+                    </dependency>
+                </dependencies>
 
                 <configuration>
-                    <driver>org.postgresql.Driver</driver>
-                    <url>jdbc:postgresql://localhost:5433/pri-system</url>
-                    <username>postgres</username>
-                    <password></password>
+                    <propertyFile>src/main/resources/liquibase.properties</propertyFile>
                     <outputChangeLogFile>src/main/resources/liquibase-outputChangeLog.xml</outputChangeLogFile>
                     <changeLogFile>src/main/resources/config/liquibase/changeLog.xml</changeLogFile>
+                    <diffChangeLogFile>src/main/resources/liquibase-diffChangeLog.xml</diffChangeLogFile>
                 </configuration>
             </plugin>
         </plugins>
