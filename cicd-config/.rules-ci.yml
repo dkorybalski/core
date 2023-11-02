@@ -1,6 +1,6 @@
 .common-rule:
   rules:
-    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event' || $CI_COMMIT_BRANCH == 'SYSPRI-204')
+    - if: ($CI_PIPELINE_SOURCE == 'merge_request_event' || $CI_COMMIT_BRANCH == 'main')
 
 .after-merge-rule:
   rules:
