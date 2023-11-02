@@ -92,7 +92,7 @@ deploy:
     - docker version
     - docker compose version
   script:
-    - "Deployment..."
+    - echo "Deployment..."
     # TODO: Necessary for final deployment stage, when server is available
     # - echo "POSTGRES_URL=${POSTGRES_URL}" >> config.env
     # - echo "POSTGRES_USER=${POSTGRES_USER}" >> config.env
