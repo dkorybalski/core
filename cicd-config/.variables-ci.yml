@@ -1,6 +1,4 @@
 variables:
-  IMAGE_OPENJDK_MVN: maven:3.8.3-openjdk-17
-  IMAGE_NODE_LATEST: node:latest
   MAVEN_OPTS: >-
     -Dhttps.protocols=TLSv1.2
     -Dmaven.repo.local=.m2/repository
@@ -18,3 +16,4 @@ variables:
   SPEC_TO_DISPLAY: "pri-api.yaml"
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
