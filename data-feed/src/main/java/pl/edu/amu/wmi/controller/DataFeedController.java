@@ -49,9 +49,9 @@ public class DataFeedController {
         dataFeedExportService.exportData(servletResponse.getWriter(), studyYear);
     }
 
-    @PostMapping("import/grades")
-    public ResponseEntity<Void> createGradesCriteria(@RequestHeader("study-year") String studyYear, @RequestParam MultipartFile data) throws Exception {
-        DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_CRITERIA);
+    @PostMapping("import/criteria")
+    public ResponseEntity<Void> createCriteria(@RequestHeader("study-year") String studyYear, @RequestParam MultipartFile data) throws Exception {
+        DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.CRITERIA);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
     }

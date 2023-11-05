@@ -5,21 +5,21 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import pl.edu.amu.wmi.dao.CriteriaGroupDAO;
+import pl.edu.amu.wmi.dao.CriteriaDAO;
+import pl.edu.amu.wmi.dao.CriteriaSectionDAO;
 import pl.edu.amu.wmi.dao.EvaluationCardRepositoryDAO;
-import pl.edu.amu.wmi.dao.ScoringCriteriaDAO;
 import pl.edu.amu.wmi.entity.CriteriaGroup;
+import pl.edu.amu.wmi.entity.CriteriaSection;
 import pl.edu.amu.wmi.entity.Criterion;
 import pl.edu.amu.wmi.entity.EvaluationCardTemplate;
-import pl.edu.amu.wmi.entity.ScoringCriteria;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.mapper.CriteriaGroupMapper;
+import pl.edu.amu.wmi.mapper.CriteriaSectionMapper;
 import pl.edu.amu.wmi.mapper.CriterionMapper;
-import pl.edu.amu.wmi.mapper.ScoringCriteriaMapper;
 import pl.edu.amu.wmi.model.CriteriaGroupDTO;
+import pl.edu.amu.wmi.model.CriteriaSectionDTO;
 import pl.edu.amu.wmi.model.CriterionDTO;
 import pl.edu.amu.wmi.model.EvaluationCriteriaDTO;
-import pl.edu.amu.wmi.model.ScoringCriteriaDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
 import pl.edu.amu.wmi.service.DataFeedImportService;
 
@@ -32,25 +32,25 @@ import java.util.Set;
 @Slf4j
 public class DataFeedCriteriaImportServiceImpl implements DataFeedImportService {
 
+    private final CriteriaSectionMapper criteriaSectionMapper;
     private final CriteriaGroupMapper criteriaGroupMapper;
     private final CriterionMapper criterionMapper;
-    private final ScoringCriteriaMapper scoringCriteriaMapper;
-    private final CriteriaGroupDAO criteriaGroupDAO;
-    private final ScoringCriteriaDAO scoringCriteriaDAO;
+    private final CriteriaSectionDAO criteriaSectionDAO;
+    private final CriteriaDAO criteriaDAO;
     private final EvaluationCardRepositoryDAO evaluationCardRepositoryDAO;
 
-    public DataFeedCriteriaImportServiceImpl(CriteriaGroupMapper criteriaGroupMapper, CriterionMapper criterionMapper, ScoringCriteriaMapper scoringCriteriaMapper, CriteriaGroupDAO criteriaGroupDAO, ScoringCriteriaDAO scoringCriteriaDAO, EvaluationCardRepositoryDAO evaluationCardRepositoryDAO) {
+    public DataFeedCriteriaImportServiceImpl(CriteriaSectionMapper criteriaSectionMapper, CriteriaGroupMapper criteriaGroupMapper, CriterionMapper criterionMapper, CriteriaSectionDAO criteriaSectionDAO, CriteriaDAO criteriaDAO, EvaluationCardRepositoryDAO evaluationCardRepositoryDAO) {
+        this.criteriaSectionMapper = criteriaSectionMapper;
         this.criteriaGroupMapper = criteriaGroupMapper;
         this.criterionMapper = criterionMapper;
-        this.scoringCriteriaMapper = scoringCriteriaMapper;
-        this.criteriaGroupDAO = criteriaGroupDAO;
-        this.scoringCriteriaDAO = scoringCriteriaDAO;
+        this.criteriaSectionDAO = criteriaSectionDAO;
+        this.criteriaDAO = criteriaDAO;
         this.evaluationCardRepositoryDAO = evaluationCardRepositoryDAO;
     }
 
     @Override
     public DataFeedType getType() {
-        return DataFeedType.NEW_CRITERIA;
+        return DataFeedType.CRITERIA;
     }
 
     @Override
@@ -63,13 +63,13 @@ public class DataFeedCriteriaImportServiceImpl implements DataFeedImportService 
             if (!Objects.equals(studyYear, evaluationCriteriaDTO.studyYear())) {
                 log.warn("Study year from file is different that active one. Study year from file is ignored");
             }
-            List<CriteriaGroupDTO> criteriaGroups = evaluationCriteriaDTO.criteriaGroups();
+            List<CriteriaSectionDTO> criteriaSections = evaluationCriteriaDTO.criteriaSections();
 
             EvaluationCardTemplate evaluationCardTemplateForStudyYear =
                     evaluationCardRepositoryDAO.findByStudyYear(studyYear).orElse(null);
             if (Objects.isNull(evaluationCardTemplateForStudyYear)) {
                 EvaluationCardTemplate evaluationCardTemplate = saveEvaluationCardTemplate(studyYear, evaluationCriteriaDTO);
-                criteriaGroups.forEach(criteriaGroup -> saveCriteriaGroup(criteriaGroup, evaluationCardTemplate, true));
+                criteriaSections.forEach(criteriaSection -> saveCriteriaSection(criteriaSection, evaluationCardTemplate, true));
             } else {
                 EvaluationCardTemplate updatedEvaluationCardTemplate = updateEvaluationCardTemplate(evaluationCardTemplateForStudyYear, evaluationCriteriaDTO);
                 // TODO: 11/5/2023 implement logic
@@ -94,50 +94,50 @@ public class DataFeedCriteriaImportServiceImpl implements DataFeedImportService 
         return evaluationCardRepositoryDAO.save(evaluationCardTemplate);
     }
 
-    private void saveCriteriaGroup(CriteriaGroupDTO criteriaGroupDTO, EvaluationCardTemplate savedEvaluationCardTemplate, boolean isNewEvaluation) {
-        CriteriaGroup firstSemesterCriteriaGroup = criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, isNewEvaluation);
-        CriteriaGroup secondSemesterCriteriaGroup = criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, isNewEvaluation);
+    private void saveCriteriaSection(CriteriaSectionDTO criteriaSectionDTO, EvaluationCardTemplate savedEvaluationCardTemplate, boolean isNewEvaluation) {
+        CriteriaSection firstSemesterCriteriaSection = criteriaSectionMapper.mapToEntityForFirstSemester(criteriaSectionDTO, isNewEvaluation);
+        CriteriaSection secondSemesterCriteriaSection = criteriaSectionMapper.mapToEntityForSecondSemester(criteriaSectionDTO, isNewEvaluation);
 
-        for (CriterionDTO criterionDTO : criteriaGroupDTO.criteria()) {
-            Set<ScoringCriteria> savedScoringCriteria = saveScoringCriteria(criterionDTO.scoringCriteria(), isNewEvaluation);
+        for (CriteriaGroupDTO criteriaGroupDTO : criteriaSectionDTO.criteriaGroups()) {
+            Set<Criterion> savedCriteria = saveCriteria(criteriaGroupDTO.criteria(), isNewEvaluation);
 
-            Criterion criterionForFirstSemester = createCriterion(criterionDTO, savedScoringCriteria, Semester.SEMESTER_I, isNewEvaluation);
-            if (Objects.nonNull(criterionForFirstSemester)) {
-                firstSemesterCriteriaGroup.getCriteria().add(criterionForFirstSemester);
+            CriteriaGroup criteriaGroupForFirstSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.SEMESTER_I, isNewEvaluation);
+            if (Objects.nonNull(criteriaGroupForFirstSemester)) {
+                firstSemesterCriteriaSection.getCriteriaGroups().add(criteriaGroupForFirstSemester);
             }
 
-            Criterion criterionForSecondSemester = createCriterion(criterionDTO, savedScoringCriteria, Semester.SEMESTER_II, isNewEvaluation);
-            if (Objects.nonNull(criterionForSecondSemester)) {
-                secondSemesterCriteriaGroup.getCriteria().add(criterionForSecondSemester);
+            CriteriaGroup criteriaGroupForSecondSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.SEMESTER_II, isNewEvaluation);
+            if (Objects.nonNull(criteriaGroupForSecondSemester)) {
+                secondSemesterCriteriaSection.getCriteriaGroups().add(criteriaGroupForSecondSemester);
             }
         }
 
-        savedEvaluationCardTemplate.addCriteriaGroupForFirstSemester(firstSemesterCriteriaGroup);
-        savedEvaluationCardTemplate.addCriteriaGroupForSecondSemester(secondSemesterCriteriaGroup);
+        savedEvaluationCardTemplate.addCriteriaSectionForFirstSemester(firstSemesterCriteriaSection);
+        savedEvaluationCardTemplate.addCriteriaSectionForSecondSemester(secondSemesterCriteriaSection);
 
-        criteriaGroupDAO.save(firstSemesterCriteriaGroup);
-        criteriaGroupDAO.save(secondSemesterCriteriaGroup);
+        criteriaSectionDAO.save(firstSemesterCriteriaSection);
+        criteriaSectionDAO.save(secondSemesterCriteriaSection);
     }
 
-    private Criterion createCriterion(CriterionDTO criterionDTO, Set<ScoringCriteria> savedScoringCriteria, Semester semester, boolean isNewEvaluation) {
-        Criterion criterion = switch (semester) {
-            case SEMESTER_I -> criterionMapper.mapToEntityForFirstSemester(criterionDTO, isNewEvaluation);
-            case SEMESTER_II -> criterionMapper.mapToEntityForSecondSemester(criterionDTO, isNewEvaluation);
+    private CriteriaGroup createCriteriaGroup(CriteriaGroupDTO criteriaGroupDTO, Set<Criterion> savedCriteria, Semester semester, boolean isNewEvaluation) {
+        CriteriaGroup criteriaGroup = switch (semester) {
+            case SEMESTER_I -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, isNewEvaluation);
+            case SEMESTER_II -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, isNewEvaluation);
         };
-        criterion.setScoringCriteria(savedScoringCriteria);
-        return isGradeWeightRelevant(criterion) ? criterion : null;
+        criteriaGroup.setCriteria(savedCriteria);
+        return isGradeWeightRelevant(criteriaGroup) ? criteriaGroup : null;
     }
 
-    private boolean isGradeWeightRelevant(Criterion criterion) {
-        return Objects.nonNull(criterion.getGradeWeight()) && isWeightNotZero(criterion);
+    private boolean isGradeWeightRelevant(CriteriaGroup criteriaGroup) {
+        return Objects.nonNull(criteriaGroup.getGradeWeight()) && isWeightNotZero(criteriaGroup);
     }
 
-    private boolean isWeightNotZero(Criterion criterion) {
-        return !(Math.abs(criterion.getGradeWeight()) < 1e-6);
+    private boolean isWeightNotZero(CriteriaGroup criteriaGroup) {
+        return !(Math.abs(criteriaGroup.getGradeWeight()) < 1e-6);
     }
 
-    private Set<ScoringCriteria> saveScoringCriteria(List<ScoringCriteriaDTO> scoringCriteriaDTOs, boolean isNewEvaluation) {
-        List<ScoringCriteria> scoringCriteria = scoringCriteriaMapper.mapToEntitiesList(scoringCriteriaDTOs, isNewEvaluation);
-        return new HashSet<>(scoringCriteriaDAO.saveAll(scoringCriteria));
+    private Set<Criterion> saveCriteria(List<CriterionDTO> criterionDTOS, boolean isNewEvaluation) {
+        List<Criterion> criteria = criterionMapper.mapToEntitiesList(criterionDTOS, isNewEvaluation);
+        return new HashSet<>(criteriaDAO.saveAll(criteria));
     }
 }

@@ -30,30 +30,30 @@ public class EvaluationCardTemplate extends AbstractEntity {
 
     @OneToMany(mappedBy = "evaluationCardTemplate")
     @Where(clause = "semester = 'SEMESTER_I'")
-    List<CriteriaGroup> criteriaGroupsFirstSemester = new ArrayList<>();
+    List<CriteriaSection> criteriaSectionsFirstSemester = new ArrayList<>();
 
     @OneToMany(mappedBy = "evaluationCardTemplate")
     @Where(clause = "semester = 'SEMESTER_II'")
-    List<CriteriaGroup> criteriaGroupsSecondSemester = new ArrayList<>();
+    List<CriteriaSection> criteriaSectionsSecondSemester = new ArrayList<>();
 
-    public void addCriteriaGroupForFirstSemester(CriteriaGroup criteriaGroup) {
-        criteriaGroupsFirstSemester.add(criteriaGroup);
-        criteriaGroup.setEvaluationCardTemplate(this);
+    public void addCriteriaSectionForFirstSemester(CriteriaSection criteriaSection) {
+        criteriaSectionsFirstSemester.add(criteriaSection);
+        criteriaSection.setEvaluationCardTemplate(this);
     }
 
-    public void removeCriteriaGroupForFirstSemester(CriteriaGroup criteriaGroup) {
-        criteriaGroupsFirstSemester.remove(criteriaGroup);
-        criteriaGroup.setEvaluationCardTemplate(null);
+    public void removeCriteriaSectionForFirstSemester(CriteriaSection criteriaSection) {
+        criteriaSectionsFirstSemester.remove(criteriaSection);
+        criteriaSection.setEvaluationCardTemplate(null);
     }
 
-    public void addCriteriaGroupForSecondSemester(CriteriaGroup criteriaGroup) {
-        criteriaGroupsSecondSemester.add(criteriaGroup);
-        criteriaGroup.setEvaluationCardTemplate(this);
+    public void addCriteriaSectionForSecondSemester(CriteriaSection criteriaSection) {
+        criteriaSectionsSecondSemester.add(criteriaSection);
+        criteriaSection.setEvaluationCardTemplate(this);
     }
 
-    public void removeCriteriaGroupForSecondSemester(CriteriaGroup criteriaGroup) {
-        criteriaGroupsSecondSemester.remove(criteriaGroup);
-        criteriaGroup.setEvaluationCardTemplate(null);
+    public void removeCriteriaSectionForSecondSemester(CriteriaSection criteriaSection) {
+        criteriaSectionsSecondSemester.remove(criteriaSection);
+        criteriaSection.setEvaluationCardTemplate(null);
     }
 
 }

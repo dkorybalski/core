@@ -1,0 +1,112 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-1">
+        <dropTable tableName="criterion_scoring_criteria"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-2">
+        <dropTable tableName="scoring_criteria"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-3">
+        <dropTable tableName="criterion"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-4">
+        <dropTable tableName="criteria_group"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-5">
+        <createTable tableName="criteria_group">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="criteria_groupPK"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grade_weight" type="FLOAT(53)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="criteria_section_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-6">
+        <createTable tableName="criteria_group_criteria">
+            <column name="criteria_group_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="criteria_group_criteriaPK"/>
+            </column>
+            <column name="criteria_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="criteria_group_criteriaPK"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-7">
+        <createTable tableName="criteria_section">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="criteria_sectionPK"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="criteria_section_grade_weight" type="FLOAT(53)"/>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="semester" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="evaluation_card_template_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-8">
+        <createTable tableName="criterion">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="criterionPK"/>
+            </column>
+            <column name="creation_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_date" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="criterion_category" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="is_disqualifying" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="points" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-9">
+        <addForeignKeyConstraint baseColumnNames="criteria_group_id" baseTableName="criteria_group_criteria" constraintName="FK9jb0h0ak2wnufv5i2v3oeh4oq" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="criteria_group" validate="true"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-10">
+        <addForeignKeyConstraint baseColumnNames="criteria_section_id" baseTableName="criteria_group" constraintName="FKaf452r398wiywvc27gy6n585i" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="criteria_section" validate="true"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-11">
+        <addForeignKeyConstraint baseColumnNames="criteria_id" baseTableName="criteria_group_criteria" constraintName="FKjfe6uy21cvebtek5mncmjh391" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="criterion" validate="true"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-05-recreate_criteria_tables-12">
+        <addForeignKeyConstraint baseColumnNames="evaluation_card_template_id" baseTableName="criteria_section" constraintName="FKl4ipen3ryv69086to1n9xp2cn" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="evaluation_card_template" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
