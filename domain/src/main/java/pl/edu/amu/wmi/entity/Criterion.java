@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Set;
+import pl.edu.amu.wmi.enumerations.CriterionCategory;
 
 @Getter
 @Setter
@@ -14,16 +13,15 @@ import java.util.Set;
 public class Criterion extends AbstractEntity {
 
     @NotNull
-    private String name;
+    private Integer points;
 
-    @ManyToOne
-    @JoinColumn(name = "CRITERIA_GROUP_ID")
-    private CriteriaGroup criteriaGroup;
+    @Column(length = 2000)
+    private String description;
+
+    private boolean isDisqualifying;
 
     @NotNull
-    private Double gradeWeight;
-
-    @ManyToMany(cascade = CascadeType.MERGE)
-    private Set<ScoringCriteria> scoringCriteria;
+    @Enumerated(EnumType.STRING)
+    private CriterionCategory criterionCategory;
 
 }

@@ -6,6 +6,6 @@ public record EvaluationCriteriaDTO(
         String studyYear,
         Double minPointsThresholdFirstSemester,
         Double minPointsThresholdSecondSemester,
-        List<CriteriaGroupDTO> criteriaGroups
+        List<CriteriaSectionDTO> criteriaSections
 ) {
 }
