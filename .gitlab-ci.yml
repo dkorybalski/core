@@ -3,18 +3,14 @@ include:
   - "cicd-config/.variables-ci.yml"
 
 stages:
-  - clean
   - build
   - test
-  - build-image
-  - publish-image
   - deploy
 
 clean:
   extends:
     - .common-rule
-  image: $IMAGE_OPENJDK_MVN
-  stage: clean
+  stage: build
   cache:
     key: "maven-$CI_COMMIT_REF_SLUG"
     paths:
@@ -26,7 +22,6 @@ clean:
 build:
   extends:
     - .common-rule
-  image: $IMAGE_OPENJDK_MVN
   stage: build
   cache:
     key: "maven-$CI_COMMIT_REF_SLUG"
@@ -43,7 +38,6 @@ build:
 code-analysis:
   extends:
     - .common-rule
-  image: $IMAGE_OPENJDK_MVN
   stage: test
   script:
     - echo "Running SonarQube..."
@@ -52,7 +46,6 @@ code-analysis:
 unit-test:
   extends:
     - .common-rule
-  image: $IMAGE_OPENJDK_MVN
   stage: test
   cache:
     key: "maven-$CI_COMMIT_REF_SLUG"
@@ -62,44 +55,31 @@ unit-test:
     - echo "Running unit tests..."
     - mvn $MAVEN_CLI_OPTS test
 
-pages:
+swagger:
   extends:
     - .after-merge-rule
-  image: $IMAGE_NODE_LATEST
   stage: deploy
-  cache:
-    paths:
-      - ./node_modules
-  before_script:
-    - npm install swagger-ui-dist@3.22.1
   script:
-    - mkdir public
-    - cp -rp node_modules/swagger-ui-dist/* public
-    - cp -rp $DOCS_FOLDER/* public
-    - sed -i "s#https://petstore\.swagger\.io/v2/swagger\.json#$SPEC_TO_DISPLAY#g" public/index.html
-  artifacts:
-    paths:
-      - public
+    - sudo docker stop swagger
+    - sudo docker rm swagger
+    - sudo docker rmi swaggerapi/swagger-ui
+    - sudo docker run -d --name swagger -e BASE_URL=/swagger -p 80:8080 -e SWAGGER_JSON=/swagger-api/pri-api.yaml -v /${CI_PROJECT_DIR}/pri-application/:/swagger-api swaggerapi/swagger-ui
 
 deploy:
   extends:
     - .after-merge-rule
-  image: docker:latest
-  services:
-    - docker:dind
   stage: deploy
   before_script:
-    - docker version
-    - docker compose version
+    - sudo docker version
+    - sudo docker compose version
   script:
-    - echo "Deployment..."
-    # TODO: Necessary for final deployment stage, when server is available
-    # - echo "POSTGRES_URL=${POSTGRES_URL}" >> config.env
-    # - echo "POSTGRES_USER=${POSTGRES_USER}" >> config.env
-    # - echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> config.env
-    # - echo "POSTGRES_DB=${POSTGRES_DB}" >> config.env
-    # - echo "JWT_TOKEN=${JWT_TOKEN}" >> config.env
-    # - cat config.env
-    # - docker compose -f docker-compose-prod.yml down
-    # - docker compose -f docker-compose-prod.yml build
-    # - docker compose -f docker-compose-prod.yml up
+    - sudo echo "Deployment..."
+    - sudo echo "POSTGRES_URL=${POSTGRES_URL}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_USER=${POSTGRES_USER}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_DB=${POSTGRES_DB}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "JWT_TOKEN=${JWT_TOKEN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo cat ${CI_PROJECT_DIR}/config.env
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env down
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env build
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env up -d

@@ -7,8 +7,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./db/data:/var/lib/postgresql/data
-      - ./db:/docker-entrypoint-initdb.d/
+      - ${CI_PROJECT_DIR}/db/data:/var/lib/postgresql/data
+      - ${CI_PROJECT_DIR}/db:/docker-entrypoint-initdb.d/
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
