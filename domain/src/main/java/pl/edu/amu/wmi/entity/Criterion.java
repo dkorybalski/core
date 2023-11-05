@@ -23,7 +23,7 @@ public class Criterion extends AbstractEntity {
     @NotNull
     private Double gradeWeight;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.MERGE)
     private Set<ScoringCriteria> scoringCriteria;
 
 }

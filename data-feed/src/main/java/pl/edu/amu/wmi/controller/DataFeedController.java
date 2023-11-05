@@ -1,7 +1,6 @@
 package pl.edu.amu.wmi.controller;
 
 import com.opencsv.exceptions.CsvException;
-import exception.DataFeedConfigurationException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -28,7 +27,7 @@ public class DataFeedController {
 
     @PostMapping(value = "/import/student", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createStudents(@RequestHeader("study-year") String studyYear,
-                                               @RequestHeader("index-number") String userIndexNumber, @RequestParam MultipartFile data) throws DataFeedConfigurationException, CsvException {
+                                               @RequestHeader("index-number") String userIndexNumber, @RequestParam MultipartFile data) throws Exception {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_STUDENT);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
@@ -36,7 +35,7 @@ public class DataFeedController {
 
     @PostMapping("/import/supervisor")
     public ResponseEntity<Void> createSupervisors(@RequestHeader("study-year") String studyYear,
-                                                 @RequestHeader("index-number") String userIndexNumber,@RequestParam MultipartFile data) throws DataFeedConfigurationException, CsvException {
+                                                 @RequestHeader("index-number") String userIndexNumber,@RequestParam MultipartFile data) throws Exception {
         DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_SUPERVISOR);
         service.saveRecords(data, studyYear);
         return ResponseEntity.ok().build();
@@ -48,6 +47,13 @@ public class DataFeedController {
         servletResponse.setCharacterEncoding("UTF-8");
         servletResponse.addHeader("Content-Disposition", "attachment; filename=\"students.csv\"");
         dataFeedExportService.exportData(servletResponse.getWriter(), studyYear);
+    }
+
+    @PostMapping("import/grades")
+    public ResponseEntity<Void> createGradesCriteria(@RequestHeader("study-year") String studyYear, @RequestParam MultipartFile data) throws Exception {
+        DataFeedImportService service = DataFeedServiceFactory.getService(DataFeedType.NEW_CRITERIA);
+        service.saveRecords(data, studyYear);
+        return ResponseEntity.ok().build();
     }
 
 }
