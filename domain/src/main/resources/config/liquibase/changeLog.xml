@@ -13,5 +13,6 @@
     <include file="classpath:config/liquibase/database/2023-11-01-create_criteria_tables.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-04-create_table_evaluation_card_template.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-05-recreate_criteria_tables.xml"/>
+    <include file="classpath:config/liquibase/database/2023-11-06-create_evaluation_card_and_grade_tables.xml"/>
 
 </databaseChangeLog>
