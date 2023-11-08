@@ -74,6 +74,7 @@ deploy:
     - sudo docker compose version
   script:
     - sudo echo "Deployment..."
+    - sudo echo "Project dir=${CI_PROJECT_DIR}"
     - sudo echo "POSTGRES_URL=${POSTGRES_URL}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "POSTGRES_USER=${POSTGRES_USER}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> ${CI_PROJECT_DIR}/config.env
