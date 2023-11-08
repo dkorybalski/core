@@ -60,9 +60,8 @@ swagger:
     - .after-merge-rule
   stage: deploy
   script:
-    - sudo docker stop swagger
-    - sudo docker rm swagger
-    - sudo docker rmi swaggerapi/swagger-ui
+    - sudo docker stop swagger || true && sudo docker rm swagger || true 
+    - sudo docker rmi swaggerapi/swagger-ui || true
     - sudo docker run -d --name swagger -e BASE_URL=/swagger -p 80:8080 -e SWAGGER_JSON=/swagger-api/pri-api.yaml -v /${CI_PROJECT_DIR}/pri-application/:/swagger-api swaggerapi/swagger-ui
 
 deploy:
@@ -73,6 +72,8 @@ deploy:
     - sudo docker version
     - sudo docker compose version
   script:
+    - sudo echo "Creating db backup..."
+    - sudo cp -Rf /pri-system/db/* /pri-db-backup/ || true
     - sudo echo "Deployment..."
     - sudo echo "Project dir=${CI_PROJECT_DIR}"
     - sudo echo "POSTGRES_URL=${POSTGRES_URL}" >> ${CI_PROJECT_DIR}/config.env
