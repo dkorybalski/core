@@ -26,6 +26,9 @@ public interface ProjectMapper {
 
     @Mapping(target = "supervisor", source = "entity.supervisor")
     @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
+    @Mapping(target = "pointsFirstSemester", source = "evaluationCard.totalPointsFirstSemester", qualifiedByName = "PointsToPercent")
+    @Mapping(target = "pointsSecondSemester", source = "evaluationCard.totalPointsSecondSemester", qualifiedByName = "PointsToPercent")
+    @Mapping(target = "criteriaMet", source = "evaluationCard.disqualified", qualifiedByName = "DisqualifiedToCriteriaMet")
     ProjectDTO mapToProjectDto(Project entity);
 
     List<ProjectDTO> mapToDtoList(List<Project> entityList);
@@ -38,6 +41,20 @@ public interface ProjectMapper {
     @Named("ConfirmedToBoolean")
     default boolean mapConfirmed(AcceptanceStatus status) {
         return status.equals(CONFIRMED) || status.equals(ACCEPTED);
+    }
+
+    @Named("DisqualifiedToCriteriaMet")
+    default boolean mapCriteriaMet(boolean isDisqualified) {
+        return !isDisqualified;
+    }
+
+    @Named("PointsToPercent")
+    default String mapPointsToPercent(Double points) {
+        if (points == null) {
+            return "0%";
+        } else {
+            return points + "%";
+        }
     }
 
 }
