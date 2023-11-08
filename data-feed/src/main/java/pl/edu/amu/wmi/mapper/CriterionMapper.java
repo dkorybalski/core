@@ -13,12 +13,12 @@ public interface CriterionMapper {
 
     @Mapping(target = "criterionCategory", source = "dto.category")
     @Mapping(target = "disqualifying", source = "dto.isDisqualifying")
-    @Mapping(target = "id", expression = "java(isNew ? null : dto.id())")
-    Criterion mapToEntity(CriterionDTO dto, boolean isNew);
+    @Mapping(target = "id", expression = "java(isSaveMode ? null : dto.id())")
+    Criterion mapToEntity(CriterionDTO dto, boolean isSaveMode);
 
-    default List<Criterion> mapToEntitiesList(List<CriterionDTO> criterionDTOS, boolean isNew) {
+    default List<Criterion> mapToEntitiesList(List<CriterionDTO> criterionDTOS, boolean isSaveMode) {
         return criterionDTOS.stream()
-                .map(criterion -> mapToEntity(criterion, isNew))
+                .map(criterion -> mapToEntity(criterion, isSaveMode))
                 .toList();
     }
 

@@ -3,7 +3,8 @@ package pl.edu.amu.wmi.model;
 import java.util.List;
 
 public record CriteriaSectionDTO(
-        Long id,
+        Long idFirstSemester,
+        Long idSecondSemester,
         String name,
         Double criteriaSectionGradeWeightFirstSemester,
         Double criteriaSectionGradeWeightSecondSemester,
