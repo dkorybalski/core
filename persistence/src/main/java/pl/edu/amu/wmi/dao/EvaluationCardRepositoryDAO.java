@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface EvaluationCardRepositoryDAO extends JpaRepository<EvaluationCardTemplate, Long> {
     Optional<EvaluationCardTemplate> findByStudyYear(String studyYear);
+
+    boolean existsByStudyYear(String studyYear);
 }

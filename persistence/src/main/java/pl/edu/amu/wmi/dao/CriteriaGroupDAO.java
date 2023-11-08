@@ -2,8 +2,8 @@ package pl.edu.amu.wmi.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import pl.edu.amu.wmi.entity.Criterion;
+import pl.edu.amu.wmi.entity.CriteriaGroup;
 
 @Repository
-public interface CriteriaDAO extends JpaRepository<Criterion, Long> {
+public interface CriteriaGroupDAO extends JpaRepository<CriteriaGroup, Long> {
 }
