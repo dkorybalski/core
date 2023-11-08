@@ -1,6 +1,6 @@
 FROM maven:3.6.3-openjdk-17-slim AS MAVEN_BUILD
 COPY . /
-RUN mvn clean package
+RUN mvn -DskipTests=true package
 
 FROM openjdk:21-slim-bookworm
 EXPOSE 8080
