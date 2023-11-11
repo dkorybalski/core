@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service;
+package pl.edu.amu.wmi.service.importdata;
 
 import org.springframework.web.multipart.MultipartFile;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;

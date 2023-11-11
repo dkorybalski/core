@@ -1,18 +1,18 @@
-package pl.edu.amu.wmi.service.impl;
+package pl.edu.amu.wmi.service.importdata.impl;
 
 import exception.DataFeedConfigurationException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
-import pl.edu.amu.wmi.service.DataFeedImportService;
+import pl.edu.amu.wmi.service.importdata.DataFeedImportService;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
-public class DataFeedServiceFactory {
+public class DataFeedImportServiceFactory {
 
     @Autowired
     private List<DataFeedImportService> services;
@@ -29,7 +29,7 @@ public class DataFeedServiceFactory {
     public static DataFeedImportService getService(DataFeedType type) throws DataFeedConfigurationException {
         DataFeedImportService service = dataFeedServiceCache.get(type);
         if (service == null) {
-            throw new DataFeedConfigurationException("Error during DataFeedImportService");
+            throw new DataFeedConfigurationException("Error during getting DataFeedImportService");
         }
         return service;
     }
