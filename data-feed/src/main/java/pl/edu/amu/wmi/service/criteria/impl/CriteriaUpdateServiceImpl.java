@@ -57,6 +57,9 @@ public class CriteriaUpdateServiceImpl implements CriteriaUpdateService {
         criteriaSectionMapper.update(persistedCriteriaSectionFirstSemester, firstSemesterCriteriaSection);
         criteriaSectionMapper.update(persistedCriteriaSectionSecondSemester, secondSemesterCriteriaSection);
 
+        persistedCriteriaSectionFirstSemester.setCriteriaGroups(new ArrayList<>());
+        persistedCriteriaSectionSecondSemester.setCriteriaGroups(new ArrayList<>());
+
         for (CriteriaGroupDTO criteriaGroupDTO : criteriaSectionDTO.criteriaGroups()) {
             Set<Criterion> updatedCriteria = updateCriteria(criteriaGroupDTO.criteria());
 
@@ -83,14 +86,28 @@ public class CriteriaUpdateServiceImpl implements CriteriaUpdateService {
             case SEMESTER_I -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, IS_SAVE_MODE);
             case SEMESTER_II -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, IS_SAVE_MODE);
         };
-        CriteriaGroup persistedCriteriaGroup = criteriaGroupDAO.findById(criteriaGroup.getId()).orElseGet(CriteriaGroup::new);
-        if (!isGradeWeightRelevant(criteriaGroup)) {
+        CriteriaGroup persistedCriteriaGroup = findPersistedCriteriaGroup(criteriaGroup);
+        if (Objects.nonNull(persistedCriteriaGroup) && !isGradeWeightRelevant(criteriaGroup)) {
+            // TODO: 11/11/2023 removing related criteria from db when criteria group is deleted is not implemented
             criteriaGroupDAO.delete(persistedCriteriaGroup);
             return null;
+        } else if (Objects.isNull(persistedCriteriaGroup) && !isGradeWeightRelevant(criteriaGroup)) {
+            return null;
         } else {
+            if (Objects.isNull(persistedCriteriaGroup)) {
+                persistedCriteriaGroup = new CriteriaGroup();
+            }
             criteriaGroupMapper.update(persistedCriteriaGroup, criteriaGroup);
-            persistedCriteriaGroup.setCriteria(updatedCriteria);
+            Objects.requireNonNull(persistedCriteriaGroup).setCriteria(updatedCriteria);
             return persistedCriteriaGroup;
+        }
+    }
+
+    private CriteriaGroup findPersistedCriteriaGroup(CriteriaGroup criteriaGroup) {
+        if (Objects.nonNull(criteriaGroup.getId())) {
+            return criteriaGroupDAO.findById(criteriaGroup.getId()).orElse(null);
+        } else {
+            return null;
         }
     }
 
