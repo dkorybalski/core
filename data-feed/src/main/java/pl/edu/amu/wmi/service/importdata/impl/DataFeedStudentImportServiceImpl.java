@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.impl;
+package pl.edu.amu.wmi.service.importdata.impl;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -17,7 +17,7 @@ import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.StudentMapper;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
-import pl.edu.amu.wmi.service.DataFeedImportService;
+import pl.edu.amu.wmi.service.importdata.DataFeedImportService;
 
 import java.io.BufferedReader;
 import java.io.IOException;

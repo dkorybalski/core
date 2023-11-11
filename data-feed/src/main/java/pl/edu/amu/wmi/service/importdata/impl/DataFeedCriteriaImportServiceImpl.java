@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.impl;
+package pl.edu.amu.wmi.service.importdata.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -9,10 +9,10 @@ import pl.edu.amu.wmi.entity.EvaluationCardTemplate;
 import pl.edu.amu.wmi.model.CriteriaSectionDTO;
 import pl.edu.amu.wmi.model.EvaluationCriteriaDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
-import pl.edu.amu.wmi.service.DataFeedImportService;
 import pl.edu.amu.wmi.service.criteria.CriteriaSaveService;
 import pl.edu.amu.wmi.service.criteria.CriteriaUpdateService;
 import pl.edu.amu.wmi.service.criteria.EvaluationCardTemplateService;
+import pl.edu.amu.wmi.service.importdata.DataFeedImportService;
 
 import java.util.List;
 import java.util.Objects;

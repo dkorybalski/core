@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import pl.edu.amu.wmi.enumerations.Semester;
 
 import java.util.Set;
 
@@ -25,5 +26,8 @@ public class CriteriaGroup extends AbstractEntity {
 
     @ManyToMany(cascade = CascadeType.MERGE)
     private Set<Criterion> criteria;
+
+    @Transient
+    private Semester semester;
 
 }

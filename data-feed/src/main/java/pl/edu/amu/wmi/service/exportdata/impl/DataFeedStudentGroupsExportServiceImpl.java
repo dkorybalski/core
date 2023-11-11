@@ -1,35 +1,41 @@
-package pl.edu.amu.wmi.service.impl;
+package pl.edu.amu.wmi.service.exportdata.impl;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.entity.StudyYear;
-import pl.edu.amu.wmi.service.DataFeedExportService;
+import pl.edu.amu.wmi.model.enumeration.DataFeedType;
+import pl.edu.amu.wmi.service.exportdata.DataFeedExportService;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
-@Service
+@Component
 @Slf4j
-public class DataFeedExportDataImpl implements DataFeedExportService {
+public class DataFeedStudentGroupsExportServiceImpl implements DataFeedExportService {
 
     private final StudentDAO studentDAO;
 
     private final StudyYearDAO studyYearDAO;
 
-    public DataFeedExportDataImpl(StudentDAO studentDAO, StudyYearDAO studyYearDAO) {
+    public DataFeedStudentGroupsExportServiceImpl(StudentDAO studentDAO, StudyYearDAO studyYearDAO) {
         this.studentDAO = studentDAO;
         this.studyYearDAO = studyYearDAO;
     }
 
     @Override
-    public void exportData(Writer writer, String studyYearName) throws CsvException {
+    public DataFeedType getType() {
+        return DataFeedType.STUDENT_GROUPS;
+    }
+
+    @Override
+    public void exportData(Writer writer, String studyYearName) throws Exception {
         try (CSVWriter csvWriter = new CSVWriter(writer, ';', ICSVWriter.NO_QUOTE_CHARACTER, ICSVWriter.DEFAULT_ESCAPE_CHARACTER, ICSVWriter.DEFAULT_LINE_END);) {
 
             csvWriter.writeNext(createHeaders());

@@ -10,7 +10,7 @@ paths:
     get:
       tags:
       - project-controller
-      operationId: getExternalLinkDataByProjectId
+      operationId: getExternalLinksByProjectId
       parameters:
       - name: projectId
         in: path
@@ -19,8 +19,8 @@ paths:
           type: integer
           format: int64
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -31,25 +31,56 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ExternalLinkDataDTO'
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkDTO'
     put:
       tags:
       - project-controller
       operationId: updateExternalLinkData
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ExternalLinkDataDTO'
+              uniqueItems: true
+              type: array
+              items:
+                $ref: '#/components/schemas/ExternalLinkDTO'
         required: true
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -60,26 +91,329 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ExternalLinkDataDTO'
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkDTO'
+  /project/{id}:
+    get:
+      tags:
+      - project-controller
+      operationId: getProjectById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProjectDetailsDTO'
+    put:
+      tags:
+      - project-controller
+      operationId: updateProject
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: index-number
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDetailsDTO'
+        required: true
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProjectDetailsDTO'
+    delete:
+      tags:
+      - project-controller
+      operationId: deleteProjectById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /project/supervisor/availability:
+    get:
+      tags:
+      - project-controller
+      operationId: getSupervisorsAvailability
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupervisorAvailabilityDTO'
+    put:
+      tags:
+      - project-controller
+      operationId: updateSupervisorsAvailability
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SupervisorAvailabilityDTO'
+        required: true
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupervisorAvailabilityDTO'
   /user/supervisor:
     get:
       tags:
       - user-controller
       operationId: getSupervisors
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -102,11 +436,6 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
-        in: header
-        required: true
-        schema:
-          type: string
       requestBody:
         content:
           application/json:
@@ -114,8 +443,8 @@ paths:
               $ref: '#/components/schemas/SupervisorCreationRequestDTO'
         required: true
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -126,12 +455,133 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/SupervisorDTO'
+  /user/student:
+    get:
+      tags:
+      - user-controller
+      operationId: getStudents
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentDTO'
+    post:
+      tags:
+      - user-controller
+      operationId: createStudent
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreationRequestDTO'
+        required: true
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StudentDTO'
   /project:
     get:
       tags:
@@ -143,20 +593,33 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
-        in: header
-        required: true
-        schema:
-          type: string
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -179,7 +642,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
+      - name: index-number
         in: header
         required: true
         schema:
@@ -191,14 +654,32 @@ paths:
               $ref: '#/components/schemas/ProjectDetailsDTO'
         required: true
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -209,61 +690,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProjectDetailsDTO'
-  /project/external-link:
-    get:
-      tags:
-      - project-controller
-      operationId: getExternalLinkData
-      responses:
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "400":
-          description: Bad Request
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLinkDataDTO'
-    post:
-      tags:
-      - project-controller
-      operationId: createExternalLinkData
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExternalLinkDataDTO'
-        required: true
-      responses:
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "400":
-          description: Bad Request
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ExternalLinkDataDTO'
   /data/import/supervisor:
     post:
       tags:
@@ -275,7 +701,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
+      - name: index-number
         in: header
         required: true
         schema:
@@ -292,14 +718,32 @@ paths:
                   type: string
                   format: binary
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -317,7 +761,62 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
+      - name: index-number
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - data
+              type: object
+              properties:
+                data:
+                  type: string
+                  format: binary
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /data/import/criteria:
+    post:
+      tags:
+      - data-feed-controller
+      operationId: createCriteria
+      parameters:
+      - name: study-year
         in: header
         required: true
         schema:
@@ -334,8 +833,8 @@ paths:
                   type: string
                   format: binary
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -346,8 +845,175 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
+  /auth/refresh:
+    post:
+      tags:
+      - auth-controller
+      operationId: refresh
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: authenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /project/{projectId}/unaccept:
+    patch:
+      tags:
+      - project-controller
+      operationId: unAcceptProject
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: index-number
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProjectDetailsDTO'
   /project/{projectId}/admin-change/{studentIndex}:
     patch:
       tags:
@@ -366,14 +1032,32 @@ paths:
         schema:
           type: string
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -395,7 +1079,7 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
+      - name: index-number
         in: header
         required: true
         schema:
@@ -407,14 +1091,32 @@ paths:
           type: integer
           format: int64
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
         "400":
           description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -425,14 +1127,20 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProjectDetailsDTO'
-  /user/supervisor/availability:
+  /user:
     get:
       tags:
       - user-controller
-      operationId: getSupervisorsAvailability
+      operationId: getUser
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -443,28 +1151,20 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
-        "200":
-          description: OK
+        "403":
+          description: Forbidden
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SupervisorAvailabilityDTO'
-  /user/student:
-    get:
-      tags:
-      - user-controller
-      operationId: getStudents
-      responses:
+                $ref: '#/components/schemas/ErrorInfo'
         "409":
           description: Conflict
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
-        "400":
-          description: Bad Request
+        "500":
+          description: Internal Server Error
           content:
             '*/*':
               schema:
@@ -474,24 +1174,15 @@ paths:
           content:
             '*/*':
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/StudentDTO'
-  /project/{id}:
+                $ref: '#/components/schemas/UserDTO'
+  /project/external-link:
     get:
       tags:
       - project-controller
-      operationId: getProjectById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
+      operationId: getExternalLinkData
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -502,12 +1193,83 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ProjectDetailsDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExternalLinkDataDTO'
+  /project/external-link/column-header:
+    get:
+      tags:
+      - project-controller
+      operationId: getExternalLinkDefinitionColumnHeaders
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  type: string
   /data/export/student:
     get:
       tags:
@@ -519,14 +1281,9 @@ paths:
         required: true
         schema:
           type: string
-      - name: user-index-number
-        in: header
-        required: true
-        schema:
-          type: string
       responses:
-        "409":
-          description: Conflict
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -537,8 +1294,112 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
         "200":
           description: OK
+  /data/export/criteria:
+    get:
+      tags:
+      - data-feed-controller
+      operationId: exportCriteria
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /auth/logout:
+    get:
+      tags:
+      - auth-controller
+      operationId: logoutUser
+      responses:
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
 components:
   schemas:
     ErrorInfo:
@@ -562,32 +1423,6 @@ components:
           format: int64
         url:
           type: string
-        externalLinkDefinition:
-          $ref: '#/components/schemas/ExternalLinkDefinitionDTO'
-    ExternalLinkDataDTO:
-      required:
-      - externalLinks
-      - projectId
-      type: object
-      properties:
-        projectId:
-          type: integer
-          format: int64
-        projectName:
-          type: string
-        supervisor:
-          $ref: '#/components/schemas/SupervisorDTO'
-        externalLinks:
-          uniqueItems: true
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalLinkDTO'
-    ExternalLinkDefinitionDTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
         name:
           type: string
         columnHeader:
@@ -595,37 +1430,6 @@ components:
         deadline:
           type: string
           format: date
-    SupervisorDTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        userData:
-          $ref: '#/components/schemas/UserDataDTO'
-    UserDataDTO:
-      type: object
-      properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
-    SupervisorCreationRequestDTO:
-      type: object
-      properties:
-        surname:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-        indexNumber:
-          type: string
-        groupNumber:
-          type: integer
-          format: int32
     ProjectDetailsDTO:
       required:
       - description
@@ -654,7 +1458,6 @@ components:
         supervisor:
           $ref: '#/components/schemas/SupervisorDTO'
         students:
-          uniqueItems: true
           type: array
           items:
             $ref: '#/components/schemas/StudentDTO'
@@ -680,19 +1483,93 @@ components:
           type: string
         email:
           type: string
+        accepted:
+          type: boolean
+    SupervisorDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        indexNumber:
+          type: string
     SupervisorAvailabilityDTO:
       type: object
       properties:
-        name:
-          type: string
-        surname:
-          type: string
+        supervisor:
+          $ref: '#/components/schemas/SupervisorDTO'
         assigned:
           type: integer
           format: int32
         max:
           type: integer
           format: int32
+    SupervisorCreationRequestDTO:
+      type: object
+      properties:
+        surname:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        indexNumber:
+          type: string
+        groupNumber:
+          type: integer
+          format: int32
+    StudentCreationRequestDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        indexNumber:
+          type: string
+        email:
+          type: string
+        pesel:
+          type: string
+    LoginRequest:
+      required:
+      - login
+      - password
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    UserDTO:
+      type: object
+      properties:
+        indexNumber:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        actualYear:
+          type: string
+        studyYears:
+          type: array
+          items:
+            type: string
+        projects:
+          type: array
+          items:
+            type: integer
+            format: int64
+        acceptedProjects:
+          type: array
+          items:
+            type: integer
+            format: int64
     ProjectDTO:
       type: object
       properties:
@@ -705,3 +1582,21 @@ components:
           $ref: '#/components/schemas/SupervisorDTO'
         accepted:
           type: boolean
+    ExternalLinkDataDTO:
+      required:
+      - externalLinks
+      - projectId
+      type: object
+      properties:
+        projectId:
+          type: integer
+          format: int64
+        projectName:
+          type: string
+        supervisor:
+          $ref: '#/components/schemas/SupervisorDTO'
+        externalLinks:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalLinkDTO'

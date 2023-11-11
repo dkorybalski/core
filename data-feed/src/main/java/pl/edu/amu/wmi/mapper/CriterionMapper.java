@@ -27,4 +27,8 @@ public interface CriterionMapper {
     @Mapping(target = "modificationDate", ignore = true)
     @Mapping(target = "version", ignore = true)
     void update(@MappingTarget Criterion persistedEntity, Criterion criterion);
+
+    @Mapping(target = "category", source = "criterionCategory")
+    @Mapping(target = "isDisqualifying", source = "entity.disqualifying")
+    CriterionDTO mapToDto(Criterion entity);
 }
