@@ -131,7 +131,11 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
 
     private static List<Criterion> getCriteriaForCriteriaGroup(Map.Entry<String, List<CriteriaGroup>> entry) {
         // criteria are the same for criteria groups for both semesters, therefore we take only criteria list from object with index 0
-        return entry.getValue().get(0).getCriteria().stream().toList();
+        Comparator<Criterion> byNumberOfPoints = Comparator
+                .comparing(Criterion::getPoints);
+        return entry.getValue().get(0).getCriteria().stream()
+                .sorted(byNumberOfPoints)
+                .toList();
     }
 
     private Pair<Long, Double> getCriteriaGroupDataForSemester(Map.Entry<String, List<CriteriaGroup>> entry, Semester semester) {

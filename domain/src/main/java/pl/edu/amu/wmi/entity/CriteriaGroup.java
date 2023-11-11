@@ -15,6 +15,7 @@ import java.util.Set;
 public class CriteriaGroup extends AbstractEntity {
 
     @NotNull
+    @Column(length = 400)
     private String name;
 
     @ManyToOne

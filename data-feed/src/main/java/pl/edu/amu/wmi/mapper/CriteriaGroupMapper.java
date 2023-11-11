@@ -27,6 +27,7 @@ public interface CriteriaGroupMapper {
     @Mapping(target = "modificationDate", ignore = true)
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "criteria", ignore = true)
+    @Mapping(target = "criteriaSection", ignore = true)
     void update(@MappingTarget CriteriaGroup persistedEntity, CriteriaGroup updateEntity);
 
     @Mapping(target = "name", source = "key")
