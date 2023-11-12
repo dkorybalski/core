@@ -13,7 +13,7 @@ import java.util.List;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.ACCEPTED;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.CONFIRMED;
 
-@Mapper(componentModel = "spring", uses = { SupervisorProjectMapper.class, ExternalLinkMapper.class })
+@Mapper(componentModel = "spring", uses = { SupervisorProjectMapper.class, ExternalLinkMapper.class, PointsMapper.class })
 public interface ProjectMapper {
 
     @Mapping(target = "supervisor", ignore = true)
@@ -46,15 +46,6 @@ public interface ProjectMapper {
     @Named("DisqualifiedToCriteriaMet")
     default boolean mapCriteriaMet(boolean isDisqualified) {
         return !isDisqualified;
-    }
-
-    @Named("PointsToPercent")
-    default String mapPointsToPercent(Double points) {
-        if (points == null) {
-            return "0%";
-        } else {
-            return points + "%";
-        }
     }
 
 }
