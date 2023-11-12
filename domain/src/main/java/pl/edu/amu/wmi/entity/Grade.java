@@ -14,7 +14,7 @@ public class Grade extends AbstractEntity {
     @JoinColumn(name = "CRITERIA_GROUP_ID")
     private CriteriaGroup criteriaGroup;
 
-    private Double points;
+    private Integer points;
 
     private Double pointsWithWeight;
 

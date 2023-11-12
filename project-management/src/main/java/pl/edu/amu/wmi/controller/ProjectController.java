@@ -8,9 +8,11 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.ProjectManagementException;
 import pl.edu.amu.wmi.model.*;
 import pl.edu.amu.wmi.service.ExternalLinkService;
+import pl.edu.amu.wmi.service.GradeService;
 import pl.edu.amu.wmi.service.ProjectService;
 import pl.edu.amu.wmi.service.SupervisorProjectService;
 
@@ -27,11 +29,14 @@ public class ProjectController {
 
     private final SupervisorProjectService supervisorProjectService;
 
+    private final GradeService gradeService;
+
     @Autowired
-    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorProjectService supervisorProjectService) {
+    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorProjectService supervisorProjectService, GradeService gradeService) {
         this.projectService = projectService;
         this.externalLinkService = externalLinkService;
         this.supervisorProjectService = supervisorProjectService;
+        this.gradeService = gradeService;
     }
 
     @GetMapping("")
@@ -144,5 +149,11 @@ public class ProjectController {
     public ResponseEntity<List<SupervisorAvailabilityDTO>> updateSupervisorsAvailability(@RequestHeader("study-year") String studyYear, @RequestBody List<SupervisorAvailabilityDTO> supervisorAvailabilityList) {
         return ResponseEntity.ok()
                 .body(supervisorProjectService.updateSupervisorsAvailability(studyYear, supervisorAvailabilityList));
+    }
+
+    @GetMapping("/{projectId}/grade")
+    public ResponseEntity<ProjectGradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam Semester semester, @PathVariable Long projectId) {
+        return ResponseEntity.ok()
+                .body(gradeService.findByProjectIdAndSemester(semester, projectId));
     }
 }
