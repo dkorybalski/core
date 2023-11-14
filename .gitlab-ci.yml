@@ -62,7 +62,7 @@ swagger:
   script:
     - sudo docker stop swagger || true && sudo docker rm swagger || true 
     - sudo docker rmi swaggerapi/swagger-ui || true
-    - sudo docker run -d --name swagger -e BASE_URL=/swagger -p 81:8080 -e SWAGGER_JSON=/swagger-api/pri-api.yaml -v /${CI_PROJECT_DIR}/pri-application/:/swagger-api swaggerapi/swagger-ui
+    - sudo docker run -d --name swagger -e BASE_URL=/swagger --network=pri-network -p 81:8080 -e SWAGGER_JSON=/swagger-api/pri-api.yaml -v /${CI_PROJECT_DIR}/pri-application/:/swagger-api swaggerapi/swagger-ui
 
 deploy:
   extends:
