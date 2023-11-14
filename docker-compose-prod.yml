@@ -1,4 +1,4 @@
-version: '3.0'
+version: '3.5'
 services:
   postgres:
     env_file:
@@ -18,6 +18,8 @@ services:
       interval: 5s
       timeout: 10s
       retries: 20
+    networks:
+      - pri-network
   core:
     build: .
     env_file:
@@ -30,3 +32,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - pri-network
+networks:
+  pri-network:
+    name: pri-network
+    external: true

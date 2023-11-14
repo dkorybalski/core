@@ -59,6 +59,12 @@ java -jar -Dspring.profiles.active=local -DPOSTGRES_URL=${POSTGRES_URL} -DPOSTGR
 
 ### Prerequisites
 
+#### Docker network
+Custom docker network named `pri-network` has to be created on the host machine (server, local). To do it use command:
+````
+sudo docker network create -d bridge pri-network
+````
+
 #### Secrets
 
 See `config.env.example` file.
