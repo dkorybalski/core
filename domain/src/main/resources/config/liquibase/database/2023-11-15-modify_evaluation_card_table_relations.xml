@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-1">
+        <dropForeignKeyConstraint baseTableName="grade" constraintName="FK2kkn8l09o5dmpaka1svllc6kp"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-6">
+        <dropUniqueConstraint constraintName="UK_km4ji0i55u2qpohi1kys8nigp" tableName="evaluation_card"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-4">
+        <dropPrimaryKey tableName="evaluation_card"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-7">
+        <dropColumn columnName="id" tableName="evaluation_card"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-5">
+        <addPrimaryKey columnNames="project_id" constraintName="evaluation_cardPK" tableName="evaluation_card"/>
+    </changeSet>
+    <changeSet author="katarzyna.jaroszewska" id="2023-11-15-modify_evaluation_card_table_relations-2">
+        <addForeignKeyConstraint baseColumnNames="evaluation_card_id" baseTableName="grade" constraintName="FK2kkn8l09o5dmpaka1svllc6kp" referencedColumnNames="project_id" referencedTableName="evaluation_card"/>
+    </changeSet>
+</databaseChangeLog>

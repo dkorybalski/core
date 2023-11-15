@@ -3,7 +3,7 @@ package pl.edu.amu.wmi.service.criteria.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
 import org.springframework.stereotype.Service;
-import pl.edu.amu.wmi.dao.EvaluationCardTemplateRepositoryDAO;
+import pl.edu.amu.wmi.dao.EvaluationCardTemplateDAO;
 import pl.edu.amu.wmi.entity.CriteriaGroup;
 import pl.edu.amu.wmi.entity.CriteriaSection;
 import pl.edu.amu.wmi.entity.Criterion;
@@ -26,19 +26,19 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
 
     private static final Double GRADE_WEIGHT_VALUE_ZERO = 0.0;
 
-    private final EvaluationCardTemplateRepositoryDAO evaluationCardTemplateRepositoryDAO;
+    private final EvaluationCardTemplateDAO evaluationCardTemplateDAO;
     private final EvaluationCriteriaMapper evaluationCriteriaMapper;
     private final CriteriaGroupMapper criteriaGroupMapper;
 
-    public EvaluationCriteriaServiceImpl(EvaluationCardTemplateRepositoryDAO evaluationCardTemplateRepositoryDAO, EvaluationCriteriaMapper evaluationCriteriaMapper, CriteriaGroupMapper criteriaGroupMapper) {
-        this.evaluationCardTemplateRepositoryDAO = evaluationCardTemplateRepositoryDAO;
+    public EvaluationCriteriaServiceImpl(EvaluationCardTemplateDAO evaluationCardTemplateDAO, EvaluationCriteriaMapper evaluationCriteriaMapper, CriteriaGroupMapper criteriaGroupMapper) {
+        this.evaluationCardTemplateDAO = evaluationCardTemplateDAO;
         this.evaluationCriteriaMapper = evaluationCriteriaMapper;
         this.criteriaGroupMapper = criteriaGroupMapper;
     }
 
     @Override
     public EvaluationCriteriaDTO constructEvaluationCriteriaDTO(String studyYear) {
-        EvaluationCardTemplate evaluationCardTemplate = evaluationCardTemplateRepositoryDAO.findByStudyYear(studyYear).orElseGet(EvaluationCardTemplate::new);
+        EvaluationCardTemplate evaluationCardTemplate = evaluationCardTemplateDAO.findByStudyYear(studyYear).orElseGet(EvaluationCardTemplate::new);
 
         List<CriteriaSection> criteriaSectionsFirstSemester = evaluationCardTemplate.getCriteriaSectionsFirstSemester();
         List<CriteriaSection> criteriaSectionsSecondSemester = evaluationCardTemplate.getCriteriaSectionsSecondSemester();

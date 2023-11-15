@@ -7,7 +7,7 @@ import pl.edu.amu.wmi.entity.EvaluationCardTemplate;
 import java.util.Optional;
 
 @Repository
-public interface EvaluationCardTemplateRepositoryDAO extends JpaRepository<EvaluationCardTemplate, Long> {
+public interface EvaluationCardTemplateDAO extends JpaRepository<EvaluationCardTemplate, Long> {
     Optional<EvaluationCardTemplate> findByStudyYear(String studyYear);
 
     boolean existsByStudyYear(String studyYear);

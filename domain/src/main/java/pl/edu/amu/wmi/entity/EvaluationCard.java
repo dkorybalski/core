@@ -1,8 +1,8 @@
 package pl.edu.amu.wmi.entity;
 
 import jakarta.persistence.*;
-import lombok.Generated;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,11 +13,13 @@ import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "EVALUATION_CARD")
 public class EvaluationCard {
 
     @Id
+    @Column(name = "PROJECT_ID")
     private Long id;
 
     @CreationTimestamp
@@ -33,7 +35,8 @@ public class EvaluationCard {
     private Long version;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId("projectId")
+    @MapsId
+    @JoinColumn(name = "PROJECT_ID")
     private Project project;
 
     @Column(name = "TOTAL_POINTS_SEMESTER_I")
@@ -50,7 +53,7 @@ public class EvaluationCard {
     @JoinColumn(name = "EVALUATION_CARD_TEMPLATE_ID")
     private EvaluationCardTemplate evaluationCardTemplate;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "EVALUATION_CARD_ID")
     private List<Grade> grades = new ArrayList<>();
 
@@ -59,5 +62,4 @@ public class EvaluationCard {
 
     @Column(name = "FINAL_GRADE_SEMESTER_II")
     private Double finalGradeSecondSemester;
-
 }
