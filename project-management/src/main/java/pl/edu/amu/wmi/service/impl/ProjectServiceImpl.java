@@ -15,6 +15,7 @@ import pl.edu.amu.wmi.mapper.StudentFromProjectMapper;
 import pl.edu.amu.wmi.model.ProjectDTO;
 import pl.edu.amu.wmi.model.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.StudentDTO;
+import pl.edu.amu.wmi.service.EvaluationCardService;
 import pl.edu.amu.wmi.service.ProjectService;
 
 import java.text.MessageFormat;
@@ -51,8 +52,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final StudentFromProjectMapper studentMapper;
 
+    private final EvaluationCardService evaluationCardService;
+
     @Autowired
-    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO definitionDAO, ProjectMapper projectMapper, StudentFromProjectMapper studentMapper) {
+    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO definitionDAO, ProjectMapper projectMapper, StudentFromProjectMapper studentMapper, EvaluationCardService evaluationCardService) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
@@ -64,6 +67,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.definitionDAO = definitionDAO;
         this.projectMapper = projectMapper;
         this.studentMapper = studentMapper;
+        this.evaluationCardService = evaluationCardService;
     }
 
     @Override
@@ -156,6 +160,10 @@ public class ProjectServiceImpl implements ProjectService {
         });
 
         projectEntity.setExternalLinks(externalLinkEntities);
+
+        EvaluationCard evaluationCard = new EvaluationCard();
+        projectEntity.setEvaluationCard(evaluationCard);
+        evaluationCard.setProject(projectEntity);
 
         projectEntity = projectDAO.save(projectEntity);
 
@@ -303,7 +311,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId) {
 
-        Project projectEntity = projectDAO.findById(projectId).get();
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
             StudentProject studentProjectEntity = getStudentProjectByStudentIndex(projectEntity, userIndexNumber);
@@ -318,6 +327,8 @@ public class ProjectServiceImpl implements ProjectService {
             studentProjectDAO.save(studentProjectEntity);
 
         } else if (getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
+            log.info("Project with id: {} was accepted by all students and a supervisor", projectId);
+            evaluationCardService.addEmptyGradesToEvaluationCard(projectEntity, studyYear);
             projectEntity.setAcceptanceStatus(ACCEPTED);
         } else {
             // TODO: 6/3/2023 handle wrong role exception

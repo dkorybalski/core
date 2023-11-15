@@ -1,11 +1,16 @@
 package pl.edu.amu.wmi.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "GRADE")
 public class Grade extends AbstractEntity {
@@ -20,4 +25,7 @@ public class Grade extends AbstractEntity {
 
     private boolean isDisqualifying;
 
+    public Grade(CriteriaGroup criteriaGroup) {
+        this.criteriaGroup = criteriaGroup;
+    }
 }

@@ -1,7 +1,8 @@
 package pl.edu.amu.wmi.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.ProjectRole;
@@ -53,6 +54,7 @@ public class Project extends AbstractEntity {
             fetch = FetchType.LAZY,
             optional = false
     )
+    @PrimaryKeyJoinColumn
     private EvaluationCard evaluationCard;
 
     @OneToMany(

@@ -3,7 +3,7 @@ package pl.edu.amu.wmi.service.criteria.impl;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import pl.edu.amu.wmi.dao.EvaluationCardTemplateRepositoryDAO;
+import pl.edu.amu.wmi.dao.EvaluationCardTemplateDAO;
 import pl.edu.amu.wmi.entity.EvaluationCardTemplate;
 import pl.edu.amu.wmi.model.EvaluationCriteriaDTO;
 import pl.edu.amu.wmi.service.criteria.EvaluationCardTemplateService;
@@ -13,19 +13,19 @@ import pl.edu.amu.wmi.service.criteria.EvaluationCardTemplateService;
 @Slf4j
 public class EvaluationCardTemplateServiceImpl implements EvaluationCardTemplateService {
 
-    private final EvaluationCardTemplateRepositoryDAO evaluationCardTemplateRepositoryDAO;
+    private final EvaluationCardTemplateDAO evaluationCardTemplateDAO;
 
-    public EvaluationCardTemplateServiceImpl(EvaluationCardTemplateRepositoryDAO evaluationCardTemplateRepositoryDAO) {
-        this.evaluationCardTemplateRepositoryDAO = evaluationCardTemplateRepositoryDAO;
+    public EvaluationCardTemplateServiceImpl(EvaluationCardTemplateDAO evaluationCardTemplateDAO) {
+        this.evaluationCardTemplateDAO = evaluationCardTemplateDAO;
     }
 
     @Override
     public EvaluationCardTemplate updateEvaluationCardTemplate(String studyYear, EvaluationCriteriaDTO evaluationCriteriaDTO) {
         EvaluationCardTemplate evaluationCardTemplateForStudyYear =
-                evaluationCardTemplateRepositoryDAO.findByStudyYear(studyYear).get();
+                evaluationCardTemplateDAO.findByStudyYear(studyYear).get();
         evaluationCardTemplateForStudyYear.setMinPointsThresholdFirstSemester(evaluationCriteriaDTO.minPointsThresholdFirstSemester());
         evaluationCardTemplateForStudyYear.setMinPointsThresholdSecondSemester(evaluationCriteriaDTO.minPointsThresholdSecondSemester());
-        return evaluationCardTemplateRepositoryDAO.save(evaluationCardTemplateForStudyYear);
+        return evaluationCardTemplateDAO.save(evaluationCardTemplateForStudyYear);
     }
 
     @Override
@@ -34,11 +34,11 @@ public class EvaluationCardTemplateServiceImpl implements EvaluationCardTemplate
         evaluationCardTemplate.setStudyYear(studyYear);
         evaluationCardTemplate.setMinPointsThresholdFirstSemester(evaluationCriteriaDTO.minPointsThresholdFirstSemester());
         evaluationCardTemplate.setMinPointsThresholdSecondSemester(evaluationCriteriaDTO.minPointsThresholdSecondSemester());
-        return evaluationCardTemplateRepositoryDAO.save(evaluationCardTemplate);
+        return evaluationCardTemplateDAO.save(evaluationCardTemplate);
     }
 
     @Override
     public boolean existsByStudyYear(String studyYear) {
-        return evaluationCardTemplateRepositoryDAO.existsByStudyYear(studyYear);
+        return evaluationCardTemplateDAO.existsByStudyYear(studyYear);
     }
 }
