@@ -1,16 +1,16 @@
 package pl.edu.amu.wmi.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
+@AllArgsConstructor
 public class ProjectCriterionDTO {
-
-    private String category;
 
     private String description;
 
+    @JsonProperty("isDisqualifying")
     private boolean isDisqualifying;
 
 }

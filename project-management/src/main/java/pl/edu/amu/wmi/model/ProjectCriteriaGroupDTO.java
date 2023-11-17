@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -22,6 +22,6 @@ public class ProjectCriteriaGroupDTO {
 
     private LocalDate modificationDate;
 
-    private List<ProjectCriterionDTO> criteria;
+    private Map<String, ProjectCriterionDTO> criteria;
 
 }

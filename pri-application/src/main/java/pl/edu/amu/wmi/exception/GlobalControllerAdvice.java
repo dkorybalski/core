@@ -63,6 +63,14 @@ public class GlobalControllerAdvice {
         return new ErrorInfo(exception.getMessage(), 403);
     }
 
+    @ResponseBody
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorInfo illegalArgumentExceptionHandler(final IllegalArgumentException exception) {
+        log.error("IllegalArgumentException exception occured", exception);
+        return new ErrorInfo(exception.getMessage(), 400);
+    }
+
 //    todo validate the error code
     @ResponseBody
     @ExceptionHandler(Exception.class)
