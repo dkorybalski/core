@@ -17,6 +17,7 @@ import pl.edu.amu.wmi.service.ProjectService;
 import pl.edu.amu.wmi.service.SupervisorProjectService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @RestController
@@ -152,7 +153,10 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/grade")
-    public ResponseEntity<ProjectGradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam Semester semester, @PathVariable Long projectId) {
+    public ResponseEntity<ProjectGradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam(required = false) Semester semester, @PathVariable Long projectId) {
+        if (Objects.isNull(semester)) {
+            semester = Semester.SEMESTER_I;
+        }
         return ResponseEntity.ok()
                 .body(gradeService.findByProjectIdAndSemester(semester, projectId));
     }
