@@ -27,6 +27,11 @@
             <artifactId>persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>pl.edu.amu.wmi</groupId>
+            <artifactId>notification-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!--mapper-->
         <dependency>
             <groupId>org.mapstruct</groupId>
