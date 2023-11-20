@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import pl.edu.amu.wmi.model.ProjectDetailsDTO;
-import pl.edu.amu.wmi.service.ProjectService;
+import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
+import pl.edu.amu.wmi.service.project.ProjectService;
 
 import java.util.List;
 

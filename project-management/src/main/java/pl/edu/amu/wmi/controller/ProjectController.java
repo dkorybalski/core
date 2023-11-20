@@ -9,12 +9,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.enumerations.Semester;
-import pl.edu.amu.wmi.exception.ProjectManagementException;
-import pl.edu.amu.wmi.model.*;
-import pl.edu.amu.wmi.service.ExternalLinkService;
-import pl.edu.amu.wmi.service.GradeService;
-import pl.edu.amu.wmi.service.ProjectService;
-import pl.edu.amu.wmi.service.SupervisorProjectService;
+import pl.edu.amu.wmi.exception.project.ProjectManagementException;
+import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
+import pl.edu.amu.wmi.model.externallink.ExternalLinkDataDTO;
+import pl.edu.amu.wmi.model.grade.GradeDetailsDTO;
+import pl.edu.amu.wmi.model.project.ProjectDTO;
+import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
+import pl.edu.amu.wmi.model.project.SupervisorAvailabilityDTO;
+import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
+import pl.edu.amu.wmi.service.grade.EvaluationCardService;
+import pl.edu.amu.wmi.service.grade.GradeService;
+import pl.edu.amu.wmi.service.project.ProjectService;
+import pl.edu.amu.wmi.service.project.SupervisorProjectService;
 
 import java.util.List;
 import java.util.Set;
@@ -31,12 +37,15 @@ public class ProjectController {
 
     private final GradeService gradeService;
 
+    private final EvaluationCardService evaluationCardService;
+
     @Autowired
-    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorProjectService supervisorProjectService, GradeService gradeService) {
+    public ProjectController(ProjectService projectService, ExternalLinkService externalLinkService, SupervisorProjectService supervisorProjectService, GradeService gradeService, EvaluationCardService evaluationCardService) {
         this.projectService = projectService;
         this.externalLinkService = externalLinkService;
         this.supervisorProjectService = supervisorProjectService;
         this.gradeService = gradeService;
+        this.evaluationCardService = evaluationCardService;
     }
 
     @GetMapping("")
@@ -152,8 +161,14 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/grade")
-    public ResponseEntity<ProjectGradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam String semester, @PathVariable Long projectId) {
+    public ResponseEntity<GradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam String semester, @PathVariable Long projectId) {
             return ResponseEntity.ok()
                     .body(gradeService.findByProjectIdAndSemester(Semester.getByShortSemesterName(semester), projectId));
+    }
+
+    @PutMapping("/{projectId}/grade")
+    public ResponseEntity<GradeDetailsDTO> putGradeDetailsByProjectId(@RequestParam String semester, @PathVariable Long projectId, @RequestBody GradeDetailsDTO projectGradeDetails) {
+        return ResponseEntity.ok()
+                .body(evaluationCardService.updateEvaluationCard(Semester.getByShortSemesterName(semester), projectId, projectGradeDetails));
     }
 }
