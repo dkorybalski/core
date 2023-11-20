@@ -89,8 +89,11 @@ public class GradeServiceImpl implements GradeService {
      * Calculates points based on data stored in EvaluationCard entity which are in range 0.0 - 4.0.
      * The method goal is to return string representation of the value as a percent.
      * To do so it use operation of proportion. As value 4 is 100% then it is divisor.
+     * If evaluation card doesn't have points, then null value is the method input, then 0.0% is returned.
      */
     private String pointsToOverallPercent(Double points) {
+        if (Objects.isNull(points))
+            return "0.0%";
         Double pointsOverall = points * 100 / 4;
         return String.format("%.2f", pointsOverall) + "%";
     }
