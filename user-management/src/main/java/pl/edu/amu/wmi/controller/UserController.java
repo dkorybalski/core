@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.user.*;
+import pl.edu.amu.wmi.service.SessionDataService;
 import pl.edu.amu.wmi.service.StudentService;
 import pl.edu.amu.wmi.service.SupervisorService;
 import pl.edu.amu.wmi.service.UserService;
@@ -25,17 +26,26 @@ public class UserController {
 
     private final UserService userService;
 
+    private final SessionDataService sessionDataService;
+
     @Autowired
-    public UserController(SupervisorService supervisorService, StudentService studentService, UserService userService) {
+    public UserController(SupervisorService supervisorService, StudentService studentService, UserService userService, SessionDataService sessionDataService) {
         this.supervisorService = supervisorService;
         this.studentService = studentService;
         this.userService = userService;
+        this.sessionDataService = sessionDataService;
     }
 
     @GetMapping("")
     public ResponseEntity<UserDTO> getUser(@RequestHeader("study-year") String studyYear) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return ResponseEntity.ok(userService.getUser(userDetails.getUsername(), studyYear));
+    }
 
+    @PutMapping("/study-year")
+    public ResponseEntity<UserDTO> updateStudyYear(@RequestHeader("study-year") String studyYear, @RequestBody ActualStudyYearDTO updatedStudyYear) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        sessionDataService.updateActualStudyYear(updatedStudyYear.studyYear(), userDetails.getUsername());
         return ResponseEntity.ok(userService.getUser(userDetails.getUsername(), studyYear));
     }
 

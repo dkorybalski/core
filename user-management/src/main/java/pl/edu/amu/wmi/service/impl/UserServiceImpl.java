@@ -12,6 +12,7 @@ import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.exception.UserManagementException;
 import pl.edu.amu.wmi.mapper.UserMapper;
 import pl.edu.amu.wmi.model.user.UserDTO;
+import pl.edu.amu.wmi.service.SessionDataService;
 import pl.edu.amu.wmi.service.UserService;
 
 import java.text.MessageFormat;
@@ -29,15 +30,19 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserDataDAO userDataDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserMapper userMapper) {
+    private final SessionDataService sessionDataService;
+
+
+    public UserServiceImpl(UserDataDAO userDataDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserMapper userMapper, SessionDataService sessionDataService) {
         this.userDataDAO = userDataDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
         this.userMapper = userMapper;
+        this.sessionDataService = sessionDataService;
     }
 
     @Override
-    public UserDTO getUser(String indexNumber, String studyYear) {
+    public UserDTO getUser(String indexNumber, String studyYearFromHeader) {
         try {
             UserData userData = this.userDataDAO.findByIndexNumber(indexNumber).orElseThrow(()
                     -> new UserManagementException(MessageFormat.format("User with index: {0} not found", indexNumber)));
@@ -56,7 +61,8 @@ public class UserServiceImpl implements UserService {
                 final List<String> studentStudyYears = getStudyYearsForStudent(students);
                 studyYears.addAll(studentStudyYears);
 
-                final String actualStudyYear = getActualStudyYear(studyYear, studentStudyYears);
+                String actualStudyYear = findActualStudyYear(studyYearFromHeader, indexNumber, studentStudyYears);
+
                 userDTO.setActualYear(actualStudyYear);
 
                 final Student entity = findStudentByActualStudyYear(students, actualStudyYear, indexNumber);
@@ -77,7 +83,8 @@ public class UserServiceImpl implements UserService {
                 final List<String> supervisorStudyYears = getStudyYearsForSupervisor(supervisors);
                 studyYears.addAll(supervisorStudyYears);
 
-                final String actualStudyYear = getActualStudyYear(studyYear, supervisorStudyYears);
+                String actualStudyYear = findActualStudyYear(studyYearFromHeader, indexNumber, supervisorStudyYears);
+
                 userDTO.setActualYear(actualStudyYear);
 
                 final Supervisor entity = findSupervisorByActualStudyYear(supervisors, actualStudyYear, indexNumber);
@@ -92,9 +99,25 @@ public class UserServiceImpl implements UserService {
             return userDTO;
 
         } catch (Exception exception) {
-            log.error("Exception during fetching the user data with index number: {} and study year: {}", indexNumber, studyYear, exception);
+            log.error("Exception during fetching the user data with index number: {} and study year: {}", indexNumber, studyYearFromHeader, exception);
             throw exception;
         }
+    }
+
+    private String findActualStudyYear(String studyYear, String indexNumber, List<String> studyYears) {
+        String actualStudyYearFromSessionData = sessionDataService.findActualStudyYear(indexNumber);
+        String actualStudyYear;
+        if (Objects.nonNull(actualStudyYearFromSessionData)) {
+            actualStudyYear = actualStudyYearFromSessionData;
+        } else {
+            actualStudyYear = getActualStudyYear(studyYear, studyYears);
+        }
+
+        if (Objects.isNull(actualStudyYearFromSessionData)) {
+            log.info("Actual study year was updated in SessionData");
+            sessionDataService.updateActualStudyYear(actualStudyYear, indexNumber);
+        }
+        return actualStudyYear;
     }
 
     private List<Long> getSupervisorAssignedProjects(Supervisor entity) {
