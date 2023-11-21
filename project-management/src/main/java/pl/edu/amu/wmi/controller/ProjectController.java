@@ -55,7 +55,7 @@ public class ProjectController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         return ResponseEntity.ok()
-                .body(projectService.findAllWithSorting(studyYear, userDetails.getUsername()));
+                .body(projectService.findAllWithSortingAndRestrictions(studyYear, userDetails.getUsername()));
     }
 
     @GetMapping("/{id}")
