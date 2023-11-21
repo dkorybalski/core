@@ -94,26 +94,64 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<ProjectDTO> findAllWithSorting(String studyYear, String userIndexNumber) {
+    public List<ProjectDTO> findAllWithSortingAndRestrictions(String studyYear, String userIndexNumber) {
         List<Project> projectEntityList = projectDAO.findAllByStudyYear_StudyYear(studyYear);
         Student student = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
         Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
 
         if (student != null) {
-            List<Long> studentProjectsIds = student.getAssignedProjects().stream()
-                    .map(sp -> sp.getProject().getId()).toList();
-            Comparator<Project> byStudentAssignedAndConfirmedProjects = Comparator
-                    .comparing((Project p) -> !studentProjectsIds.contains(p.getId()))
-                    .thenComparing((Project p) -> !isProjectEqualToStudentsConfirmed(p, student));
-            projectEntityList.sort(byStudentAssignedAndConfirmedProjects);
-        } else {
-            Comparator<Project> bySupervisorAssignedAndAcceptedProjects = Comparator
-                    .comparing((Project p) -> !p.getSupervisor().equals(supervisor))
-                    .thenComparing((Project p) -> !p.getAcceptanceStatus().equals(ACCEPTED));
-            projectEntityList.sort(bySupervisorAssignedAndAcceptedProjects);
-        }
+            List<Long> studentProjectsIds = getStudentProjectsIds(student);
+            Comparator<Project> byStudentAssignedAndConfirmedProjects =
+                            createComparatorByStudentAssignedAndConfirmedProjects(studentProjectsIds, student);
 
-        return projectMapper.mapToDtoList(projectEntityList);
+            return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects);
+        } else {
+            List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
+            Comparator<Project> bySupervisorAssignedAndAcceptedProjects = createComparatorBySupervisorAssignedAndAcceptedProjects(supervisor);
+
+            if (isUserRoleCoordinator(userIndexNumber)) {
+                projectEntityList.sort(bySupervisorAssignedAndAcceptedProjects);
+                return projectMapper.mapToDTOs(projectEntityList);
+            }
+            return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects);
+        }
+    }
+
+    private Comparator<Project> createComparatorByStudentAssignedAndConfirmedProjects(List<Long> studentProjectsIds, Student student) {
+        return Comparator
+                .comparing((Project p) -> !studentProjectsIds.contains(p.getId()))
+                .thenComparing((Project p) -> !isProjectEqualToStudentsConfirmed(p, student));
+    }
+
+    private List<Long> getStudentProjectsIds(Student student) {
+        return student.getAssignedProjects().stream()
+                .map(sp -> sp.getProject().getId()).toList();
+    }
+
+    private Comparator<Project> createComparatorBySupervisorAssignedAndAcceptedProjects(Supervisor supervisor) {
+        return Comparator
+                .comparing((Project p) -> !p.getSupervisor().equals(supervisor))
+                .thenComparing((Project p) -> !p.getAcceptanceStatus().equals(ACCEPTED));
+    }
+
+    private List<Long> getSupervisorProjectIds(Supervisor supervisor) {
+        return supervisor.getProjects().stream()
+                .map(BaseAbstractEntity::getId)
+                .toList();
+    }
+
+    private List<ProjectDTO> prepareSortedProjectListWithRestrictions(List<Project> projects, List<Long> userProjectIds,
+                                                          Comparator<Project> comparator) {
+        projects.sort(comparator);
+        List<ProjectDTO> projectDTOs = new ArrayList<>();
+        projects.forEach(project -> {
+            if (userProjectIds.contains(project.getId())) {
+                projectDTOs.add(projectMapper.mapToProjectDto(project));
+            } else {
+                projectDTOs.add(projectMapper.mapToProjectDtoWithRestrictions(project));
+            }
+        });
+        return projectDTOs;
     }
 
     private boolean isProjectEqualToStudentsConfirmed(Project project, Student student) {
