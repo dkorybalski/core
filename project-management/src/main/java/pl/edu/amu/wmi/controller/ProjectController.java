@@ -13,6 +13,7 @@ import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.model.grade.GradeDetailsDTO;
+import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.SupervisorAvailabilityDTO;
@@ -166,9 +167,9 @@ public class ProjectController {
                     .body(gradeService.findByProjectIdAndSemester(Semester.getByShortSemesterName(semester), projectId));
     }
 
-    @PutMapping("/{projectId}/grade")
-    public ResponseEntity<GradeDetailsDTO> putGradeDetailsByProjectId(@RequestParam String semester, @PathVariable Long projectId, @RequestBody GradeDetailsDTO projectGradeDetails) {
+    @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}")
+    public ResponseEntity<SingleGroupGradeUpdateDTO> updateEvaluationCardGrade(@PathVariable Long evaluationCardId, @RequestBody SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
         return ResponseEntity.ok()
-                .body(evaluationCardService.updateEvaluationCard(Semester.getByShortSemesterName(semester), projectId, projectGradeDetails));
+                .body(evaluationCardService.updateEvaluationCard(evaluationCardId, singleGroupGradeUpdate));
     }
 }

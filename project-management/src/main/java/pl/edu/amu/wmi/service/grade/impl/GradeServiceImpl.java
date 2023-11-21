@@ -9,7 +9,6 @@ import pl.edu.amu.wmi.enumerations.CriterionCategory;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
-import pl.edu.amu.wmi.model.grade.CriteriaGroupDTO;
 import pl.edu.amu.wmi.model.grade.CriteriaSectionDTO;
 import pl.edu.amu.wmi.model.grade.GradeDetailsDTO;
 import pl.edu.amu.wmi.service.grade.GradeService;
@@ -110,57 +109,11 @@ public class GradeServiceImpl implements GradeService {
         };
     }
 
-    /**
-     * Updates each project's grade for the chosen semester based on data provided in GradeDetailsDTO.
-     * Firstly it takes all criteria groups from the request body, then it creates a map of a groups and new selected
-     * criteria (CriteriaGroupDTO id : CriterionCategory). When map is ready, then it iterates through current project grades
-     * and updates each of them. Objects are updated using cascade.
-     *
-     * @param semester  - semester that grades are updated for
-     * @param projectGradesForSemester - list of current project grades for semester
-     * @param projectGradeDetails - request GradeDetailsDTO that contains all updated data
-     */
     @Override
     @Transactional
-    public void updateProjectGradesForSemester(Semester semester, List<Grade> projectGradesForSemester, GradeDetailsDTO projectGradeDetails) {
-        List<CriteriaGroupDTO> groups = getCriteriaGroupsToUpdate(projectGradeDetails);
-        Map<Long, CriterionCategory> newSelectedCriteriaByGroupId = getSelectedCriteriaByGroupId(groups);
-
-        projectGradesForSemester.forEach(grade -> {
-            Long gradeCriteriaGroupId = grade.getCriteriaGroup().getId();
-            CriterionCategory newSelectedCriterion = newSelectedCriteriaByGroupId.get(gradeCriteriaGroupId);
-            updateGrade(grade, newSelectedCriterion);
-        });
-    }
-
-    /**
-     * Returns list of all criteria group extracted from GradeDetailsDTO's criteria sections.
-     */
-    private List<CriteriaGroupDTO> getCriteriaGroupsToUpdate(GradeDetailsDTO projectGradeDetails) {
-        List<CriteriaSectionDTO> sections = projectGradeDetails.getSections();
-        return sections.stream()
-                .map(CriteriaSectionDTO::getCriteriaGroups)
-                .flatMap(List::stream)
-                .toList();
-    }
-
-    /**
-     * Returns map of selected criterion for criteria group based on CriteriaGroupDTO's list.
-     */
-    private Map<Long, CriterionCategory> getSelectedCriteriaByGroupId(List<CriteriaGroupDTO> criteriaGroups) {
-        Map<Long, CriterionCategory> selectedCriteriaByGroupId = new HashMap<>();
-        for (CriteriaGroupDTO group : criteriaGroups) {
-            selectedCriteriaByGroupId.put(group.getId(), group.getSelectedCriterion());
-        }
-        return selectedCriteriaByGroupId;
-    }
-
-    /**
-     * Updates grade's point, points with weight and disqualification based on newSelectedCriterionCategory.
-     */
-    private void updateGrade(Grade grade, CriterionCategory newSelectedCriterionCategory) {
-        CriteriaGroup gradeCriteriaGroup = grade.getCriteriaGroup();
+    public void updateSingleGrade(Grade grade, CriterionCategory newSelectedCriterionCategory) {
         Integer criterionPoints = CriterionCategory.getPoints(newSelectedCriterionCategory);
+        CriteriaGroup gradeCriteriaGroup = grade.getCriteriaGroup();
         Optional<Criterion> criterion = gradeCriteriaGroup.getCriteria().stream()
                 .filter(c -> c.getCriterionCategory().equals(newSelectedCriterionCategory))
                 .findFirst();

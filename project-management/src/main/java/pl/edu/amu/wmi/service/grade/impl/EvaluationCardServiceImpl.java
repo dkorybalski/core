@@ -6,10 +6,11 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.EvaluationCardDAO;
 import pl.edu.amu.wmi.dao.EvaluationCardTemplateDAO;
 import pl.edu.amu.wmi.entity.*;
+import pl.edu.amu.wmi.enumerations.CriterionCategory;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.grade.EvaluationCardException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
-import pl.edu.amu.wmi.model.grade.GradeDetailsDTO;
+import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
 
@@ -78,27 +79,27 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
 
     // TODO: 11/18/2023 - Once SYSPRI-223 is ready, update the disqualification and approval conditions
-    /**
-     * Updates project evaluation card based on received GradeDetailsDTO object. Method triggers
-     * GradeService.updateProjectGradesForSemester(Semester semester, List<Grade> projectGradesForSemester, GradeDetailsDTO projectGradeDetails)
-     * method to update single grades entities belonging to the project evaluation card.
-     * Based on updated grades points and evaluation card qualification is calculated.
-     * Also, each Criteria Group modification date is being updated (TODO 11/19.2023: SYSPRI-231)
-     * On the end method returns updated project's grades information as a GradeDetailsDTO object.
-     *
-     * @param semester  - semester that the grades are updated for
-     * @param projectId - project that the grades update is for
-     * @param gradeDetails - request body containing all update information
-     * @return GradeDetailsDTO - contain updated project's grades information
-     */
     @Override
     @Transactional
-    public GradeDetailsDTO updateEvaluationCard(Semester semester, Long projectId, GradeDetailsDTO gradeDetails) {
-        EvaluationCard evaluationCard = evaluationCardDAO.findById(projectId)
-                .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card for project with id: {0} not found", projectId)));
+    public SingleGroupGradeUpdateDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
+        EvaluationCard evaluationCard = evaluationCardDAO.findById(evaluationCardId)
+                .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card with id: {0} not found", evaluationCardId)));
+
+        // TODO 11/22/2023: When Evaluation Card changes are completed, then semester needs to be taken from Evaluation Card.
+        Semester semester = Semester.SEMESTER_I;
+//        Semester semester = evaluationCard.getSemester();
+
+        Long criteriaGroupId = singleGroupGradeUpdate.getId();
+        Grade gradeToUpdate = evaluationCard.getGrades()
+                .stream()
+                .filter(g -> g.getCriteriaGroup().getId().equals(criteriaGroupId))
+                .findFirst()
+                .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Grade for Criteria Group with id: {0} not found", criteriaGroupId)));
+
+        CriterionCategory newSelectedCriterion = singleGroupGradeUpdate.getSelectedCriterion();
+        gradeService.updateSingleGrade(gradeToUpdate, newSelectedCriterion);
 
         List<Grade> gradesForSemester = getGradesForSemester(semester, evaluationCard);
-        gradeService.updateProjectGradesForSemester(semester, gradesForSemester, gradeDetails);
 
         updateCriteriaGroupModificationDate();
 
@@ -110,12 +111,14 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                     evaluationCard.setTotalPointsSecondSemester(totalPointsSemester);
         }
 
+        // TODO 11/22/2023: SYSPRI-223 - when the task is completed, disqualification logic must be changed.
         boolean isDisqualified = checkDisqualification(gradesForSemester);
         evaluationCard.setDisqualified(isDisqualified);
+        // TODO 11/22/2023: When evaluation card changes are completed, approval logic must be changed.
         evaluationCard.setApprovedForDefense(!isDisqualified);
         evaluationCardDAO.save(evaluationCard);
 
-        return gradeService.findByProjectIdAndSemester(semester, projectId);
+        return new SingleGroupGradeUpdateDTO(singleGroupGradeUpdate.getId(), CriterionCategory.getByPointsReceived(gradeToUpdate.getPoints()));
     }
 
     /**
