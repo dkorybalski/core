@@ -10,7 +10,7 @@ public interface SupervisorService {
 
     SupervisorDTO create(SupervisorCreationRequestDTO dto, String studyYear);
 
-    List<SupervisorDTO> findAll();
+    List<SupervisorDTO> findAll(String studyYear);
 
     AbstractEntity findById(Long id);
 }

@@ -1,9 +1,9 @@
 package pl.edu.amu.wmi.service.importdata.impl;
 
-import exception.DataFeedConfigurationException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.edu.amu.wmi.exception.DataFeedConfigurationException;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
 import pl.edu.amu.wmi.service.importdata.DataFeedImportService;
 

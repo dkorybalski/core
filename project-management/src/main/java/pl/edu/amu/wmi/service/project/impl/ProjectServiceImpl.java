@@ -15,6 +15,7 @@ import pl.edu.amu.wmi.mapper.project.StudentProjectMapper;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.StudentDTO;
+import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 
@@ -42,9 +43,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final StudentProjectDAO studentProjectDAO;
 
-    private final ExternalLinkDAO externalLinkDAO;
-
-    private final ExternalLinkDefinitionDAO definitionDAO;
 
     private final RoleDAO roleDAO;
 
@@ -54,8 +52,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final EvaluationCardService evaluationCardService;
 
+    private final ExternalLinkService externalLinkService;
+
     @Autowired
-    public ProjectServiceImpl(ProjectDAO projectDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserDataDAO userDataDAO, StudyYearDAO studyYearDAO, StudentProjectDAO studentProjectDAO, RoleDAO roleDAO, ExternalLinkDAO externalLinkDAO, ExternalLinkDefinitionDAO definitionDAO, ProjectMapper projectMapper, StudentProjectMapper studentMapper, EvaluationCardService evaluationCardService) {
+    public ProjectServiceImpl(ProjectDAO projectDAO,
+                              StudentDAO studentDAO,
+                              SupervisorDAO supervisorDAO,
+                              UserDataDAO userDataDAO,
+                              StudyYearDAO studyYearDAO,
+                              StudentProjectDAO studentProjectDAO,
+                              RoleDAO roleDAO,
+                              ProjectMapper projectMapper,
+                              StudentProjectMapper studentMapper,
+                              EvaluationCardService evaluationCardService, ExternalLinkService externalLinkService) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
@@ -63,8 +72,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.studyYearDAO = studyYearDAO;
         this.studentProjectDAO = studentProjectDAO;
         this.roleDAO = roleDAO;
-        this.externalLinkDAO = externalLinkDAO;
-        this.definitionDAO = definitionDAO;
+        this.externalLinkService = externalLinkService;
         this.projectMapper = projectMapper;
         this.studentMapper = studentMapper;
         this.evaluationCardService = evaluationCardService;
@@ -169,16 +177,13 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectMapper.mapToEntity(project);
         Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
-        Set<ExternalLinkDefinition> definitionEntities = definitionDAO.findAllByStudyYear_StudyYear(studyYear);
-        Set<ExternalLink> externalLinkEntities = new HashSet<>();
 
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);
         projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(project));
 
         for (StudentDTO student : project.getStudents()) {
-//            todo exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
-            Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
+            Student entity = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, student.getIndexNumber());
             if (isProjectAdmin(entity, userIndexNumber)) {
                 entity.setProjectAdmin(true);
                 entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
@@ -187,17 +192,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
         }
 
-        // TODO: New method
-        // External Links without URL creation
-        definitionEntities.forEach(entity -> {
-            ExternalLink externalLink = new ExternalLink();
-            externalLink.setExternalLinkDefinition(entity);
-            externalLink.setUrl(null);
-            externalLinkDAO.save(externalLink);
-            externalLinkEntities.add(externalLink);
-        });
-
-        projectEntity.setExternalLinks(externalLinkEntities);
+        projectEntity.setExternalLinks(externalLinkService.createEmptyExternalLinks(studyYear));
 
         EvaluationCard evaluationCard = new EvaluationCard();
         projectEntity.setEvaluationCard(evaluationCard);

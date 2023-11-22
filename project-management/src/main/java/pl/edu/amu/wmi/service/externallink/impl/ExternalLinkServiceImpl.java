@@ -80,6 +80,25 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
 
     @Transactional
     @Override
+    public Set<ExternalLink> createEmptyExternalLinks(String studyYear) {
+        Set<ExternalLinkDefinition> definitionEntities = externalLinkDefinitionDAO.findAllByStudyYear_StudyYear(studyYear);
+        Set<ExternalLink> externalLinkEntities = new HashSet<>();
+
+        definitionEntities.forEach(entity ->
+                externalLinkEntities.add(createEmptyExternalLink(entity))
+        );
+        return externalLinkEntities;
+    }
+
+    private ExternalLink createEmptyExternalLink(ExternalLinkDefinition definition) {
+        ExternalLink externalLink = new ExternalLink();
+        externalLink.setExternalLinkDefinition(definition);
+        externalLink.setUrl(null);
+        return externalLinkDAO.save(externalLink);
+    }
+
+    @Transactional
+    @Override
     public Set<ExternalLinkDTO> updateExternalLinks(Long projectId, Set<ExternalLinkDTO> externalLinks) {
 
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
@@ -90,7 +109,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
         externalLinks.forEach(externalLinkDto -> {
             ExternalLink externalLink = externalLinkDAO.findById(
                     externalLinkDto.getId()).orElseThrow(()
-                    -> new ExternalLinkException(MessageFormat.format("External link with id: {0} not found.",  externalLinkDto.getId())));
+                    -> new ExternalLinkException(MessageFormat.format("External link with id: {0} not found.", externalLinkDto.getId())));
             externalLink.setUrl(externalLinkDto.getUrl());
             externalLinkEntities.add(externalLink);
         });
