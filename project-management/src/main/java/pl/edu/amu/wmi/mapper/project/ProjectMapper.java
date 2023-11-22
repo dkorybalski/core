@@ -24,7 +24,12 @@ public interface ProjectMapper {
 
     @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
     @Mapping(target = "confirmed", source = "acceptanceStatus", qualifiedByName = "ConfirmedToBoolean")
-    ProjectDetailsDTO mapToDto(Project project);
+    ProjectDetailsDTO mapToProjectDetailsDto(Project project);
+
+    @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
+    @Mapping(target = "confirmed", source = "acceptanceStatus", qualifiedByName = "ConfirmedToBoolean")
+    @Mapping(target = "externalLinks", ignore = true)
+    ProjectDetailsDTO mapToProjectDetailsWithRestrictionsDto(Project project);
 
 
     @Mapping(target = "supervisor", source = "entity.supervisor")
