@@ -6,8 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
-import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
-import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.enumerations.*;
 import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.project.ProjectMapper;
@@ -214,10 +213,11 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setExternalLinks(externalLinkService.createEmptyExternalLinks(studyYear));
 
         EvaluationCard evaluationCard = new EvaluationCard();
-        projectEntity.setEvaluationCard(evaluationCard);
+        projectEntity.addEvaluationCard(evaluationCard);
         evaluationCard.setProject(projectEntity);
 
-        evaluationCardService.createEvaluationCard(projectEntity, studyYear);
+        evaluationCardService.createEvaluationCard(projectEntity, studyYear,
+                Semester.SEMESTER_I, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
 
         projectEntity = projectDAO.save(projectEntity);
 

@@ -8,11 +8,10 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDataDTO;
-import pl.edu.amu.wmi.model.grade.GradeDetailsDTO;
+import pl.edu.amu.wmi.model.grade.EvaluationCardDTO;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
@@ -164,10 +163,10 @@ public class ProjectController {
                 .body(supervisorProjectService.updateSupervisorsAvailability(studyYear, supervisorAvailabilityList));
     }
 
-    @GetMapping("/{projectId}/grade")
-    public ResponseEntity<GradeDetailsDTO> getGradeDetailsByProjectId(@RequestParam String semester, @PathVariable Long projectId) {
+    @GetMapping("/{projectId}/evaluationCard")
+    public ResponseEntity<EvaluationCardDTO> getGradeDetailsByProjectId(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId) {
             return ResponseEntity.ok()
-                    .body(gradeService.findByProjectIdAndSemester(Semester.getByShortSemesterName(semester), projectId));
+                    .body(evaluationCardService.findEvaluationCards(projectId, studyYear));
     }
 
     @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}")

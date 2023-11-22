@@ -7,7 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.ProjectRole;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -48,14 +50,8 @@ public class Project extends AbstractEntity {
     )
     private StudyYear studyYear;
 
-    @OneToOne(
-            mappedBy = "project",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            optional = false
-    )
-    @PrimaryKeyJoinColumn
-    private EvaluationCard evaluationCard;
+    @OneToMany(mappedBy = "project")
+    private List<EvaluationCard> evaluationCards = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "project",
@@ -75,4 +71,8 @@ public class Project extends AbstractEntity {
         this.assignedStudents.removeAll(studentProjectSet);
     }
 
+    public void addEvaluationCard(EvaluationCard evaluationCard) {
+        this.evaluationCards.add(evaluationCard);
+        evaluationCard.setProject(this);
+    }
 }
