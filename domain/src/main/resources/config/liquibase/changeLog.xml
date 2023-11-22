@@ -18,5 +18,6 @@
     <include file="classpath:config/liquibase/database/2023-11-12-modify_grade_table.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-15-modify_evaluation_card_table_relations.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-20-add-new-table-session-data.xml"/>
+    <include file="classpath:config/liquibase/database/2023-11-20-evaluation_card_modifications.xml"/>
 
 </databaseChangeLog>
