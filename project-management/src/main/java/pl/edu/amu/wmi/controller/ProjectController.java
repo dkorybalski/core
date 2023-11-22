@@ -60,9 +60,12 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectDetailsDTO> getProjectById(@PathVariable Long id) {
+    public ResponseEntity<ProjectDetailsDTO> getProjectById(
+            @PathVariable Long id,
+            @RequestHeader("study-year") String studyYear) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok()
-                .body(projectService.findById(id));
+                .body(projectService.findByIdWithRestrictions(studyYear, userDetails.getUsername(), id));
     }
 
     @Secured({"PROJECT_ADMIN", "COORDINATOR"})

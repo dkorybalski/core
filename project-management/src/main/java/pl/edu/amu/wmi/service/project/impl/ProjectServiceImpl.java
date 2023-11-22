@@ -79,21 +79,36 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectDetailsDTO findById(Long id) {
+    public ProjectDetailsDTO findByIdWithRestrictions(String studyYear, String userIndexNumber, Long id) {
         Project project = projectDAO.findById(id).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", id)));
-        List<StudentDTO> studentDTOs = new ArrayList<>();
-        project.getAssignedStudents().stream()
-                .forEach(studentProject -> {
-                    StudentDTO studentDTO = studentMapper.mapToDto(studentProject.getStudent());
-                    studentDTO.setRole(studentProject.getProjectRole());
-                    studentDTO.setAccepted(studentProject.isProjectConfirmed());
-                    studentDTOs.add(studentDTO);
-                });
-        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(project);
+        Student student = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
+        Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
+
+        List<StudentDTO> studentDTOs = prepareStudentDTOs(project);
+        List<Long> studentProjectsIds = getStudentProjectsIds(student);
+        List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
+
+        ProjectDetailsDTO projectDetailsDTO;
+        if (isUserRoleCoordinator(userIndexNumber) || studentProjectsIds.contains(project.getId()) || supervisorProjectIds.contains(project.getId()))
+            projectDetailsDTO = projectMapper.mapToProjectDetailsDto(project);
+        else
+            projectDetailsDTO = projectMapper.mapToProjectDetailsWithRestrictionsDto(project);
+
         projectDetailsDTO.setStudents(studentDTOs);
         projectDetailsDTO.setAdmin(getIndexNumberOfProjectAdmin(project));
         return projectDetailsDTO;
+    }
+
+    private List<StudentDTO> prepareStudentDTOs(Project project) {
+        return project.getAssignedStudents().stream().map(this::prepareStudentDTO).toList();
+    }
+
+    private StudentDTO prepareStudentDTO(StudentProject studentProject) {
+        StudentDTO studentDTO = studentMapper.mapToDto(studentProject.getStudent());
+        studentDTO.setRole(studentProject.getProjectRole());
+        studentDTO.setAccepted(studentProject.isProjectConfirmed());
+        return studentDTO;
     }
 
     private String getIndexNumberOfProjectAdmin(Project project) {
@@ -110,7 +125,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (student != null) {
             List<Long> studentProjectsIds = getStudentProjectsIds(student);
             Comparator<Project> byStudentAssignedAndConfirmedProjects =
-                            createComparatorByStudentAssignedAndConfirmedProjects(studentProjectsIds, student);
+                    createComparatorByStudentAssignedAndConfirmedProjects(studentProjectsIds, student);
 
             return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects);
         } else {
@@ -132,6 +147,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private List<Long> getStudentProjectsIds(Student student) {
+        if (Objects.isNull(student))
+            return new ArrayList<>();
         return student.getAssignedProjects().stream()
                 .map(sp -> sp.getProject().getId()).toList();
     }
@@ -143,13 +160,15 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private List<Long> getSupervisorProjectIds(Supervisor supervisor) {
+        if (Objects.isNull(supervisor))
+            return new ArrayList<>();
         return supervisor.getProjects().stream()
                 .map(BaseAbstractEntity::getId)
                 .toList();
     }
 
     private List<ProjectDTO> prepareSortedProjectListWithRestrictions(List<Project> projects, List<Long> userProjectIds,
-                                                          Comparator<Project> comparator) {
+                                                                      Comparator<Project> comparator) {
         projects.sort(comparator);
         List<ProjectDTO> projectDTOs = new ArrayList<>();
         projects.forEach(project -> {
@@ -198,9 +217,11 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setEvaluationCard(evaluationCard);
         evaluationCard.setProject(projectEntity);
 
+        evaluationCardService.createEvaluationCard(projectEntity, studyYear);
+
         projectEntity = projectDAO.save(projectEntity);
 
-        return projectMapper.mapToDto(projectEntity);
+        return projectMapper.mapToProjectDetailsDto(projectEntity);
     }
 
     @Override
@@ -279,7 +300,7 @@ public class ProjectServiceImpl implements ProjectService {
         updateProjectStatus(projectEntity);
 
         projectDAO.save(projectEntity);
-        return projectMapper.mapToDto(projectEntity);
+        return projectMapper.mapToProjectDetailsDto(projectEntity);
     }
 
     private void updateProjectStatus(Project project) {
@@ -333,7 +354,7 @@ public class ProjectServiceImpl implements ProjectService {
         studentDAO.save(currentAdminStudentEntity);
         studentDAO.save(newAdminStudentEntity);
 
-        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToDto(projectEntity);
+        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToProjectDetailsDto(projectEntity);
         projectDetailsDTO.setAdmin(newAdminStudentEntity.getIndexNumber());
 
         return projectDetailsDTO;
@@ -361,7 +382,6 @@ public class ProjectServiceImpl implements ProjectService {
 
         } else if (getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
             log.info("Project with id: {} was accepted by all students and a supervisor", projectId);
-            evaluationCardService.addEmptyGradesToEvaluationCard(projectEntity, studyYear);
             projectEntity.setAcceptanceStatus(ACCEPTED);
         } else {
             // TODO: 6/3/2023 handle wrong role exception
@@ -370,7 +390,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectDAO.save(projectEntity);
 
-        return projectMapper.mapToDto(projectEntity);
+        return projectMapper.mapToProjectDetailsDto(projectEntity);
 
     }
 
@@ -391,7 +411,7 @@ public class ProjectServiceImpl implements ProjectService {
             studentProjectDAO.save(studentProjectEntity);
 
         }
-        return projectMapper.mapToDto(projectEntity);
+        return projectMapper.mapToProjectDetailsDto(projectEntity);
     }
 
     @Transactional
@@ -482,7 +502,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .filter(studentProject -> isStudentProjectConnectedWithStudent(index, studentProject))
                 .findFirst().orElseThrow(()
                         -> new ProjectManagementException(MessageFormat.format("Project with id: {0} is not connected with student: {1}",
-                                                                                project.getId(), index)));
+                        project.getId(), index)));
     }
 
     private static boolean isStudentProjectConnectedWithStudent(String index, StudentProject studentProject) {

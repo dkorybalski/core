@@ -23,7 +23,7 @@ public interface ProjectService {
      */
     List<ProjectDTO> findAllWithSortingAndRestrictions(String studyYear, String userIndexNumber);
 
-    ProjectDetailsDTO findById(Long id);
+    ProjectDetailsDTO findByIdWithRestrictions(String studyYear, String userIndexNumber, Long id);
 
     ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber);
 
