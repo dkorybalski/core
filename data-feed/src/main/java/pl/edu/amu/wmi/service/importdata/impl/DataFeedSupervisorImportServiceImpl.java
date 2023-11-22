@@ -11,9 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.edu.amu.wmi.dao.RoleDAO;
 import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
+import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.StudyYear;
 import pl.edu.amu.wmi.entity.Supervisor;
+import pl.edu.amu.wmi.entity.UserData;
 import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.SupervisorMapper;
 import pl.edu.amu.wmi.model.NewSupervisorDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
@@ -41,11 +44,18 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
 
     private final RoleDAO roleDAO;
 
-    public DataFeedSupervisorImportServiceImpl(SupervisorMapper supervisorMapper, SupervisorDAO supervisorDAO, StudyYearDAO studyYearDAO, RoleDAO roleDAO) {
+    private final UserDataDAO userDataDAO;
+
+    public DataFeedSupervisorImportServiceImpl(SupervisorMapper supervisorMapper,
+                                               SupervisorDAO supervisorDAO,
+                                               StudyYearDAO studyYearDAO,
+                                               RoleDAO roleDAO,
+                                               UserDataDAO userDataDAO) {
         this.supervisorMapper = supervisorMapper;
         this.supervisorDAO = supervisorDAO;
         this.studyYearDAO = studyYearDAO;
         this.roleDAO = roleDAO;
+        this.userDataDAO = userDataDAO;
     }
 
 
@@ -101,9 +111,17 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         List<Supervisor> entities = supervisorMapper.mapToEntities(newSupervisors);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Supervisor supervisor : entities) {
+            String indexNumberWithPrefix;
             if (!validateIndexNumber(supervisor.getIndexNumber())) {
-                String indexNumberWithPrefix = addPrefixToIndex(supervisor.getIndexNumber());
+                indexNumberWithPrefix = addPrefixToIndex(supervisor.getIndexNumber());
                 supervisor.getUserData().setIndexNumber(indexNumberWithPrefix);
+            } else {
+                indexNumberWithPrefix = supervisor.getIndexNumber();
+            }
+            if (Boolean.TRUE.equals(userDataDAO.existsByIndexNumber(indexNumberWithPrefix))) {
+                UserData userData = userDataDAO.findByIndexNumber(indexNumberWithPrefix).orElseThrow(() ->
+                        new BusinessException("Unexpected exception during fetching user data"));
+                supervisor.setUserData(userData);
             }
             supervisor.setStudyYear(studyYearEntity.getStudyYear());
             supervisor.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.SUPERVISOR)));

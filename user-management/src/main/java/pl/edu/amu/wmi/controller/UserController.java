@@ -50,10 +50,9 @@ public class UserController {
     }
 
     @GetMapping("/supervisor")
-    public ResponseEntity<List<SupervisorDTO>> getSupervisors() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<List<SupervisorDTO>> getSupervisors(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
-                .body(supervisorService.findAll());
+                .body(supervisorService.findAll(studyYear));
     }
 
     @PostMapping("/supervisor")

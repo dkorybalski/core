@@ -10,7 +10,6 @@ import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.entity.StudyYear;
 import pl.edu.amu.wmi.entity.Supervisor;
-
 import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.mapper.SupervisorUserMapper;
 import pl.edu.amu.wmi.model.user.SupervisorCreationRequestDTO;
@@ -62,8 +61,8 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
     @Override
-    public List<SupervisorDTO> findAll() {
-        return supervisorUserMapper.mapToDtoList(supervisorDAO.findAll());
+    public List<SupervisorDTO> findAll(String studyYear) {
+        return supervisorUserMapper.mapToDtoList(supervisorDAO.findAllByStudyYear(studyYear));
     }
 
     @Override

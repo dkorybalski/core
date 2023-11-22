@@ -11,9 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 import pl.edu.amu.wmi.dao.RoleDAO;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.dao.StudyYearDAO;
+import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.entity.StudyYear;
+import pl.edu.amu.wmi.entity.UserData;
 import pl.edu.amu.wmi.enumerations.UserRole;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.StudentMapper;
 import pl.edu.amu.wmi.model.NewStudentDTO;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
@@ -41,11 +44,18 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
 
     private final RoleDAO roleDAO;
 
-    public DataFeedStudentImportServiceImpl(StudentMapper studentMapper, StudentDAO studentDAO, StudyYearDAO studyYearDAO, RoleDAO roleDAO) {
+    private final UserDataDAO userDataDAO;
+
+    public DataFeedStudentImportServiceImpl(StudentMapper studentMapper,
+                                            StudentDAO studentDAO,
+                                            StudyYearDAO studyYearDAO,
+                                            RoleDAO roleDAO,
+                                            UserDataDAO userDataDAO) {
         this.studentMapper = studentMapper;
         this.studentDAO = studentDAO;
         this.studyYearDAO = studyYearDAO;
         this.roleDAO = roleDAO;
+        this.userDataDAO = userDataDAO;
     }
 
     @Override
@@ -99,12 +109,23 @@ public class DataFeedStudentImportServiceImpl implements DataFeedImportService {
     public List<NewStudentDTO> saveNewStudents(List<NewStudentDTO> newStudents, String studyYear) {
         List<Student> entities = studentMapper.mapToEntities(newStudents);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
+        String indexNumberWithPrefix;
         for (Student student : entities) {
             if (!validateIndexNumber(student.getIndexNumber())) {
-                String indexNumberWithPrefix = addPrefixToIndex(student.getIndexNumber());
+                indexNumberWithPrefix = addPrefixToIndex(student.getIndexNumber());
                 student.getUserData().setIndexNumber(indexNumberWithPrefix);
+            } else {
+                indexNumberWithPrefix = student.getIndexNumber();
             }
             student.setStudyYear(studyYearEntity.getStudyYear());
+
+            if (Boolean.TRUE.equals(userDataDAO.existsByIndexNumber(indexNumberWithPrefix))) {
+                UserData userData = userDataDAO.findByIndexNumber(indexNumberWithPrefix).orElseThrow(() ->
+                        new BusinessException("Unexpected exception during fetching user data"));
+                student.setUserData(userData);
+            }
+
+            // TODO: 11/22/2023 check if roles works correctly when student has many study years
             student.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.STUDENT)));
         }
         List<Student> students = studentDAO.saveAll(entities);
