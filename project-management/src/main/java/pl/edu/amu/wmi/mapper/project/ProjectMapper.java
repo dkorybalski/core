@@ -17,12 +17,16 @@ import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.ACCEPTED;
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.CONFIRMED;
 
 @Mapper(componentModel = "spring", uses = { SupervisorProjectMapper.class, ExternalLinkMapper.class, PointsMapper.class })
 public interface ProjectMapper {
+
+    Integer NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER = 3;
 
     @Mapping(target = "supervisor", ignore = true)
     Project mapToEntity(ProjectDetailsDTO dto);
@@ -43,7 +47,6 @@ public interface ProjectMapper {
     @Mapping(target = "pointsSecondSemester", source = "entity", qualifiedByName = "GetPointsForSecondSemester")
     @Mapping(target = "criteriaMet", source = "entity", qualifiedByName = "GetCriteriaMet")
     @Named("mapWithoutRestrictions")
-        // TODO: 11/22/2023 add manual mapping for disqualified
     ProjectDTO mapToProjectDto(Project entity);
 
     @Named("GetPointsForFirstSemester")
@@ -58,27 +61,43 @@ public interface ProjectMapper {
 
     @Named("GetCriteriaMet")
     default boolean getCriteriaMet(Project entity) {
-        // TODO: 11/23/2023 remove hardcoded values | add correct logic
-        return entity.getEvaluationCards().stream()
-                .filter(evaluationCard -> Objects.equals(Semester.FIRST, evaluationCard.getSemester()))
-                .filter(evaluationCard -> Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCard.getEvaluationPhase()))
-                .filter(evaluationCard -> Objects.equals(EvaluationStatus.ACTIVE, evaluationCard.getEvaluationStatus()))
-                .map(evaluationCard -> !evaluationCard.isDisqualified())
-                .findFirst()
-                .orElse(false);
+        Semester semester = determineTheMostRecentSemester(entity.getEvaluationCards());
+        Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
+        return theMostRecentEvaluationCard.map(evaluationCard -> !evaluationCard.isDisqualified()).orElse(false);
+    }
+
+    default Semester determineTheMostRecentSemester(List<EvaluationCard> evaluationCards) {
+        return evaluationCards.size() <= NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER ? Semester.FIRST : Semester.SECOND;
     }
 
     private String getPointsForSemester(Project entity, Semester semester) {
-        // TODO: 11/23/2023 implement logic to take the most recent active or published result
-        Double points = entity.getEvaluationCards().stream()
-                .filter(evaluationCard -> Objects.equals(semester, evaluationCard.getSemester()))
-                .filter(evaluationCard -> Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCard.getEvaluationPhase()))
-                .filter(evaluationCard -> Objects.equals(EvaluationStatus.ACTIVE, evaluationCard.getEvaluationStatus()))
-                .map(EvaluationCard::getTotalPoints)
-                .findFirst()
-                .orElse(0.0);
-        return String.format("%.2f", (points * 100 / 4)) + "%";
+        Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
+        return theMostRecentEvaluationCard.map(evaluationCard -> pointsToOverallPercent(evaluationCard.getTotalPoints())).orElse("0%");
+    }
 
+    private Optional<EvaluationCard> findTheMostRecentEvaluationCard(List<EvaluationCard> evaluationCards, Semester semester) {
+        Predicate<EvaluationCard> isSearchedSemester = evaluationCard -> Objects.equals(semester, evaluationCard.getSemester());
+        Predicate<EvaluationCard> isDefensePhase = evaluationCard -> Objects.equals(EvaluationPhase.DEFENSE_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard> isRetakePhase = evaluationCard -> Objects.equals(EvaluationPhase.RETAKE_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard> isActiveStatus = evaluationCard -> Objects.equals(EvaluationStatus.ACTIVE, evaluationCard.getEvaluationStatus());
+        Predicate<EvaluationCard> isPublishedStatus = evaluationCard -> Objects.equals(EvaluationStatus.PUBLISHED, evaluationCard.getEvaluationStatus());
+
+        return evaluationCards.stream()
+                .filter(isSearchedSemester.and(isActiveStatus))
+                .findFirst()
+                .or(() -> evaluationCards.stream()
+                        .filter(isSearchedSemester.and(isRetakePhase).and(isPublishedStatus))
+                        .findFirst()
+                        .or(() -> evaluationCards.stream()
+                                .filter(isSearchedSemester.and(isDefensePhase).and(isPublishedStatus))
+                                .findFirst()));
+    }
+
+    private String pointsToOverallPercent(Double points) {
+        if (Objects.isNull(points))
+            return "0.0%";
+        Double pointsOverall = points * 100 / 4;
+        return String.format("%.2f", pointsOverall) + "%";
     }
 
     @Named("AcceptedToBoolean")

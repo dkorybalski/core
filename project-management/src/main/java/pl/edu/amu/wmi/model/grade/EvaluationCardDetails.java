@@ -17,9 +17,6 @@ public class EvaluationCardDetails {
 
     private boolean editable;
 
-    // TODO: 11/22/2023 this field is probably not necessary
-    private boolean visible;
-
     private List<CriteriaSectionDTO> sections;
 
 }
