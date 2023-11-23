@@ -10,12 +10,14 @@ import pl.edu.amu.wmi.model.CriteriaSectionDTO;
 public interface CriteriaSectionMapper {
 
     @Mapping(target = "criteriaSectionGradeWeight", source = "dto.criteriaSectionGradeWeightFirstSemester")
+    @Mapping(target = "defenseSection", source = "dto.isDefenseSection")
     @Mapping(target = "criteriaGroups", ignore = true)
     @Mapping(target = "semester", expression = "java(pl.edu.amu.wmi.enumerations.Semester.FIRST)")
     @Mapping(target = "id", expression = "java(isSaveMode ? null : dto.idFirstSemester())")
     CriteriaSection mapToEntityForFirstSemester(CriteriaSectionDTO dto, boolean isSaveMode);
 
     @Mapping(target = "criteriaSectionGradeWeight", source = "dto.criteriaSectionGradeWeightSecondSemester")
+    @Mapping(target = "defenseSection", source = "dto.isDefenseSection")
     @Mapping(target = "criteriaGroups", ignore = true)
     @Mapping(target = "semester", expression = "java(pl.edu.amu.wmi.enumerations.Semester.SECOND)")
     @Mapping(target = "id", expression = "java(isSaveMode ? null : dto.idSecondSemester())")

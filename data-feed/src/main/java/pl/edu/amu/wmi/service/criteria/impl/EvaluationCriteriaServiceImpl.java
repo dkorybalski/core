@@ -9,6 +9,8 @@ import pl.edu.amu.wmi.entity.CriteriaSection;
 import pl.edu.amu.wmi.entity.Criterion;
 import pl.edu.amu.wmi.entity.EvaluationCardTemplate;
 import pl.edu.amu.wmi.enumerations.Semester;
+import pl.edu.amu.wmi.exception.BusinessException;
+import pl.edu.amu.wmi.exception.DataFeedConfigurationException;
 import pl.edu.amu.wmi.mapper.CriteriaGroupMapper;
 import pl.edu.amu.wmi.mapper.EvaluationCriteriaMapper;
 import pl.edu.amu.wmi.model.CriteriaGroupDTO;
@@ -66,6 +68,8 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
         Long criteriaSectionSecondSemesterId = getCriteriaSectionId(criteriaSectionSecondSemester);
         Double criteriaSectionGradeWeightSecondSemester = getCriteriaSectionWeight(criteriaSectionSecondSemester);
 
+        boolean isDefenseCriteriaSection = isDefenseCriteriaSection(criteriaSectionFirstSemester, criteriaSectionSecondSemester);
+
         Map<String, List<CriteriaGroup>> criteriaGroups = createCriteriaGroupMap(criteriaSectionFirstSemester, criteriaSectionSecondSemester);
         List<CriteriaGroupDTO> criteriaGroupDTOs = criteriaGroups.entrySet().stream()
                         .map(this::createCriteriaGroupDTO)
@@ -75,6 +79,7 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
                 criteriaSectionFirstSemesterId,
                 criteriaSectionSecondSemesterId,
                 criteriaSectionName,
+                isDefenseCriteriaSection,
                 criteriaSectionGradeWeightFirstSemester,
                 criteriaSectionGradeWeightSecondSemester,
                 criteriaGroupDTOs
@@ -107,6 +112,17 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
 
     private Long getCriteriaSectionId(CriteriaSection criteriaSection) {
         return Objects.nonNull(criteriaSection) ? criteriaSection.getId() : null;
+    }
+
+
+    // TODO 11/23/2023: SYSPRI-254 - Implement isDefenseSection flag handling on the import phase
+    private boolean isDefenseCriteriaSection(CriteriaSection criteriaSectionFirstSemester, CriteriaSection criteriaSectionSecondSemester) {
+        boolean isDefenseSectionFirstSemester = criteriaSectionFirstSemester.isDefenseSection();
+        boolean isDefenseSectionSecondSemester = criteriaSectionSecondSemester.isDefenseSection();
+        boolean isDefenseSection = isDefenseSectionFirstSemester && isDefenseSectionSecondSemester;
+        if (isDefenseSectionFirstSemester != isDefenseSectionSecondSemester)
+            throw new BusinessException("Criteria Sections have different defense flags");
+        return isDefenseSection;
     }
 
     private CriteriaGroupDTO createCriteriaGroupDTO(Map.Entry<String, List<CriteriaGroup>> entry) {
