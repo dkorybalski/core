@@ -4,8 +4,10 @@ import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
 import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 import pl.edu.amu.wmi.enumerations.Semester;
-import pl.edu.amu.wmi.model.grade.EvaluationCardDTO;
+import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
+
+import java.util.Map;
 
 
 public interface EvaluationCardService {
@@ -14,5 +16,5 @@ public interface EvaluationCardService {
 
     SingleGroupGradeUpdateDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate);
 
-    EvaluationCardDTO findEvaluationCards(Long projectId, String studyYear);
+    Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> findEvaluationCards(Long projectId, String studyYear, String indexNumber);
 }

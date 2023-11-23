@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.*;
-import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.project.ProjectMapper;
 import pl.edu.amu.wmi.mapper.project.StudentProjectMapper;
@@ -16,6 +15,7 @@ import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.StudentDTO;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
+import pl.edu.amu.wmi.service.project.ProjectMemberService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 
 import java.text.MessageFormat;
@@ -36,8 +36,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final SupervisorDAO supervisorDAO;
 
-    private final UserDataDAO userDataDAO;
-
     private final StudyYearDAO studyYearDAO;
 
     private final StudentProjectDAO studentProjectDAO;
@@ -53,21 +51,23 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ExternalLinkService externalLinkService;
 
+    private final ProjectMemberService projectMemberService;
+
     @Autowired
     public ProjectServiceImpl(ProjectDAO projectDAO,
                               StudentDAO studentDAO,
                               SupervisorDAO supervisorDAO,
-                              UserDataDAO userDataDAO,
                               StudyYearDAO studyYearDAO,
                               StudentProjectDAO studentProjectDAO,
                               RoleDAO roleDAO,
                               ProjectMapper projectMapper,
                               StudentProjectMapper studentMapper,
-                              EvaluationCardService evaluationCardService, ExternalLinkService externalLinkService) {
+                              EvaluationCardService evaluationCardService,
+                              ExternalLinkService externalLinkService,
+                              ProjectMemberService projectMemberService) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
-        this.userDataDAO = userDataDAO;
         this.studyYearDAO = studyYearDAO;
         this.studentProjectDAO = studentProjectDAO;
         this.roleDAO = roleDAO;
@@ -75,6 +75,7 @@ public class ProjectServiceImpl implements ProjectService {
         this.projectMapper = projectMapper;
         this.studentMapper = studentMapper;
         this.evaluationCardService = evaluationCardService;
+        this.projectMemberService = projectMemberService;
     }
 
     @Override
@@ -89,7 +90,7 @@ public class ProjectServiceImpl implements ProjectService {
         List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
 
         ProjectDetailsDTO projectDetailsDTO;
-        if (isUserRoleCoordinator(userIndexNumber) || studentProjectsIds.contains(project.getId()) || supervisorProjectIds.contains(project.getId()))
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber) || studentProjectsIds.contains(project.getId()) || supervisorProjectIds.contains(project.getId()))
             projectDetailsDTO = projectMapper.mapToProjectDetailsDto(project);
         else
             projectDetailsDTO = projectMapper.mapToProjectDetailsWithRestrictionsDto(project);
@@ -131,7 +132,7 @@ public class ProjectServiceImpl implements ProjectService {
             List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
             Comparator<Project> bySupervisorAssignedAndAcceptedProjects = createComparatorBySupervisorAssignedAndAcceptedProjects(supervisor);
 
-            if (isUserRoleCoordinator(userIndexNumber)) {
+            if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
                 projectEntityList.sort(bySupervisorAssignedAndAcceptedProjects);
                 return projectMapper.mapToDTOs(projectEntityList);
             }
@@ -217,7 +218,7 @@ public class ProjectServiceImpl implements ProjectService {
         evaluationCard.setProject(projectEntity);
 
         evaluationCardService.createEvaluationCard(projectEntity, studyYear,
-                Semester.SEMESTER_I, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
+                Semester.FIRST, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
 
         projectEntity = projectDAO.save(projectEntity);
 
@@ -242,7 +243,7 @@ public class ProjectServiceImpl implements ProjectService {
         Set<StudentProject> assignedStudentsToRemove = getAssignedStudentsToRemove(currentAssignedStudents, newAssignedStudents);
 
         // TODO: 6/23/2023 Extract students removing to a new method
-        if (isUserRoleCoordinator(userIndexNumber)) {
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
             assignedStudentsToRemove.forEach(assignedStudent -> {
                 Long studentId = assignedStudent.getStudent().getId();
                 Student student = studentDAO.findById(studentId).orElseThrow(()
@@ -289,7 +290,7 @@ public class ProjectServiceImpl implements ProjectService {
                 projectEntity.addStudent(entity, student.getRole(), false);
         }
 
-        if (isUserRoleCoordinator(userIndexNumber)) {
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
             projectEntity.getAssignedStudents().forEach(assignedStudent -> {
                 assignedStudent.setProjectConfirmed(true);
                 assignedStudent.getStudent().setProjectConfirmed(true);
@@ -311,12 +312,6 @@ public class ProjectServiceImpl implements ProjectService {
         } else if (!isProjectNotConfirmed && project.getAcceptanceStatus() == PENDING) {
             project.setAcceptanceStatus(CONFIRMED);
         }
-    }
-
-    private boolean isUserRoleCoordinator(String index) {
-        UserData userData = userDataDAO.findByIndexNumber(index).orElseThrow(()
-                -> new BusinessException(MessageFormat.format("User with index: {0} not found.", index)));
-        return userData.getRoles().stream().anyMatch(role -> role.getName().equals(COORDINATOR));
     }
 
     private void updateCurrentStudentRole(Set<StudentProject> assignedStudents, List<StudentDTO> students) {
@@ -368,7 +363,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
-        if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
             StudentProject studentProjectEntity = getStudentProjectByStudentIndex(projectEntity, userIndexNumber);
             studentProjectEntity.setProjectConfirmed(true);
             studentProjectEntity.getStudent().setProjectConfirmed(true);
@@ -380,7 +375,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             studentProjectDAO.save(studentProjectEntity);
 
-        } else if (getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
+        } else if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
             log.info("Project with id: {} was accepted by all students and a supervisor", projectId);
             projectEntity.setAcceptanceStatus(ACCEPTED);
         } else {
@@ -399,7 +394,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
-        if (getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
             if (isProjectConfirmedByAllStudents(projectEntity)) {
                 projectEntity.setAcceptanceStatus(PENDING);
             }
@@ -450,8 +445,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private boolean validateDeletionPermission(String userIndexNumber, Project project) {
-        UserData userDataEntity = userDataDAO.findByIndexNumber(userIndexNumber).orElseThrow(()
-                -> new BusinessException(MessageFormat.format("User with index: {0} not found", userIndexNumber)));
+        UserData userDataEntity = projectMemberService.findUserDataByIndexNumber(userIndexNumber);
         List<UserRole> userRoles = userDataEntity.getRoles().stream()
                 .map(Role::getName)
                 .toList();
@@ -474,16 +468,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private boolean isProjectConfirmedByAllStudents(Project project) {
         return project.getAssignedStudents().stream().allMatch(StudentProject::isProjectConfirmed);
-    }
-
-    private UserRole getUserRoleByUserIndex(String index) {
-        UserData userData = userDataDAO.findByIndexNumber(index).orElseThrow(()
-                -> new BusinessException(MessageFormat.format("User with index: {0} not found.", index)));
-        Role userRole = userData.getRoles().stream()
-                .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
-                .findFirst().orElseThrow(()
-                        -> new BusinessException(MessageFormat.format("User with index: {0} does not have required role.", index)));
-        return userRole.getName();
     }
 
     private boolean isProjectAdmin(Student entity, String userIndexNumber) {

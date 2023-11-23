@@ -86,14 +86,14 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
 
         if (Objects.nonNull(criteriaSectionFirstSemester)) {
             criteriaSectionFirstSemester.getCriteriaGroups().forEach(criteriaGroup -> {
-                criteriaGroup.setSemester(Semester.SEMESTER_I);
+                criteriaGroup.setSemester(Semester.FIRST);
                 criteriaGroups.computeIfAbsent(criteriaGroup.getName(), k -> new ArrayList<>()).add(criteriaGroup);
             });
         }
 
         if (Objects.nonNull(criteriaSectionSecondSemester)) {
             criteriaSectionSecondSemester.getCriteriaGroups().forEach(criteriaGroup -> {
-                criteriaGroup.setSemester(Semester.SEMESTER_II);
+                criteriaGroup.setSemester(Semester.SECOND);
                 criteriaGroups.computeIfAbsent(criteriaGroup.getName(), k -> new ArrayList<>()).add(criteriaGroup);
             });
         }
@@ -110,11 +110,11 @@ public class EvaluationCriteriaServiceImpl implements EvaluationCriteriaService 
     }
 
     private CriteriaGroupDTO createCriteriaGroupDTO(Map.Entry<String, List<CriteriaGroup>> entry) {
-        Pair<Long, Double> criteriaGroupDataFirstSemester = getCriteriaGroupDataForSemester(entry, Semester.SEMESTER_I);
+        Pair<Long, Double> criteriaGroupDataFirstSemester = getCriteriaGroupDataForSemester(entry, Semester.FIRST);
         Long idFirstSemester = criteriaGroupDataFirstSemester.getValue0();
         Double weightFirstSemester = criteriaGroupDataFirstSemester.getValue1();
 
-        Pair<Long, Double> criteriaGroupDataSecondSemester = getCriteriaGroupDataForSemester(entry, Semester.SEMESTER_II);
+        Pair<Long, Double> criteriaGroupDataSecondSemester = getCriteriaGroupDataForSemester(entry, Semester.SECOND);
         Long idSecondSemester = criteriaGroupDataSecondSemester.getValue0();
         Double weightSecondSemester = criteriaGroupDataSecondSemester.getValue1();
 
