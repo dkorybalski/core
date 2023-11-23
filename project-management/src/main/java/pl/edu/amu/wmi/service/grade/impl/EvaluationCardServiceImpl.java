@@ -14,6 +14,7 @@ import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
 import pl.edu.amu.wmi.model.grade.CriteriaSectionDTO;
 import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
+import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
 import pl.edu.amu.wmi.service.project.ProjectMemberService;
@@ -133,7 +134,9 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
         Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> evaluationCardMap = new HashMap<>();
         evaluationCardMap.put(Semester.FIRST, evaluationCardsFirstSemester);
-        evaluationCardMap.put(Semester.SECOND, evaluationCardsSecondSemester);
+        if (!evaluationCardsSecondSemester.isEmpty()) {
+            evaluationCardMap.put(Semester.SECOND, evaluationCardsSecondSemester);
+        }
 
         return evaluationCardMap;
     }
@@ -150,7 +153,6 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         boolean isEditable = determineIfEvaluationCardIsEditable(evaluationCardEntity, project, indexNumber);
 
         evaluationCardDetails.setEditable(isEditable);
-        evaluationCardDetails.setVisible(true);
 
         List<CriteriaSection> sections = getCriteriaSectionsForSemester(evaluationCardTemplate, evaluationCardEntity.getSemester());
         List<CriteriaSectionDTO> sectionDTOs = projectCriteriaSectionMapper.mapToDtoList(sections);
@@ -213,12 +215,10 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         };
     }
 
-
-
     // TODO: 11/18/2023 - Once SYSPRI-223 is ready, update the disqualification and approval conditions
     @Override
     @Transactional
-    public SingleGroupGradeUpdateDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
+    public UpdatedGradeDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
         EvaluationCard evaluationCard = evaluationCardDAO.findById(evaluationCardId)
                 .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card with id: {0} not found", evaluationCardId)));
 
@@ -242,11 +242,12 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         evaluationCard.setTotalPoints(totalPointsSemester);
 
         boolean isDisqualified = checkDisqualification(gradesForSemester);
+        boolean criteriaMet = !isDisqualified;
         evaluationCard.setDisqualified(isDisqualified);
-        evaluationCard.setApprovedForDefense(!isDisqualified);
+        evaluationCard.setApprovedForDefense(criteriaMet);
         evaluationCardDAO.save(evaluationCard);
 
-        return new SingleGroupGradeUpdateDTO(singleGroupGradeUpdate.getId(), CriterionCategory.getByPointsReceived(gradeToUpdate.getPoints()));
+        return new UpdatedGradeDTO(pointsToOverallPercent(totalPointsSemester), criteriaMet);
     }
 
     /**

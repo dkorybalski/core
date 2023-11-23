@@ -18,6 +18,7 @@ import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
+import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.SupervisorAvailabilityDTO;
@@ -187,8 +188,9 @@ public class ProjectController {
                 .body(evaluationCardService.findEvaluationCards(projectId, studyYear, userDetails.getUsername()));
     }
 
+    @Secured({"SUPERVISOR", "COORDINATOR"})
     @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}")
-    public ResponseEntity<SingleGroupGradeUpdateDTO> updateEvaluationCardGrade(@PathVariable Long evaluationCardId, @RequestBody SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
+    public ResponseEntity<UpdatedGradeDTO> updateEvaluationCardGrade(@PathVariable Long evaluationCardId, @RequestBody SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
         return ResponseEntity.ok()
                 .body(evaluationCardService.updateEvaluationCard(evaluationCardId, singleGroupGradeUpdate));
     }
