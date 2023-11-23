@@ -63,12 +63,12 @@ public class CriteriaUpdateServiceImpl implements CriteriaUpdateService {
         for (CriteriaGroupDTO criteriaGroupDTO : criteriaSectionDTO.criteriaGroups()) {
             Set<Criterion> updatedCriteria = updateCriteria(criteriaGroupDTO.criteria());
 
-            CriteriaGroup criteriaGroupFirstSemester = updateCriteriaGroup(criteriaGroupDTO, updatedCriteria, Semester.SEMESTER_I);
+            CriteriaGroup criteriaGroupFirstSemester = updateCriteriaGroup(criteriaGroupDTO, updatedCriteria, Semester.FIRST);
             if (Objects.nonNull(criteriaGroupFirstSemester)) {
                 persistedCriteriaSectionFirstSemester.getCriteriaGroups().add(criteriaGroupFirstSemester);
             }
 
-            CriteriaGroup criteriaGroupSecondSemester = updateCriteriaGroup(criteriaGroupDTO, updatedCriteria, Semester.SEMESTER_II);
+            CriteriaGroup criteriaGroupSecondSemester = updateCriteriaGroup(criteriaGroupDTO, updatedCriteria, Semester.SECOND);
             if (Objects.nonNull(criteriaGroupSecondSemester)) {
                 persistedCriteriaSectionSecondSemester.getCriteriaGroups().add(criteriaGroupSecondSemester);
             }
@@ -83,8 +83,8 @@ public class CriteriaUpdateServiceImpl implements CriteriaUpdateService {
 
     private CriteriaGroup updateCriteriaGroup(CriteriaGroupDTO criteriaGroupDTO, Set<Criterion> updatedCriteria, Semester semester) {
         CriteriaGroup criteriaGroup = switch (semester) {
-            case SEMESTER_I -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, IS_SAVE_MODE);
-            case SEMESTER_II -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, IS_SAVE_MODE);
+            case FIRST -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, IS_SAVE_MODE);
+            case SECOND -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, IS_SAVE_MODE);
         };
         CriteriaGroup persistedCriteriaGroup = findPersistedCriteriaGroup(criteriaGroup);
         if (Objects.nonNull(persistedCriteriaGroup) && !isGradeWeightRelevant(criteriaGroup)) {

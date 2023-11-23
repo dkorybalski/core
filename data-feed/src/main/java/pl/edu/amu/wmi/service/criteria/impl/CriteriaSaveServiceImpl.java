@@ -56,12 +56,12 @@ public class CriteriaSaveServiceImpl implements CriteriaSaveService {
         for (CriteriaGroupDTO criteriaGroupDTO : criteriaSectionDTO.criteriaGroups()) {
             Set<Criterion> savedCriteria = saveCriteria(criteriaGroupDTO.criteria());
 
-            CriteriaGroup criteriaGroupForFirstSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.SEMESTER_I);
+            CriteriaGroup criteriaGroupForFirstSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.FIRST);
             if (Objects.nonNull(criteriaGroupForFirstSemester)) {
                 firstSemesterCriteriaSection.getCriteriaGroups().add(criteriaGroupForFirstSemester);
             }
 
-            CriteriaGroup criteriaGroupForSecondSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.SEMESTER_II);
+            CriteriaGroup criteriaGroupForSecondSemester = createCriteriaGroup(criteriaGroupDTO, savedCriteria, Semester.SECOND);
             if (Objects.nonNull(criteriaGroupForSecondSemester)) {
                 secondSemesterCriteriaSection.getCriteriaGroups().add(criteriaGroupForSecondSemester);
             }
@@ -76,8 +76,8 @@ public class CriteriaSaveServiceImpl implements CriteriaSaveService {
 
     private CriteriaGroup createCriteriaGroup(CriteriaGroupDTO criteriaGroupDTO, Set<Criterion> savedCriteria, Semester semester) {
         CriteriaGroup criteriaGroup = switch (semester) {
-            case SEMESTER_I -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, IS_SAVE_MODE);
-            case SEMESTER_II -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, IS_SAVE_MODE);
+            case FIRST -> criteriaGroupMapper.mapToEntityForFirstSemester(criteriaGroupDTO, IS_SAVE_MODE);
+            case SECOND -> criteriaGroupMapper.mapToEntityForSecondSemester(criteriaGroupDTO, IS_SAVE_MODE);
         };
         criteriaGroup.setCriteria(savedCriteria);
         return isGradeWeightRelevant(criteriaGroup) ? criteriaGroup : null;

@@ -29,11 +29,11 @@ public class EvaluationCardTemplate extends AbstractEntity {
     private Double minPointsThresholdSecondSemester;
 
     @OneToMany(mappedBy = "evaluationCardTemplate")
-    @Where(clause = "semester = 'SEMESTER_I'")
+    @Where(clause = "semester = 'FIRST'")
     List<CriteriaSection> criteriaSectionsFirstSemester = new ArrayList<>();
 
     @OneToMany(mappedBy = "evaluationCardTemplate")
-    @Where(clause = "semester = 'SEMESTER_II'")
+    @Where(clause = "semester = 'SECOND'")
     List<CriteriaSection> criteriaSectionsSecondSemester = new ArrayList<>();
 
     public void addCriteriaSectionForFirstSemester(CriteriaSection criteriaSection) {

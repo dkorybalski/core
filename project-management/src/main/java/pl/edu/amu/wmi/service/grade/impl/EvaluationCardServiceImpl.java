@@ -7,19 +7,16 @@ import pl.edu.amu.wmi.dao.EvaluationCardDAO;
 import pl.edu.amu.wmi.dao.EvaluationCardTemplateDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
 import pl.edu.amu.wmi.entity.*;
-import pl.edu.amu.wmi.enumerations.CriterionCategory;
-import pl.edu.amu.wmi.enumerations.EvaluationPhase;
-import pl.edu.amu.wmi.enumerations.EvaluationStatus;
-import pl.edu.amu.wmi.enumerations.Semester;
+import pl.edu.amu.wmi.enumerations.*;
 import pl.edu.amu.wmi.exception.grade.EvaluationCardException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
 import pl.edu.amu.wmi.model.grade.CriteriaSectionDTO;
-import pl.edu.amu.wmi.model.grade.EvaluationCardDTO;
 import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
+import pl.edu.amu.wmi.service.project.ProjectMemberService;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -32,17 +29,19 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     private final EvaluationCardTemplateDAO evaluationCardTemplateDAO;
     private final ProjectDAO projectDAO;
     private final GradeService gradeService;
+    private final ProjectMemberService projectMemberService;
     private final ProjectCriteriaSectionMapper projectCriteriaSectionMapper;
 
     public EvaluationCardServiceImpl(EvaluationCardDAO evaluationCardDAO,
                                      EvaluationCardTemplateDAO evaluationCardTemplateDAO,
                                      ProjectDAO projectDAO,
                                      GradeService gradeService,
-                                     ProjectCriteriaSectionMapper projectCriteriaSectionMapper) {
+                                     ProjectMemberService projectMemberService, ProjectCriteriaSectionMapper projectCriteriaSectionMapper) {
         this.evaluationCardDAO = evaluationCardDAO;
         this.evaluationCardTemplateDAO = evaluationCardTemplateDAO;
         this.projectDAO = projectDAO;
         this.gradeService = gradeService;
+        this.projectMemberService = projectMemberService;
         this.projectCriteriaSectionMapper = projectCriteriaSectionMapper;
     }
 
@@ -107,10 +106,11 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
      * and evaluation phases
      */
     @Override
-    public EvaluationCardDTO findEvaluationCards(Long projectId, String studyYear) {
+    public Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> findEvaluationCards(Long projectId, String studyYear, String indexNumber) {
 
         Project project = projectDAO.findById(projectId)
                 .orElseThrow(() -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
+
 
         EvaluationCardTemplate evaluationCardTemplate = evaluationCardTemplateDAO.findByStudyYear(studyYear)
                 .orElseThrow(() -> new ProjectManagementException(MessageFormat.format("Evaluation card template for project with id: {0} not found", projectId)));
@@ -121,30 +121,9 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsSecondSemester = new HashMap<>();
 
         evaluationCardsEntities.forEach(evaluationCardEntity -> {
-            // TODO: 11/22/2023 add logic to restrict the access and not send restricted data - SYSPRI-252
-            EvaluationCardDetails evaluationCardDetails = new EvaluationCardDetails();
-            evaluationCardDetails.setId(evaluationCardEntity.getId());
-            evaluationCardDetails.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
+            EvaluationCardDetails evaluationCardDetails = createEvaluationCardDetails(evaluationCardEntity, project, evaluationCardTemplate, indexNumber);
 
-            evaluationCardDetails.setEditable(true);
-            evaluationCardDetails.setVisible(true);
-
-            List<CriteriaSection> sections = getCriteriaSectionsForSemester(evaluationCardTemplate, evaluationCardEntity.getSemester());
-            List<CriteriaSectionDTO> sectionDTOs = projectCriteriaSectionMapper.mapToDtoList(sections);
-
-            List<Grade> projectGrades = evaluationCardEntity.getGrades();
-            Map<Long, Integer> projectPointsByGroupId = new HashMap<>();
-            for (Grade projectGrade : projectGrades) {
-                projectPointsByGroupId.put(projectGrade.getCriteriaGroup().getId(), projectGrade.getPoints());
-            }
-
-            sectionDTOs.forEach(section -> section.getCriteriaGroups().forEach(group ->
-                    group.setSelectedCriterion(CriterionCategory.getByPointsReceived(projectPointsByGroupId.get(group.getId())))
-            ));
-
-            evaluationCardDetails.setSections(sectionDTOs);
-
-            if (Objects.equals(Semester.SEMESTER_I, evaluationCardEntity.getSemester())) {
+            if (Objects.equals(Semester.FIRST, evaluationCardEntity.getSemester())) {
                 evaluationCardsFirstSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
             } else {
                 evaluationCardsSecondSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
@@ -152,10 +131,60 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         });
 
         Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> evaluationCardMap = new HashMap<>();
-        evaluationCardMap.put(Semester.SEMESTER_I, evaluationCardsFirstSemester);
-        evaluationCardMap.put(Semester.SEMESTER_II, evaluationCardsSecondSemester);
+        evaluationCardMap.put(Semester.FIRST, evaluationCardsFirstSemester);
+        evaluationCardMap.put(Semester.SECOND, evaluationCardsSecondSemester);
 
-        return new EvaluationCardDTO(evaluationCardMap);
+        return evaluationCardMap;
+    }
+
+    private EvaluationCardDetails createEvaluationCardDetails(EvaluationCard evaluationCardEntity, Project project, EvaluationCardTemplate evaluationCardTemplate, String indexNumber) {
+        EvaluationCardDetails evaluationCardDetails = new EvaluationCardDetails();
+        evaluationCardDetails.setId(evaluationCardEntity.getId());
+        evaluationCardDetails.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
+
+        if (!Objects.equals(AcceptanceStatus.ACCEPTED, project.getAcceptanceStatus())) {
+            // TODO: 11/23/2023 editable to false
+        }
+
+        boolean isEditable = determineIfEvaluationCardIsEditable(evaluationCardEntity, project, indexNumber);
+
+        evaluationCardDetails.setEditable(isEditable);
+        evaluationCardDetails.setVisible(true);
+
+        List<CriteriaSection> sections = getCriteriaSectionsForSemester(evaluationCardTemplate, evaluationCardEntity.getSemester());
+        List<CriteriaSectionDTO> sectionDTOs = projectCriteriaSectionMapper.mapToDtoList(sections);
+
+        List<Grade> projectGrades = evaluationCardEntity.getGrades();
+        Map<Long, Integer> projectPointsByGroupId = new HashMap<>();
+        for (Grade projectGrade : projectGrades) {
+            projectPointsByGroupId.put(projectGrade.getCriteriaGroup().getId(), projectGrade.getPoints());
+        }
+
+        sectionDTOs.forEach(section -> section.getCriteriaGroups().forEach(group ->
+                group.setSelectedCriterion(CriterionCategory.getByPointsReceived(projectPointsByGroupId.get(group.getId())))
+        ));
+
+        evaluationCardDetails.setSections(sectionDTOs);
+        return evaluationCardDetails;
+    }
+
+    private boolean isUserAProjectSupervisor(Supervisor supervisor, String indexNumber) {
+        return Objects.equals(supervisor.getIndexNumber(), indexNumber);
+    }
+
+    private boolean determineIfEvaluationCardIsEditable(EvaluationCard evaluationCardEntity, Project project, String indexNumber) {
+        if (isUserAProjectSupervisor(project.getSupervisor(), indexNumber) && Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
+            return true;
+        }
+        if (Objects.equals(UserRole.SUPERVISOR, projectMemberService.getUserRoleByUserIndex(indexNumber))
+                && !Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase())
+                && Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
+            return true;
+        }
+        if (projectMemberService.isUserRoleCoordinator(indexNumber)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -176,9 +205,9 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
      */
     private List<CriteriaSection> getCriteriaSectionsForSemester(EvaluationCardTemplate template, Semester semester) {
         return switch (semester) {
-            case SEMESTER_I ->
+            case FIRST ->
                     template.getCriteriaSectionsFirstSemester();
-            case SEMESTER_II ->
+            case SECOND ->
                     template.getCriteriaSectionsSecondSemester();
         };
     }
@@ -193,7 +222,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                 .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card with id: {0} not found", evaluationCardId)));
 
         // TODO 11/22/2023: When Evaluation Card changes are completed, then semester needs to be taken from Evaluation Card.
-        Semester semester = Semester.SEMESTER_I;
+        Semester semester = Semester.FIRST;
 //        Semester semester = evaluationCard.getSemester();
 
         Long criteriaGroupId = singleGroupGradeUpdate.getId();
