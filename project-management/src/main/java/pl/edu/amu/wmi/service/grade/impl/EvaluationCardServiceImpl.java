@@ -63,6 +63,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         evaluationCard.setSemester(semester);
         evaluationCard.setEvaluationPhase(phase);
         evaluationCard.setEvaluationStatus(status);
+        evaluationCard.setTotalPoints(0.0);
 
         project.addEvaluationCard(evaluationCard);
 
@@ -221,9 +222,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         EvaluationCard evaluationCard = evaluationCardDAO.findById(evaluationCardId)
                 .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card with id: {0} not found", evaluationCardId)));
 
-        // TODO 11/22/2023: When Evaluation Card changes are completed, then semester needs to be taken from Evaluation Card.
-        Semester semester = Semester.FIRST;
-//        Semester semester = evaluationCard.getSemester();
+        Semester semester = evaluationCard.getSemester();
 
         Long criteriaGroupId = singleGroupGradeUpdate.getId();
         Grade gradeToUpdate = evaluationCard.getGrades()
@@ -242,10 +241,8 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         Double totalPointsSemester = calculateTotalPointsWithWeight(gradesForSemester);
         evaluationCard.setTotalPoints(totalPointsSemester);
 
-        // TODO 11/22/2023: SYSPRI-223 - when the task is completed, disqualification logic must be changed.
         boolean isDisqualified = checkDisqualification(gradesForSemester);
         evaluationCard.setDisqualified(isDisqualified);
-        // TODO 11/22/2023: When evaluation card changes are completed, approval logic must be changed.
         evaluationCard.setApprovedForDefense(!isDisqualified);
         evaluationCardDAO.save(evaluationCard);
 
@@ -296,9 +293,14 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     /**
      * Confirms if all grades are selected and none of them are disqualifying.
      */
+    // TODO 11/23/2023: Add logic to handle different evaluation card's phase
     private boolean checkDisqualification(List<Grade> gradesForSemester) {
-        return gradesForSemester.stream().anyMatch(Grade::isDisqualifying) ||
-                gradesForSemester.stream().anyMatch(g -> g.getPointsWithWeight() == null);
+        return gradesForSemester.stream().filter(g -> !isGradeFromDefenseSection(g)).anyMatch(Grade::isDisqualifying) ||
+                gradesForSemester.stream().filter(g -> !isGradeFromDefenseSection(g)).anyMatch(g -> Objects.isNull(g.getPointsWithWeight()));
+    }
+
+    private boolean isGradeFromDefenseSection(Grade grade) {
+        return grade.getCriteriaGroup().getCriteriaSection().isDefenseSection();
     }
 
 }

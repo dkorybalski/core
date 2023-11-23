@@ -25,6 +25,8 @@ public class CriteriaSection extends AbstractEntity {
 
     private Double criteriaSectionGradeWeight;
 
+    private boolean isDefenseSection;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private Semester semester;
@@ -37,11 +39,11 @@ public class CriteriaSection extends AbstractEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CriteriaSection that = (CriteriaSection) o;
-        return Objects.equals(name, that.name) && Objects.equals(criteriaGroups, that.criteriaGroups) && Objects.equals(criteriaSectionGradeWeight, that.criteriaSectionGradeWeight) && semester == that.semester && Objects.equals(evaluationCardTemplate, that.evaluationCardTemplate);
+        return isDefenseSection == that.isDefenseSection && Objects.equals(name, that.name) && Objects.equals(criteriaGroups, that.criteriaGroups) && Objects.equals(criteriaSectionGradeWeight, that.criteriaSectionGradeWeight) && semester == that.semester && Objects.equals(evaluationCardTemplate, that.evaluationCardTemplate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, criteriaGroups, criteriaSectionGradeWeight, semester, evaluationCardTemplate);
+        return Objects.hash(name, criteriaGroups, criteriaSectionGradeWeight, isDefenseSection, semester, evaluationCardTemplate);
     }
 }
