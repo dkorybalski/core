@@ -237,6 +237,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setName(projectDetailsDTO.getName());
         projectEntity.setDescription(projectDetailsDTO.getDescription());
         projectEntity.setTechnologies(projectDetailsDTO.getTechnologies());
+        externalLinkService.updateExternalLinks(projectDetailsDTO.getExternalLinks());
 
         Set<StudentProject> currentAssignedStudents = projectEntity.getAssignedStudents();
         Set<StudentProject> newAssignedStudents = getAssignedStudentsToUpdate(projectDetailsDTO);
