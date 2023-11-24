@@ -52,7 +52,7 @@ public class Project extends AbstractEntity {
 
     @OneToMany(
             mappedBy = "project",
-            cascade = CascadeType.ALL
+            cascade = CascadeType.REMOVE
     )
     private List<EvaluationCard> evaluationCards = new ArrayList<>();
 
