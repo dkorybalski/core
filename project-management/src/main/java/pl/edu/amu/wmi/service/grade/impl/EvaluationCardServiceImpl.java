@@ -176,6 +176,9 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     }
 
     private boolean determineIfEvaluationCardIsEditable(EvaluationCard evaluationCardEntity, Project project, String indexNumber) {
+        if (!Objects.equals(AcceptanceStatus.ACCEPTED, project.getAcceptanceStatus())) {
+            return false;
+        }
         if (isUserAProjectSupervisor(project.getSupervisor(), indexNumber) && Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
             return true;
         }
