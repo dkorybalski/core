@@ -50,7 +50,10 @@ public class Project extends AbstractEntity {
     )
     private StudyYear studyYear;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(
+            mappedBy = "project",
+            cascade = CascadeType.ALL
+    )
     private List<EvaluationCard> evaluationCards = new ArrayList<>();
 
     @OneToMany(

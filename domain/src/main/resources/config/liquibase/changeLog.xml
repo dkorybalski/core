@@ -20,5 +20,6 @@
     <include file="classpath:config/liquibase/database/2023-11-20-add-new-table-session-data.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-20-evaluation_card_modifications.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-23-modify_criteria_section_table.xml"/>
+    <include file="classpath:config/liquibase/database/2023-11-24-modify_evaluation_card_table.xml"/>
 
 </databaseChangeLog>
