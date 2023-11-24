@@ -90,14 +90,21 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"PROJECT_ADMIN", "COORDINATOR"})
     @PutMapping("/{id}")
     public ResponseEntity<ProjectDetailsDTO> updateProject(
             @RequestHeader("study-year") String studyYear,
-            @RequestHeader("index-number") String userIndexNumber,
             @PathVariable Long id,
             @Valid @RequestBody ProjectDetailsDTO project) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok()
-                .body(projectService.updateProject(studyYear, userIndexNumber, id, project));
+                .body(projectService.updateProject(studyYear, userDetails.getUsername(), id, project));
+    }
+
+    @GetMapping("/external-link/column-header")
+    public ResponseEntity<Set<String>> getExternalLinkDefinitionColumnHeaders(@RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(externalLinkService.findDefinitionHeadersByStudyYear(studyYear));
     }
 
     @PostMapping("")
@@ -111,33 +118,6 @@ public class ProjectController {
         projectService.updateProjectAdmin(projectDetailsDTO.getId(), userIndexNumber);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectDetailsDTO);
-    }
-
-
-    @GetMapping("/{projectId}/external-link")
-    public ResponseEntity<Set<ExternalLinkDTO>> getExternalLinksByProjectId(@PathVariable Long projectId) {
-        return ResponseEntity.ok()
-                .body(externalLinkService.findByProjectId(projectId));
-    }
-
-    @GetMapping("/external-link")
-    public ResponseEntity<List<ExternalLinkDataDTO>> getExternalLinkData() {
-        return ResponseEntity.ok()
-                .body(externalLinkService.findAll());
-    }
-
-    @GetMapping("/external-link/column-header")
-    public ResponseEntity<Set<String>> getExternalLinkDefinitionColumnHeaders(@RequestHeader("study-year") String studyYear) {
-        return ResponseEntity.ok()
-                .body(externalLinkService.findDefinitionHeadersByStudyYear(studyYear));
-    }
-
-    @PutMapping("/{projectId}/external-link")
-    public ResponseEntity<Set<ExternalLinkDTO>> updateExternalLinkData(
-            @PathVariable Long projectId,
-            @Valid @RequestBody Set<ExternalLinkDTO> externalLinks) {
-        return ResponseEntity.ok()
-                .body(externalLinkService.updateExternalLinks(projectId, externalLinks));
     }
 
     @PatchMapping("/{projectId}/admin-change/{studentIndex}")
