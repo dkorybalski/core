@@ -34,7 +34,8 @@ public class EvaluationCard extends AbstractEntity {
     @Column(name = "TOTAL_POINTS")
     private Double totalPoints;
 
-    private boolean isDisqualified;
+    @Column(columnDefinition = "boolean default true")
+    private boolean isDisqualified = true;
 
     private boolean isApprovedForDefense;
 
