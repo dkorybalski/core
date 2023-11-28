@@ -7,7 +7,10 @@ import pl.edu.amu.wmi.dao.EvaluationCardDAO;
 import pl.edu.amu.wmi.dao.EvaluationCardTemplateDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
 import pl.edu.amu.wmi.entity.*;
-import pl.edu.amu.wmi.enumerations.*;
+import pl.edu.amu.wmi.enumerations.CriterionCategory;
+import pl.edu.amu.wmi.enumerations.EvaluationPhase;
+import pl.edu.amu.wmi.enumerations.EvaluationStatus;
+import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.grade.EvaluationCardException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
@@ -17,10 +20,12 @@ import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
+import pl.edu.amu.wmi.service.permission.PermissionService;
 import pl.edu.amu.wmi.service.project.ProjectMemberService;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Predicate;
 
 @Slf4j
 @Service
@@ -30,6 +35,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     private final EvaluationCardTemplateDAO evaluationCardTemplateDAO;
     private final ProjectDAO projectDAO;
     private final GradeService gradeService;
+    private final PermissionService permissionService;
     private final ProjectMemberService projectMemberService;
     private final ProjectCriteriaSectionMapper projectCriteriaSectionMapper;
 
@@ -37,11 +43,13 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                                      EvaluationCardTemplateDAO evaluationCardTemplateDAO,
                                      ProjectDAO projectDAO,
                                      GradeService gradeService,
+                                     PermissionService permissionService,
                                      ProjectMemberService projectMemberService, ProjectCriteriaSectionMapper projectCriteriaSectionMapper) {
         this.evaluationCardDAO = evaluationCardDAO;
         this.evaluationCardTemplateDAO = evaluationCardTemplateDAO;
         this.projectDAO = projectDAO;
         this.gradeService = gradeService;
+        this.permissionService = permissionService;
         this.projectMemberService = projectMemberService;
         this.projectCriteriaSectionMapper = projectCriteriaSectionMapper;
     }
@@ -119,15 +127,15 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
         List<EvaluationCard> evaluationCardsEntities = project.getEvaluationCards();
 
-        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsFirstSemester = new HashMap<>();
-        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsSecondSemester = new HashMap<>();
+        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsFirstSemester = new EnumMap<>(EvaluationPhase.class);
+        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsSecondSemester = new EnumMap<>(EvaluationPhase.class);
 
         evaluationCardsEntities.forEach(evaluationCardEntity -> {
             EvaluationCardDetails evaluationCardDetails = createEvaluationCardDetails(evaluationCardEntity, project, evaluationCardTemplate, indexNumber);
 
-            if (Objects.equals(Semester.FIRST, evaluationCardEntity.getSemester())) {
+            if (Objects.equals(Semester.FIRST, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetails)) {
                 evaluationCardsFirstSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
-            } else {
+            } else if (Objects.equals(Semester.SECOND, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetails)) {
                 evaluationCardsSecondSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
             }
         });
@@ -142,15 +150,19 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     }
 
     private EvaluationCardDetails createEvaluationCardDetails(EvaluationCard evaluationCardEntity, Project project, EvaluationCardTemplate evaluationCardTemplate, String indexNumber) {
+        if (!permissionService.isEvaluationCardVisibleForUser(evaluationCardEntity, project, indexNumber)) {
+            return null;
+        }
+        if (projectMemberService.isStudentAMemberOfProject(indexNumber, project) && !isEvaluationCardTheMostRecentOne(project, evaluationCardEntity)) {
+            // defense phase in status active should not be displayed for student - add implementation after adding freeze logic (SYSPRI-226)
+            return null;
+        }
+
         EvaluationCardDetails evaluationCardDetails = new EvaluationCardDetails();
         evaluationCardDetails.setId(evaluationCardEntity.getId());
         evaluationCardDetails.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
 
-        if (!Objects.equals(AcceptanceStatus.ACCEPTED, project.getAcceptanceStatus())) {
-            // TODO: 11/23/2023 editable to false
-        }
-
-        boolean isEditable = determineIfEvaluationCardIsEditable(evaluationCardEntity, project, indexNumber);
+        boolean isEditable = permissionService.isEvaluationCardEditableForUser(evaluationCardEntity, project, indexNumber);
 
         evaluationCardDetails.setEditable(isEditable);
 
@@ -171,26 +183,14 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         return evaluationCardDetails;
     }
 
-    private boolean isUserAProjectSupervisor(Supervisor supervisor, String indexNumber) {
-        return Objects.equals(supervisor.getIndexNumber(), indexNumber);
-    }
+    /**
+     * check if an evaluation card is the most recent one in semester
+     */
+    private boolean isEvaluationCardTheMostRecentOne(Project project, EvaluationCard evaluationCard) {
+        Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(project.getEvaluationCards(), evaluationCard.getSemester());
 
-    private boolean determineIfEvaluationCardIsEditable(EvaluationCard evaluationCardEntity, Project project, String indexNumber) {
-        if (!Objects.equals(AcceptanceStatus.ACCEPTED, project.getAcceptanceStatus())) {
-            return false;
-        }
-        if (isUserAProjectSupervisor(project.getSupervisor(), indexNumber) && Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
-            return true;
-        }
-        if (Objects.equals(UserRole.SUPERVISOR, projectMemberService.getUserRoleByUserIndex(indexNumber))
-                && !Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase())
-                && Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
-            return true;
-        }
-        if (projectMemberService.isUserRoleCoordinator(indexNumber)) {
-            return true;
-        }
-        return false;
+        return theMostRecentEvaluationCard.map(card -> Objects.equals(evaluationCard.getId(), card.getId())).orElse(Boolean.FALSE);
+
     }
 
     /**
@@ -305,6 +305,31 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
     private boolean isGradeFromDefenseSection(Grade grade) {
         return grade.getCriteriaGroup().getCriteriaSection().isDefenseSection();
+    }
+
+    @Override
+    public Optional<EvaluationCard> findTheMostRecentEvaluationCard(List<EvaluationCard> evaluationCards, Semester semester) {
+        Predicate<EvaluationCard> isSearchedSemester = evaluationCard -> Objects.equals(semester, evaluationCard.getSemester());
+        Predicate<EvaluationCard> isDefensePhase = evaluationCard -> Objects.equals(EvaluationPhase.DEFENSE_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard> isRetakePhase = evaluationCard -> Objects.equals(EvaluationPhase.RETAKE_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard> isActiveStatus = evaluationCard -> Objects.equals(EvaluationStatus.ACTIVE, evaluationCard.getEvaluationStatus());
+        Predicate<EvaluationCard> isPublishedStatus = evaluationCard -> Objects.equals(EvaluationStatus.PUBLISHED, evaluationCard.getEvaluationStatus());
+
+        return evaluationCards.stream()
+                .filter(isSearchedSemester.and(isActiveStatus))
+                .findFirst()
+                .or(() -> evaluationCards.stream()
+                        .filter(isSearchedSemester.and(isRetakePhase).and(isPublishedStatus))
+                        .findFirst()
+                        .or(() -> evaluationCards.stream()
+                                .filter(isSearchedSemester.and(isDefensePhase).and(isPublishedStatus))
+                                .findFirst()));
+    }
+
+    @Override
+    public String getPointsForSemester(Project entity, Semester semester) {
+        Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
+        return theMostRecentEvaluationCard.map(evaluationCard -> pointsToOverallPercent(evaluationCard.getTotalPoints())).orElse("0%");
     }
 
 }
