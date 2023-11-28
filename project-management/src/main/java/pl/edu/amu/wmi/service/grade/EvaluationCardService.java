@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.service.grade;
 
+import pl.edu.amu.wmi.entity.EvaluationCard;
 import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
 import pl.edu.amu.wmi.enumerations.EvaluationStatus;
@@ -8,7 +9,9 @@ import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public interface EvaluationCardService {
@@ -18,4 +21,9 @@ public interface EvaluationCardService {
     UpdatedGradeDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate);
 
     Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> findEvaluationCards(Long projectId, String studyYear, String indexNumber);
+
+    Optional<EvaluationCard> findTheMostRecentEvaluationCard(List<EvaluationCard> evaluationCards, Semester semester);
+
+    String getPointsForSemester(Project entity, Semester semester);
+
 }

@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.*;
 import pl.edu.amu.wmi.entity.*;
-import pl.edu.amu.wmi.enumerations.*;
+import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
+import pl.edu.amu.wmi.enumerations.EvaluationPhase;
+import pl.edu.amu.wmi.enumerations.EvaluationStatus;
+import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.project.ProjectMapper;
 import pl.edu.amu.wmi.mapper.project.StudentProjectMapper;
@@ -15,11 +18,13 @@ import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.StudentDTO;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
+import pl.edu.amu.wmi.service.permission.PermissionService;
 import pl.edu.amu.wmi.service.project.ProjectMemberService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.*;
@@ -29,6 +34,8 @@ import static pl.edu.amu.wmi.enumerations.UserRole.*;
 @Slf4j
 @Service
 public class ProjectServiceImpl implements ProjectService {
+
+    public static final Integer NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER = 3;
 
     private final ProjectDAO projectDAO;
 
@@ -40,7 +47,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final StudentProjectDAO studentProjectDAO;
 
-
     private final RoleDAO roleDAO;
 
     private final ProjectMapper projectMapper;
@@ -50,8 +56,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final EvaluationCardService evaluationCardService;
 
     private final ExternalLinkService externalLinkService;
-
     private final ProjectMemberService projectMemberService;
+    private final PermissionService permissionService;
 
     @Autowired
     public ProjectServiceImpl(ProjectDAO projectDAO,
@@ -64,7 +70,8 @@ public class ProjectServiceImpl implements ProjectService {
                               StudentProjectMapper studentMapper,
                               EvaluationCardService evaluationCardService,
                               ExternalLinkService externalLinkService,
-                              ProjectMemberService projectMemberService) {
+                              ProjectMemberService projectMemberService,
+                              PermissionService permissionService) {
         this.projectDAO = projectDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
@@ -76,21 +83,18 @@ public class ProjectServiceImpl implements ProjectService {
         this.studentMapper = studentMapper;
         this.evaluationCardService = evaluationCardService;
         this.projectMemberService = projectMemberService;
+        this.permissionService = permissionService;
     }
 
     @Override
     public ProjectDetailsDTO findByIdWithRestrictions(String studyYear, String userIndexNumber, Long id) {
         Project project = projectDAO.findById(id).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", id)));
-        Student student = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
-        Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, userIndexNumber);
 
         List<StudentDTO> studentDTOs = prepareStudentDTOs(project);
-        List<Long> studentProjectsIds = getStudentProjectsIds(student);
-        List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
-
         ProjectDetailsDTO projectDetailsDTO;
-        if (projectMemberService.isUserRoleCoordinator(userIndexNumber) || studentProjectsIds.contains(project.getId()) || supervisorProjectIds.contains(project.getId()))
+        if (permissionService.isUserAllowedToSeeProjectDetails(studyYear, userIndexNumber, project.getId()))
+            // TODO: 11/25/2023 what with external links in defense / retake phase ??
             projectDetailsDTO = projectMapper.mapToProjectDetailsDto(project);
         else
             projectDetailsDTO = projectMapper.mapToProjectDetailsWithRestrictionsDto(project);
@@ -127,7 +131,7 @@ public class ProjectServiceImpl implements ProjectService {
             Comparator<Project> byStudentAssignedAndConfirmedProjects =
                     createComparatorByStudentAssignedAndConfirmedProjects(studentProjectsIds, student);
 
-            return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects);
+            return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects, false);
         } else {
             List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
             Comparator<Project> bySupervisorAssignedAndAcceptedProjects = createComparatorBySupervisorAssignedAndAcceptedProjects(supervisor);
@@ -136,7 +140,7 @@ public class ProjectServiceImpl implements ProjectService {
                 projectEntityList.sort(bySupervisorAssignedAndAcceptedProjects);
                 return projectMapper.mapToDTOs(projectEntityList);
             }
-            return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects);
+            return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects, true);
         }
     }
 
@@ -168,17 +172,59 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private List<ProjectDTO> prepareSortedProjectListWithRestrictions(List<Project> projects, List<Long> userProjectIds,
-                                                                      Comparator<Project> comparator) {
+                                                                      Comparator<Project> comparator, boolean isSupervisor) {
         projects.sort(comparator);
         List<ProjectDTO> projectDTOs = new ArrayList<>();
         projects.forEach(project -> {
             if (userProjectIds.contains(project.getId())) {
-                projectDTOs.add(projectMapper.mapToProjectDto(project));
+                projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL));
+            } else if (isSupervisor && isProjectInDefenseOrRetakePhase(project)) {
+                projectDTOs.add(mapToProjectDTO(project, MappingMode.WITH_PARTIAL_RESTRICTIONS));
             } else {
-                projectDTOs.add(projectMapper.mapToProjectDtoWithRestrictions(project));
+                projectDTOs.add(mapToProjectDTO(project, MappingMode.WITH_FULL_RESTRICTIONS));
             }
         });
         return projectDTOs;
+    }
+
+    private ProjectDTO mapToProjectDTO(Project entity, MappingMode mode) {
+        switch (mode) {
+            case FULL -> {
+                ProjectDTO projectDTO = projectMapper.mapToProjectDto(entity);
+                projectDTO.setPointsFirstSemester(evaluationCardService.getPointsForSemester(entity, Semester.FIRST));
+                projectDTO.setPointsSecondSemester(evaluationCardService.getPointsForSemester(entity, Semester.SECOND));
+                projectDTO.setCriteriaMet(getCriteriaMet(entity));
+                return projectDTO;
+            }
+            case WITH_PARTIAL_RESTRICTIONS -> {
+                ProjectDTO projectDTO = projectMapper.mapToProjectDtoWithRestrictionsInPhaseDefense(entity);
+                projectDTO.setPointsFirstSemester(evaluationCardService.getPointsForSemester(entity, Semester.FIRST));
+                projectDTO.setPointsSecondSemester(evaluationCardService.getPointsForSemester(entity, Semester.SECOND));
+                projectDTO.setCriteriaMet(getCriteriaMet(entity));
+                return projectDTO;
+            }
+            case WITH_FULL_RESTRICTIONS -> {
+                return projectMapper.mapToProjectDtoWithRestrictions(entity);
+            }
+            default -> throw new IllegalArgumentException("Unknown mapping mode: " + mode);
+        }
+    }
+
+    private boolean getCriteriaMet(Project entity) {
+        Semester semester = determineTheMostRecentSemester(entity.getEvaluationCards());
+        Optional<EvaluationCard> theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
+        return theMostRecentEvaluationCard.map(evaluationCard -> !evaluationCard.isDisqualified()).orElse(false);
+    }
+
+    private Semester determineTheMostRecentSemester(List<EvaluationCard> evaluationCards) {
+        return evaluationCards.size() <= NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER ? Semester.FIRST : Semester.SECOND;
+    }
+
+    private boolean isProjectInDefenseOrRetakePhase(Project project) {
+        Predicate<EvaluationCard> isDefensePhase = evaluationCard -> Objects.equals(EvaluationPhase.DEFENSE_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard> isRetakePhase = evaluationCard -> Objects.equals(EvaluationPhase.RETAKE_PHASE, evaluationCard.getEvaluationPhase());
+        return project.getEvaluationCards().stream()
+                .anyMatch(isDefensePhase.or(isRetakePhase));
     }
 
     private boolean isProjectEqualToStudentsConfirmed(Project project, Student student) {
@@ -416,7 +462,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
-        if (!validateDeletionPermission(userIndexNumber, projectEntity)) {
+        if (!permissionService.validateDeletionPermission(userIndexNumber, projectEntity)) {
             log.error("Missing permission to delete project for user with index number: {}", userIndexNumber);
             throw new ProjectManagementException("Missing permission to delete project");
         }
@@ -444,28 +490,6 @@ public class ProjectServiceImpl implements ProjectService {
         student.getUserData().getRoles().remove(roleDAO.findByName(PROJECT_ADMIN));
 
     }
-
-    private boolean validateDeletionPermission(String userIndexNumber, Project project) {
-        UserData userDataEntity = projectMemberService.findUserDataByIndexNumber(userIndexNumber);
-        List<UserRole> userRoles = userDataEntity.getRoles().stream()
-                .map(Role::getName)
-                .toList();
-        if (userRoles.contains(COORDINATOR)) {
-            return true;
-        } else if (userRoles.contains(PROJECT_ADMIN)) {
-            if (ACCEPTED == project.getAcceptanceStatus()) {
-                return false;
-            } else return isStudentAnAdminOfTheProject(userIndexNumber, project.getId());
-        }
-        return false;
-    }
-
-    private boolean isStudentAnAdminOfTheProject(String userIndexNumber, Long projectId) {
-        Student student = studentDAO.findByUserData_IndexNumber(userIndexNumber);
-        return Objects.equals(student.getConfirmedProject().getId(), projectId) &&
-                student.isProjectAdmin();
-    }
-
 
     private boolean isProjectConfirmedByAllStudents(Project project) {
         return project.getAssignedStudents().stream().allMatch(StudentProject::isProjectConfirmed);
@@ -515,6 +539,12 @@ public class ProjectServiceImpl implements ProjectService {
         return currentAssignedStudents.stream()
                 .filter(element -> !newAssignedStudents.contains(element))
                 .collect(Collectors.toSet());
+    }
+
+    private enum MappingMode {
+        FULL,
+        WITH_PARTIAL_RESTRICTIONS,
+        WITH_FULL_RESTRICTIONS
     }
 
 }
