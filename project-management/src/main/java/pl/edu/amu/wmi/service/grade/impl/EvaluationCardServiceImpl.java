@@ -14,10 +14,7 @@ import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.grade.EvaluationCardException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
-import pl.edu.amu.wmi.model.grade.CriteriaSectionDTO;
-import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
-import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
-import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
+import pl.edu.amu.wmi.model.grade.*;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
 import pl.edu.amu.wmi.service.permission.PermissionService;
@@ -44,7 +41,8 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                                      ProjectDAO projectDAO,
                                      GradeService gradeService,
                                      PermissionService permissionService,
-                                     ProjectMemberService projectMemberService, ProjectCriteriaSectionMapper projectCriteriaSectionMapper) {
+                                     ProjectMemberService projectMemberService,
+                                     ProjectCriteriaSectionMapper projectCriteriaSectionMapper) {
         this.evaluationCardDAO = evaluationCardDAO;
         this.evaluationCardTemplateDAO = evaluationCardTemplateDAO;
         this.projectDAO = projectDAO;
@@ -89,9 +87,9 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     private List<Grade> createEmptyGradesForSemester(List<CriteriaSection> criteriaSections) {
         List<Grade> grades = new ArrayList<>();
         criteriaSections.forEach(criteriaSection -> {
-                    List<Grade> gradesForSection = createEmptyGradesForCriteriaSection(criteriaSection);
-                    grades.addAll(gradesForSection);
-                });
+            List<Grade> gradesForSection = createEmptyGradesForCriteriaSection(criteriaSection);
+            grades.addAll(gradesForSection);
+        });
         return grades;
     }
 
@@ -116,7 +114,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
      * and evaluation phases
      */
     @Override
-    public Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> findEvaluationCards(Long projectId, String studyYear, String indexNumber) {
+    public Map<Semester, Map<EvaluationPhase, EvaluationCardDetailsDTO>> findEvaluationCards(Long projectId, String studyYear, String indexNumber) {
 
         Project project = projectDAO.findById(projectId)
                 .orElseThrow(() -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
@@ -127,20 +125,20 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
         List<EvaluationCard> evaluationCardsEntities = project.getEvaluationCards();
 
-        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsFirstSemester = new EnumMap<>(EvaluationPhase.class);
-        Map<EvaluationPhase, EvaluationCardDetails> evaluationCardsSecondSemester = new EnumMap<>(EvaluationPhase.class);
+        Map<EvaluationPhase, EvaluationCardDetailsDTO> evaluationCardsFirstSemester = new EnumMap<>(EvaluationPhase.class);
+        Map<EvaluationPhase, EvaluationCardDetailsDTO> evaluationCardsSecondSemester = new EnumMap<>(EvaluationPhase.class);
 
         evaluationCardsEntities.forEach(evaluationCardEntity -> {
-            EvaluationCardDetails evaluationCardDetails = createEvaluationCardDetails(evaluationCardEntity, project, evaluationCardTemplate, indexNumber);
+            EvaluationCardDetailsDTO evaluationCardDetailsDTO = createEvaluationCardDetails(evaluationCardEntity, project, evaluationCardTemplate, indexNumber);
 
-            if (Objects.equals(Semester.FIRST, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetails)) {
-                evaluationCardsFirstSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
-            } else if (Objects.equals(Semester.SECOND, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetails)) {
-                evaluationCardsSecondSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetails);
+            if (Objects.equals(Semester.FIRST, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetailsDTO)) {
+                evaluationCardsFirstSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetailsDTO);
+            } else if (Objects.equals(Semester.SECOND, evaluationCardEntity.getSemester()) && Objects.nonNull(evaluationCardDetailsDTO)) {
+                evaluationCardsSecondSemester.put(evaluationCardEntity.getEvaluationPhase(), evaluationCardDetailsDTO);
             }
         });
 
-        Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>> evaluationCardMap = new HashMap<>();
+        Map<Semester, Map<EvaluationPhase, EvaluationCardDetailsDTO>> evaluationCardMap = new HashMap<>();
         evaluationCardMap.put(Semester.FIRST, evaluationCardsFirstSemester);
         if (!evaluationCardsSecondSemester.isEmpty()) {
             evaluationCardMap.put(Semester.SECOND, evaluationCardsSecondSemester);
@@ -149,7 +147,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         return evaluationCardMap;
     }
 
-    private EvaluationCardDetails createEvaluationCardDetails(EvaluationCard evaluationCardEntity, Project project, EvaluationCardTemplate evaluationCardTemplate, String indexNumber) {
+    private EvaluationCardDetailsDTO createEvaluationCardDetails(EvaluationCard evaluationCardEntity, Project project, EvaluationCardTemplate evaluationCardTemplate, String indexNumber) {
         if (!permissionService.isEvaluationCardVisibleForUser(evaluationCardEntity, project, indexNumber)) {
             return null;
         }
@@ -158,13 +156,13 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
             return null;
         }
 
-        EvaluationCardDetails evaluationCardDetails = new EvaluationCardDetails();
-        evaluationCardDetails.setId(evaluationCardEntity.getId());
-        evaluationCardDetails.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
+        EvaluationCardDetailsDTO evaluationCardDetailsDTO = new EvaluationCardDetailsDTO();
+        evaluationCardDetailsDTO.setId(evaluationCardEntity.getId());
+        evaluationCardDetailsDTO.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
 
         boolean isEditable = permissionService.isEvaluationCardEditableForUser(evaluationCardEntity, project, indexNumber);
 
-        evaluationCardDetails.setEditable(isEditable);
+        evaluationCardDetailsDTO.setEditable(isEditable);
 
         List<CriteriaSection> sections = getCriteriaSectionsForSemester(evaluationCardTemplate, evaluationCardEntity.getSemester());
         List<CriteriaSectionDTO> sectionDTOs = projectCriteriaSectionMapper.mapToDtoList(sections);
@@ -179,8 +177,8 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                 group.setSelectedCriterion(CriterionCategory.getByPointsReceived(projectPointsByGroupId.get(group.getId())))
         ));
 
-        evaluationCardDetails.setSections(sectionDTOs);
-        return evaluationCardDetails;
+        evaluationCardDetailsDTO.setSections(sectionDTOs);
+        return evaluationCardDetailsDTO;
     }
 
     /**
@@ -211,10 +209,8 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
      */
     private List<CriteriaSection> getCriteriaSectionsForSemester(EvaluationCardTemplate template, Semester semester) {
         return switch (semester) {
-            case FIRST ->
-                    template.getCriteriaSectionsFirstSemester();
-            case SECOND ->
-                    template.getCriteriaSectionsSecondSemester();
+            case FIRST -> template.getCriteriaSectionsFirstSemester();
+            case SECOND -> template.getCriteriaSectionsSecondSemester();
         };
     }
 
@@ -330,6 +326,36 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     public String getPointsForSemester(Project entity, Semester semester) {
         Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
         return theMostRecentEvaluationCard.map(evaluationCard -> pointsToOverallPercent(evaluationCard.getTotalPoints())).orElse("0%");
+    }
+
+    @Override
+    @Transactional
+    public void publishEvaluationCard(Long evaluationCardId) {
+        EvaluationCard evaluationCard = evaluationCardDAO.findById(evaluationCardId)
+                .orElseThrow(() -> new EvaluationCardException(MessageFormat.format("Evaluation card with id: {0} not found", evaluationCardId)));
+
+        evaluationCard.setEvaluationStatus(EvaluationStatus.PUBLISHED);
+        log.info("Status was set to published for evaluation card with id: {}", evaluationCard.getId());
+        evaluationCardDAO.save(evaluationCard);
+    }
+
+    @Override
+    @Transactional
+    public void publishEvaluationCards(String studyYear) {
+        List<EvaluationCard> evaluationCards =
+                evaluationCardDAO.findAllByEvaluationPhaseAndEvaluationStatusAndEvaluationCardTemplate_StudyYear(
+                        EvaluationPhase.DEFENSE_PHASE,
+                        EvaluationStatus.FROZEN,
+                        studyYear
+                );
+
+        if (!evaluationCards.isEmpty()) {
+            evaluationCards.forEach(e -> {
+                e.setEvaluationStatus(EvaluationStatus.PUBLISHED);
+                log.info("Status was set to published for evaluation card with id: {}", e.getId());
+            });
+            evaluationCardDAO.saveAll(evaluationCards);
+        }
     }
 
 }

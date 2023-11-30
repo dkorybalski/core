@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class EvaluationCardDetails {
+public class EvaluationCardDetailsDTO {
 
     @NotNull
     private Long id;

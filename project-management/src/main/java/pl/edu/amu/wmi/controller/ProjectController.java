@@ -9,12 +9,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.dao.ProjectDAO;
+import pl.edu.amu.wmi.entity.EvaluationCard;
 import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
 import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
-import pl.edu.amu.wmi.model.grade.EvaluationCardDetails;
+import pl.edu.amu.wmi.model.grade.EvaluationCardDetailsDTO;
+import pl.edu.amu.wmi.model.grade.EvaluationCardStatusDTO;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
@@ -158,7 +160,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/evaluation-card")
-    public ResponseEntity<Map<Semester, Map<EvaluationPhase, EvaluationCardDetails>>> getGradeDetailsByProjectId(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId) {
+    public ResponseEntity<Map<Semester, Map<EvaluationPhase, EvaluationCardDetailsDTO>>> getGradeDetailsByProjectId(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!permissionService.isUserAllowedToSeeProjectDetails(studyYear, userDetails.getUsername(), projectId)) {
             return ResponseEntity.ok().body(Collections.emptyMap());
@@ -172,6 +174,20 @@ public class ProjectController {
     public ResponseEntity<UpdatedGradeDTO> updateEvaluationCardGrade(@PathVariable Long evaluationCardId, @RequestBody SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
         return ResponseEntity.ok()
                 .body(evaluationCardService.updateEvaluationCard(evaluationCardId, singleGroupGradeUpdate));
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}/publish")
+    public ResponseEntity<Void> publishEvaluationCard(@PathVariable Long evaluationCardId) {
+        evaluationCardService.publishEvaluationCard(evaluationCardId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/{projectId}/evaluation-card/publish")
+    public ResponseEntity<Void> publishEvaluationCards(@RequestHeader("study-year") String studyYear) {
+        evaluationCardService.publishEvaluationCards(studyYear);
+        return ResponseEntity.ok().build();
     }
 
     // TODO: 11/22/2023 remove this endpoint (only for tests)
