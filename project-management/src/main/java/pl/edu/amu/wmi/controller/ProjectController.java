@@ -177,14 +177,14 @@ public class ProjectController {
     }
 
     @Secured({"COORDINATOR"})
-    @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}/publish")
+    @PatchMapping("/{projectId}/evaluation-card/{evaluationCardId}/publish")
     public ResponseEntity<Void> publishEvaluationCard(@PathVariable Long evaluationCardId) {
         evaluationCardService.publishEvaluationCard(evaluationCardId);
         return ResponseEntity.ok().build();
     }
 
     @Secured({"COORDINATOR"})
-    @PutMapping("/{projectId}/evaluation-card/publish")
+    @PatchMapping("/{projectId}/evaluation-card/publish")
     public ResponseEntity<Void> publishEvaluationCards(@RequestHeader("study-year") String studyYear) {
         evaluationCardService.publishEvaluationCards(studyYear);
         return ResponseEntity.ok().build();
