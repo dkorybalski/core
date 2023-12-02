@@ -238,37 +238,49 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectDetailsDTO saveProject(ProjectDetailsDTO project, String studyYear, String userIndexNumber) {
-        Project projectEntity = projectMapper.mapToEntity(project);
-        Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, project.getSupervisor().getIndexNumber());
+    public ProjectDetailsDTO saveProject(ProjectDetailsDTO projectDTO, String studyYear, String userIndexNumber) {
+        Project projectEntity = projectMapper.mapToEntity(projectDTO);
+        Supervisor supervisorEntity = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, projectDTO.getSupervisor().getIndexNumber());
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
+
+        String adminIndexNumber = projectDTO.getAdmin();
+        List<StudentDTO> studentDTOs = projectDTO.getStudents();
+        addStudentsToProject(projectEntity, studyYear, adminIndexNumber, studentDTOs);
 
         projectEntity.setSupervisor(supervisorEntity);
         projectEntity.setStudyYear(studyYearEntity);
-        projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(project));
-
-        for (StudentDTO student : project.getStudents()) {
-            Student entity = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, student.getIndexNumber());
-            if (isProjectAdmin(entity, userIndexNumber)) {
-                entity.setProjectAdmin(true);
-                entity.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
-            }
-
-            projectEntity.addStudent(entity, student.getRole(), isProjectAdmin(entity, userIndexNumber));
-        }
-
+        projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(projectDTO));
         projectEntity.setExternalLinks(externalLinkService.createEmptyExternalLinks(studyYear));
 
-        EvaluationCard evaluationCard = new EvaluationCard();
-        projectEntity.addEvaluationCard(evaluationCard);
-        evaluationCard.setProject(projectEntity);
-
-        evaluationCardService.createEvaluationCard(projectEntity, studyYear,
-                Semester.FIRST, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
+        addFirstEvaluationCardToProject(projectEntity, studyYear);
 
         projectEntity = projectDAO.save(projectEntity);
 
         return projectMapper.mapToProjectDetailsDto(projectEntity);
+    }
+
+    private void addStudentsToProject(Project project, String studyYear, String adminIndexNumber, List<StudentDTO> students) {
+        for (StudentDTO student : students) {
+            Student studentEntity = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, student.getIndexNumber());
+            if (isProjectAdmin(studentEntity, adminIndexNumber)) {
+                setStudentToBeAdmin(studentEntity);
+            }
+            project.addStudent(studentEntity, student.getRole(), isProjectAdmin(studentEntity, adminIndexNumber));
+        }
+    }
+
+    private void setStudentToBeAdmin(Student student) {
+        student.setProjectAdmin(true);
+        student.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
+    }
+
+    private void addFirstEvaluationCardToProject(Project project, String studyYear) {
+        EvaluationCard evaluationCard = new EvaluationCard();
+        project.addEvaluationCard(evaluationCard);
+        evaluationCard.setProject(project);
+
+        evaluationCardService.createEvaluationCard(project, studyYear,
+                Semester.FIRST, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
     }
 
     @Override
@@ -495,8 +507,8 @@ public class ProjectServiceImpl implements ProjectService {
         return project.getAssignedStudents().stream().allMatch(StudentProject::isProjectConfirmed);
     }
 
-    private boolean isProjectAdmin(Student entity, String userIndexNumber) {
-        return Objects.equals(userIndexNumber, entity.getIndexNumber());
+    private boolean isProjectAdmin(Student entity, String adminIndexNumber) {
+        return Objects.equals(adminIndexNumber, entity.getIndexNumber());
     }
 
     private StudentProject getStudentProjectOfAdmin(Project project) {

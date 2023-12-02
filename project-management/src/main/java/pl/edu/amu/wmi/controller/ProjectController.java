@@ -9,14 +9,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.dao.ProjectDAO;
-import pl.edu.amu.wmi.entity.EvaluationCard;
 import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
 import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.model.grade.EvaluationCardDetailsDTO;
-import pl.edu.amu.wmi.model.grade.EvaluationCardStatusDTO;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
@@ -108,6 +106,7 @@ public class ProjectController {
                 .body(externalLinkService.findDefinitionHeadersByStudyYear(studyYear));
     }
 
+    @Secured({"STUDENT", "COORDINATOR"})
     @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
@@ -115,8 +114,8 @@ public class ProjectController {
             @Valid @RequestBody ProjectDetailsDTO project) {
 
         ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
-        projectService.acceptProject(studyYear, userIndexNumber, projectDetailsDTO.getId());
-        projectService.updateProjectAdmin(projectDetailsDTO.getId(), userIndexNumber);
+        projectService.acceptProject(studyYear, project.getAdmin(), projectDetailsDTO.getId());
+        projectService.updateProjectAdmin(projectDetailsDTO.getId(), project.getAdmin());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(projectDetailsDTO);
     }
