@@ -23,6 +23,7 @@ import pl.edu.amu.wmi.model.project.SupervisorAvailabilityDTO;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.permission.PermissionService;
+import pl.edu.amu.wmi.service.project.ProjectMemberService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 import pl.edu.amu.wmi.service.project.SupervisorProjectService;
 
@@ -45,6 +46,8 @@ public class ProjectController {
 
     private final PermissionService permissionService;
 
+    private final ProjectMemberService projectMemberService;
+
     // TODO: 11/23/2023 remove project dao from controller after tests
     private final ProjectDAO projectDAO;
 
@@ -53,12 +56,15 @@ public class ProjectController {
                              ExternalLinkService externalLinkService,
                              SupervisorProjectService supervisorProjectService,
                              EvaluationCardService evaluationCardService,
-                             PermissionService permissionService, ProjectDAO projectDAO) {
+                             PermissionService permissionService,
+                             ProjectMemberService projectMemberService,
+                             ProjectDAO projectDAO) {
         this.projectService = projectService;
         this.externalLinkService = externalLinkService;
         this.supervisorProjectService = supervisorProjectService;
         this.evaluationCardService = evaluationCardService;
         this.permissionService = permissionService;
+        this.projectMemberService = projectMemberService;
         this.projectDAO = projectDAO;
     }
 
@@ -112,12 +118,20 @@ public class ProjectController {
             @RequestHeader("study-year") String studyYear,
             @RequestHeader("index-number") String userIndexNumber,
             @Valid @RequestBody ProjectDetailsDTO project) {
-
-        ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
-        projectService.acceptProject(studyYear, project.getAdmin(), projectDetailsDTO.getId());
-        projectService.updateProjectAdmin(projectDetailsDTO.getId(), project.getAdmin());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(projectDetailsDTO);
+        String supervisorIndexNumber = project.getSupervisor().getIndexNumber();
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
+            if (!supervisorProjectService.isSupervisorAvailable(studyYear, supervisorIndexNumber)) {
+                return ResponseEntity.status(409).build();
+            }
+            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
+            projectService.acceptProjectByAllStudents(projectDetailsDTO.getId());
+            projectService.acceptProjectBySingleUser(supervisorIndexNumber, projectDetailsDTO.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
+        } else {
+            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
+            projectService.acceptProjectBySingleUser(project.getAdmin(), projectDetailsDTO.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
+        }
     }
 
     @PatchMapping("/{projectId}/admin-change/{studentIndex}")
@@ -134,7 +148,7 @@ public class ProjectController {
             @RequestHeader("index-number") String userIndexNumber,
             @PathVariable Long projectId) {
         return ResponseEntity.ok()
-                .body(projectService.acceptProject(studyYear, userIndexNumber, projectId));
+                .body(projectService.acceptProjectBySingleUser(userIndexNumber, projectId));
     }
 
     @PatchMapping("/{projectId}/unaccept")
