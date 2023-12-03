@@ -8,6 +8,8 @@ public interface SupervisorProjectService {
 
     List<SupervisorAvailabilityDTO> getSupervisorsAvailability(String studyYear);
 
+    boolean isSupervisorAvailable(String studyYear, String supervisorIndexNumber);
+
     List<SupervisorAvailabilityDTO> updateSupervisorsAvailability(String studyYear, List<SupervisorAvailabilityDTO> supervisorAvailabilityList);
 
 }

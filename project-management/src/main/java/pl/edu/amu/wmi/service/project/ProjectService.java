@@ -31,7 +31,9 @@ public interface ProjectService {
 
     ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex);
 
-    ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId);
+    ProjectDetailsDTO acceptProjectBySingleUser(String userIndexNumber, Long projectId);
+
+    ProjectDetailsDTO acceptProjectByAllStudents(Long projectId);
 
     ProjectDetailsDTO unAcceptProject(String studyYear, String userIndexNumber, Long projectId);
 

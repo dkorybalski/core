@@ -417,7 +417,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectDetailsDTO acceptProject(String studyYear, String userIndexNumber, Long projectId) {
+    public ProjectDetailsDTO acceptProjectBySingleUser(String userIndexNumber, Long projectId) {
 
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
@@ -445,7 +445,28 @@ public class ProjectServiceImpl implements ProjectService {
         projectDAO.save(projectEntity);
 
         return projectMapper.mapToProjectDetailsDto(projectEntity);
+    }
 
+    @Override
+    @Transactional
+    public ProjectDetailsDTO acceptProjectByAllStudents(Long projectId) {
+        Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
+                -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
+
+        Set<StudentProject> studentProjectEntities = projectEntity.getAssignedStudents();
+
+        studentProjectEntities.forEach(as -> {
+            as.setProjectConfirmed(true);
+            as.getStudent().setProjectConfirmed(true);
+            as.getStudent().setConfirmedProject(projectEntity);
+        });
+
+        projectEntity.setAcceptanceStatus(CONFIRMED);
+
+        studentProjectDAO.saveAll(studentProjectEntities);
+        projectDAO.save(projectEntity);
+
+        return projectMapper.mapToProjectDetailsDto(projectEntity);
     }
 
     @Override
