@@ -38,6 +38,11 @@
         </dependency>
         <dependency>
             <groupId>pl.edu.amu.wmi</groupId>
+            <artifactId>defense-schedule</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pl.edu.amu.wmi</groupId>
             <artifactId>auth</artifactId>
             <version>${project.version}</version>
         </dependency>
