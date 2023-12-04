@@ -13,6 +13,7 @@
         <module>user-management</module>
         <module>auth</module>
         <module>notification-management</module>
+        <module>defense-schedule</module>
     </modules>
 
     <parent>
