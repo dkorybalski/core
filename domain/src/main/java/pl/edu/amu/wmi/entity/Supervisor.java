@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -29,8 +31,16 @@ public class Supervisor extends AbstractEntity {
 
     private String studyYear;
 
+    @OneToMany(mappedBy = "supervisor")
+    private List<SupervisorDefenseAssignment> supervisorDefenseAssignments = new ArrayList<>();
+
     public String getIndexNumber() {
         return userData != null ? userData.getIndexNumber() : null;
+    }
+
+    public void addSupervisorDefenseAssignments(SupervisorDefenseAssignment assignment) {
+        supervisorDefenseAssignments.add(assignment);
+        assignment.setSupervisor(this);
     }
 
 }

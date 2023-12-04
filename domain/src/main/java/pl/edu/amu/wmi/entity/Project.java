@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.ProjectRole;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Getter
@@ -62,6 +59,14 @@ public class Project extends AbstractEntity {
     )
     private Set<StudentProject> assignedStudents = new HashSet<>();
 
+    // TODO: 12/4/2023 check if this cascade type is sufficient
+    @OneToOne(
+            mappedBy = "project",
+            cascade = CascadeType.MERGE,
+            fetch = FetchType.LAZY
+    )
+    private ProjectDefense projectDefense;
+
     public void addStudent(Student student, ProjectRole projectRole, boolean isProjectAdmin) {
         StudentProject studentProject = new StudentProject(student, this);
         studentProject.setProjectRole(projectRole);
@@ -77,5 +82,18 @@ public class Project extends AbstractEntity {
     public void addEvaluationCard(EvaluationCard evaluationCard) {
         this.evaluationCards.add(evaluationCard);
         evaluationCard.setProject(this);
+    }
+
+    public void setProjectDefense(ProjectDefense projectDefense) {
+        // TODO: 12/4/2023 verify if it works correctly
+        if (Objects.isNull(projectDefense)) {
+            if (Objects.nonNull(this.projectDefense)) {
+                this.projectDefense.setProject(null);
+            }
+        } else {
+            projectDefense.setProject(this);
+        }
+        this.projectDefense = projectDefense;
+//        this.setProjectDefense(projectDefense);
     }
 }
