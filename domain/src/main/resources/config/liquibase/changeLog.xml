@@ -21,5 +21,6 @@
     <include file="classpath:config/liquibase/database/2023-11-20-evaluation_card_modifications.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-23-modify_criteria_section_table.xml"/>
     <include file="classpath:config/liquibase/database/2023-11-24-modify_evaluation_card_table.xml"/>
+    <include file="classpath:config/liquibase/database/2023-12-01-create_tables_for_defense_schedule_module.xml"/>
 
 </databaseChangeLog>
