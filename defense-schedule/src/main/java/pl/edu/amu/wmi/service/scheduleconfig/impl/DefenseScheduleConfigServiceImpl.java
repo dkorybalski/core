@@ -9,18 +9,24 @@ import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.enumerations.DefensePhase;
 import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
+import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
+
 
 @Slf4j
 @Service
 public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigService {
 
+    private final DefenseTimeSlotService defenseTimeSlotService;
     private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final DefenseScheduleConfigMapper defenseScheduleConfigMapper;
 
 
     @Autowired
-    public DefenseScheduleConfigServiceImpl(DefenseScheduleConfigDAO defenseScheduleConfigDAO, DefenseScheduleConfigMapper defenseScheduleConfigMapper) {
+    public DefenseScheduleConfigServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
+                                            DefenseScheduleConfigDAO defenseScheduleConfigDAO,
+                                            DefenseScheduleConfigMapper defenseScheduleConfigMapper) {
+        this.defenseTimeSlotService = defenseTimeSlotService;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.defenseScheduleConfigMapper = defenseScheduleConfigMapper;
     }
@@ -31,8 +37,13 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         DefenseScheduleConfig defenseScheduleConfigEntity = defenseScheduleConfigMapper.mapToEntity(defenseScheduleConfig);
         defenseScheduleConfigEntity.setStudyYear(studyYear);
         defenseScheduleConfigEntity.setDefensePhase(DefensePhase.SCHEDULE_PLANNING);
+        defenseScheduleConfigEntity = defenseScheduleConfigDAO.save(defenseScheduleConfigEntity);
         log.info("Defense schedule config was created with id: {}", defenseScheduleConfigEntity.getId());
-        defenseScheduleConfigDAO.save(defenseScheduleConfigEntity);
+
+        /*
+         * Create all defense timeslots for the selected configuration.
+         */
+        defenseTimeSlotService.createDefenseTimeSlots(studyYear, defenseScheduleConfigEntity.getId());
     }
 
 }
