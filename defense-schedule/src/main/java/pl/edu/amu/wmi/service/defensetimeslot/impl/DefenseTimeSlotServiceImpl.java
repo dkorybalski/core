@@ -31,6 +31,9 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
     }
 
+    /**
+     * Create all defense timeslots for the selected configuration.
+     */
     @Override
     @Transactional
     public void createDefenseTimeSlots(String studyYear, Long defenseScheduleConfigId) {
@@ -46,12 +49,13 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
         List<LocalDate> defenseDays = getDefenseDays(startDay, endDay);
         List<LocalTime> defenseHours = getDefenseHours(startTime, endTime, defenseSlotDuration);
 
-        defenseDays.forEach(day ->
-                defenseHours.forEach(hour -> {
-                    DefenseTimeSlot defenseTimeSlot = createSingleTimeSlot(day, hour, hour.plusMinutes(defenseSlotDuration), defenseSlotDuration, studyYear, defenseScheduleConfig);
-                    defenseTimeSlot = defenseTimeSlotDAO.save(defenseTimeSlot);
-                    log.info("Defense timeslot was created with id: {}", defenseTimeSlot.getId());
-                }));
+        defenseDays.forEach(day -> {
+            defenseHours.forEach(hour -> {
+                DefenseTimeSlot defenseTimeSlot = createSingleTimeSlot(day, hour, hour.plusMinutes(defenseSlotDuration), defenseSlotDuration, studyYear, defenseScheduleConfig);
+                defenseTimeSlotDAO.save(defenseTimeSlot);
+            });
+            log.info("Defense timeslots were created for day: {}", day.toString());
+        });
     }
 
     /**
@@ -89,6 +93,11 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
         defenseTimeSlot.setStudyYear(studyYear);
         defenseTimeSlot.setDefenseScheduleConfig(defenseScheduleConfig);
         return defenseTimeSlot;
+    }
+
+    @Override
+    public List<DefenseTimeSlot> getAllTimeSlotsForDefenseConfig(Long defenseScheduleConfigId) {
+        return defenseTimeSlotDAO.findAllByDefenseScheduleConfig_Id(defenseScheduleConfigId);
     }
 
 }

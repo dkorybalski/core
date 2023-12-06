@@ -11,6 +11,7 @@ import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
+import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
 
 
 @Slf4j
@@ -18,15 +19,18 @@ import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
 public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigService {
 
     private final DefenseTimeSlotService defenseTimeSlotService;
+    private final SupervisorDefenseAssignmentService supervisorDefenseAssignmentService;
     private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final DefenseScheduleConfigMapper defenseScheduleConfigMapper;
 
 
     @Autowired
     public DefenseScheduleConfigServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
+                                            SupervisorDefenseAssignmentService supervisorDefenseAssignmentService,
                                             DefenseScheduleConfigDAO defenseScheduleConfigDAO,
                                             DefenseScheduleConfigMapper defenseScheduleConfigMapper) {
         this.defenseTimeSlotService = defenseTimeSlotService;
+        this.supervisorDefenseAssignmentService = supervisorDefenseAssignmentService;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.defenseScheduleConfigMapper = defenseScheduleConfigMapper;
     }
@@ -40,10 +44,8 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         defenseScheduleConfigEntity = defenseScheduleConfigDAO.save(defenseScheduleConfigEntity);
         log.info("Defense schedule config was created with id: {}", defenseScheduleConfigEntity.getId());
 
-        /*
-         * Create all defense timeslots for the selected configuration.
-         */
         defenseTimeSlotService.createDefenseTimeSlots(studyYear, defenseScheduleConfigEntity.getId());
+        supervisorDefenseAssignmentService.createSupervisorDefenseAssignments(studyYear, defenseScheduleConfigEntity.getId());
     }
 
 }
