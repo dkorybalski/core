@@ -6,4 +6,7 @@ import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 
 @Repository
 public interface SupervisorDefenseAssignmentDAO extends JpaRepository<SupervisorDefenseAssignment, Long> {
+
+    SupervisorDefenseAssignment findBySupervisor_IdAndDefenseTimeSlot_Id(Long supervisorId, Long defenseTimeSlotId);
+
 }
