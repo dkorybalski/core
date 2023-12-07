@@ -7,11 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.enumerations.DefensePhase;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
 import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
+
+import java.util.Objects;
 
 
 @Slf4j
@@ -46,6 +49,21 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
 
         defenseTimeSlotService.createDefenseTimeSlots(studyYear, defenseScheduleConfigEntity.getId());
         supervisorDefenseAssignmentService.createSupervisorDefenseAssignments(studyYear, defenseScheduleConfigEntity.getId());
+    }
+
+    @Override
+    @Transactional
+    public void openRegistrationForDefense(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndDefensePhase(studyYear, DefensePhase.SCHEDULE_PLANNING);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.error("Opening registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
+            throw new BusinessException("Opening registration for defense unsuccessful - process in incorrect phase");
+        }
+
+        // TODO: 12/7/2023 create project defense slots SYSPRI-324
+
+        defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT_REGISTRATION);
+        defenseScheduleConfigDAO.save(defenseScheduleConfig);
     }
 
 }
