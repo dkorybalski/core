@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>PRI Missing project assessment</title>
+    <title>PRI - Registration for project defenses has been open</title>
 </head>
 <body>
 <div style="margin-top: 10px">Dear Mr./Ms. ${user}</div>
-<div>Some projects that you are in charge of have not been assessed yet.</div>
+<div>Registration for project defenses has been open. Please sign up for a free date in the system.</div>
 <br/>
 <div> Yours sincerely,</div>
 <div> Subject Coordinator</div>

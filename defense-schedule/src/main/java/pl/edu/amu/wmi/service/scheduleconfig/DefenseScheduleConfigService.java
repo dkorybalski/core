@@ -6,4 +6,5 @@ public interface DefenseScheduleConfigService {
 
     void createDefenseScheduleConfig(String studyYear, DefenseScheduleConfigDTO defenseScheduleConfig);
 
+    void openRegistrationForDefense(String studyYear);
 }
