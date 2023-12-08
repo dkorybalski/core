@@ -38,6 +38,10 @@ public class Supervisor extends AbstractEntity {
         return userData != null ? userData.getIndexNumber() : null;
     }
 
+    public String getFullName() {
+        return userData.getFirstName() + " " + userData.getLastName();
+    }
+
     public void addSupervisorDefenseAssignments(SupervisorDefenseAssignment assignment) {
         supervisorDefenseAssignments.add(assignment);
         assignment.setSupervisor(this);

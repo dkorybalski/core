@@ -9,10 +9,15 @@ import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 import pl.edu.amu.wmi.exception.BusinessException;
+import pl.edu.amu.wmi.mapper.projectdefense.ProjectDefenseMapper;
+import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,12 +27,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+
     private final DefenseTimeSlotService defenseTimeSlotService;
+    private final ProjectDefenseMapper projectDefenseMapper;
     private final ProjectDefenseDAO projectDefenseDAO;
 
     public ProjectDefenseServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
+                                     ProjectDefenseMapper projectDefenseMapper,
                                      ProjectDefenseDAO projectDefenseDAO) {
         this.defenseTimeSlotService = defenseTimeSlotService;
+        this.projectDefenseMapper = projectDefenseMapper;
         this.projectDefenseDAO = projectDefenseDAO;
     }
 
@@ -40,6 +50,18 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
             createProjectDefensesForTimeSlot(studyYear, defenseTimeSlot)
         );
         log.info("Project defense slots have been created for study year {}", studyYear);
+    }
+
+    @Override
+    public Map<String, List<ProjectDefenseDTO>> getProjectDefenses(String studyYear, String username) {
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
+        Map<LocalDate, List<ProjectDefense>> projectDefenseMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
+        Map<String, List<ProjectDefenseDTO>> projectDefenseDTOMap = new HashMap<>();
+        projectDefenseMap.forEach((date, defenses) -> {
+            projectDefenseDTOMap.put(date.format(dateTimeFormatter), projectDefenseMapper.mapToDTOs(projectDefenses));
+        });
+        // TODO: 12/8/2023 implement isEditable mapping
+        return projectDefenseDTOMap;
     }
 
     private void createProjectDefensesForTimeSlot(String studyYear, DefenseTimeSlot defenseTimeSlot) {

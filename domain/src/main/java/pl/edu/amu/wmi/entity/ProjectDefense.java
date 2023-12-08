@@ -28,7 +28,7 @@ public class ProjectDefense extends AbstractEntity {
     private SupervisorDefenseAssignment chairpersonDefenseAssignment;
 
     @PostLoad
-    public void getChairpersonDefenseAssignment() {
+    public void fetchChairpersonDefenseAssignment() {
         this.chairpersonDefenseAssignment = supervisorDefenseAssignments.stream()
                 .filter(defenseAssignment -> Objects.equals(Boolean.TRUE, defenseAssignment.isChairperson()))
                 .findFirst().orElse(null);
