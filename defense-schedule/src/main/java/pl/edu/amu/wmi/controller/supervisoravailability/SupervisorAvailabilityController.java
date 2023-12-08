@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.service.supervisoravailability.SupervisorAvailabilityService;
 
+import java.util.List;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/schedule/availability/supervisor")
@@ -29,6 +32,15 @@ public class SupervisorAvailabilityController {
             @Valid @RequestBody SupervisorDefenseAssignmentDTO supervisorDefenseAssignment) {
         supervisorAvailabilityService.putSupervisorAvailability(studyYear, supervisorId, supervisorDefenseAssignment);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @Secured({"SUPERVISOR"})
+    @GetMapping("/{supervisorId}")
+    public ResponseEntity<Map<String, List<SupervisorDefenseAssignmentDTO>>> getSupervisorAvailability(
+            @RequestHeader("study-year") String studyYear,
+            @PathVariable Long supervisorId) {
+        return ResponseEntity.ok()
+                .body(supervisorAvailabilityService.getSupervisorAvailabilitySurvey(supervisorId));
     }
 
 }
