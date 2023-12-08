@@ -19,7 +19,7 @@ public class ProjectDefense extends AbstractEntity {
     @JoinColumn(name = "PROJECT_ID")
     private Project project;
 
-    @OneToMany(mappedBy = "projectDefense")
+    @OneToMany(mappedBy = "projectDefense", cascade = CascadeType.MERGE)
     private List<SupervisorDefenseAssignment> supervisorDefenseAssignments = new ArrayList<>();
 
     private String studyYear;
@@ -45,5 +45,10 @@ public class ProjectDefense extends AbstractEntity {
 
     public CommitteeIdentifier getCommitteeIdentifier() {
         return Objects.nonNull(this.chairpersonDefenseAssignment) ? this.chairpersonDefenseAssignment.getCommitteeIdentifier() : null;
+    }
+
+    public void addSupervisorDefenseAssignments(List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
+        this.setSupervisorDefenseAssignments(supervisorDefenseAssignments);
+        supervisorDefenseAssignments.forEach(supervisorDefenseAssignment -> supervisorDefenseAssignment.setProjectDefense(this));
     }
 }

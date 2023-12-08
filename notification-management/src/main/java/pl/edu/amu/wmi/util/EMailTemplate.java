@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum EMailTemplate {
 
-    PROJECT_DEFENSE_REGISTRATION_OPEN("project_defense_registration_open.ftlh", "PRI - Registration for project defenses has been open");
+    PROJECT_DEFENSE_REGISTRATION_OPEN("project_defense_registration_open.ftlh", "PRI - Registration for project defenses has been opened");
 
     private final String path;
     private final String subject;
