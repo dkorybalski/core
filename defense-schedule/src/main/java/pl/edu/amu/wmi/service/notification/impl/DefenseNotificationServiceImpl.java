@@ -31,6 +31,10 @@ public class DefenseNotificationServiceImpl implements DefenseNotificationServic
     public void notifyStudents(String studyYear, DefensePhase defensePhase) {
         List<Student> students = studentDAO.findAllByStudyYear(studyYear);
         List<UserInfoDTO> userInfos = userInfoMapper.mapToUserInfos(students);
-        notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_REGISTRATION_OPEN);
+        switch (defensePhase) {
+            case DEFENSE_PROJECT_REGISTRATION -> notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_REGISTRATION_OPEN);
+            default -> log.info("Sending notification for defense: {} phase not supported", defensePhase);
+        }
+
     }
 }
