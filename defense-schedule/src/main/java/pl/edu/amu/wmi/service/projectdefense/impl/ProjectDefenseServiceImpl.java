@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.service.projectdefense.impl;
 
+import jakarta.persistence.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import pl.edu.amu.wmi.mapper.projectdefense.ProjectDefenseMapper;
 import pl.edu.amu.wmi.model.UserRoleType;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 import pl.edu.amu.wmi.service.PermissionService;
 import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
@@ -102,6 +104,20 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         if (isUserAProjectAdminAndDefensePhaseAllowTheModifications(indexNumber, defensePhase)) {
             assignProjectToProjectDefenseAsProjectAdmin(indexNumber, projectDefensePatchDTO, previouslyAssignedProject, projectDefense);
         }
+    }
+
+    @Override
+    public List<ProjectNameDTO> getProjectNames(String studyYear) {
+        List<Tuple> projectsWithDefenseInfoForStudyYear = projectDAO.findAcceptedProjectsWithDefenseInfoForStudyYear(studyYear);
+        return projectsWithDefenseInfoForStudyYear.stream()
+                .map(this::mapTupleToProjectNameDto)
+                .toList();
+    }
+
+    private ProjectNameDTO mapTupleToProjectNameDto(Tuple tuple) {
+        Project project = (Project) tuple.get("project");
+        Long defenseId = (Long) tuple.get("projectDefenseId");
+        return new ProjectNameDTO(project.getId(), project.getName(), defenseId);
     }
 
     private boolean isUserAProjectAdminAndDefensePhaseAllowTheModifications(String indexNumber, DefensePhase defensePhase) {

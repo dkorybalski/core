@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.dao;
 
+import jakarta.persistence.Tuple;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,8 +17,15 @@ public interface ProjectDAO extends JpaRepository<Project, Long> {
             "FROM Project p " +
             "JOIN p.students AS s " +
             "JOIN s.userData As u " +
-            "JOIN p.studyYear AS st " +
-            "WHERE u.indexNumber = :indexNumber AND st.studyYear = :studyYear")
+            "JOIN p.studyYear AS sy " +
+            "WHERE u.indexNumber = :indexNumber AND sy.studyYear = :studyYear")
     Project findByProjectAdmin(String indexNumber, String studyYear);
+
+    @Query("SELECT p AS project, pd.id AS projectDefenseId " +
+            "FROM ProjectDefense pd " +
+            "RIGHT JOIN pd.project p " +
+            "JOIN p.studyYear sy " +
+            "WHERE sy.studyYear = :studyYear AND p.acceptanceStatus = 'ACCEPTED'")
+    List<Tuple> findAcceptedProjectsWithDefenseInfoForStudyYear(String studyYear);
 
 }

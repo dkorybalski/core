@@ -5,6 +5,7 @@ import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -40,4 +41,12 @@ public interface ProjectDefenseService {
      * @param projectDefensePatchDTO - contains the project id (or null value), that should be assigned to the project defense
      */
     void assignProjectToProjectDefense(String studyYear, String indexNumber, Long projectDefenseId, ProjectDefensePatchDTO projectDefensePatchDTO);
+
+    /**
+     * Returns a list with project ids, names and related project defenses
+     *
+     * @param studyYear - study year that project names are connected with
+     * @return list of project names
+     */
+    List<ProjectNameDTO> getProjectNames(String studyYear);
 }
