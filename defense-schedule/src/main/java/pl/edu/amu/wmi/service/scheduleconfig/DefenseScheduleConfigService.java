@@ -15,4 +15,11 @@ public interface DefenseScheduleConfigService {
      * @param studyYear study year that defense registration is open for
      */
     void openRegistrationForDefense(String studyYear);
+
+    /**
+     * Sets the defense phase of the object {@link DefenseScheduleConfig} to DEFENSE_PROJECT
+     *
+     * @param studyYear study year that defense registration is closed for
+     */
+    void closeRegistrationForDefense(String studyYear);
 }
