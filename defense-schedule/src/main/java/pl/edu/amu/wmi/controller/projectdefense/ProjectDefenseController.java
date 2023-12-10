@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.util.List;
@@ -38,6 +39,13 @@ public class ProjectDefenseController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         projectDefenseService.assignProjectToProjectDefense(studyYear, userDetails.getUsername(), projectDefenseId, projectDefensePatchDTO);
         return ResponseEntity.ok().build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @GetMapping("/projects")
+    public ResponseEntity<List<ProjectNameDTO>> getProjectNames(@RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(projectDefenseService.getProjectNames(studyYear));
     }
 
 }
