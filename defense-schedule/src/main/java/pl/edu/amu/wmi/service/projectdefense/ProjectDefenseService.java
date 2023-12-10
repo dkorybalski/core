@@ -5,6 +5,7 @@ import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseSummaryDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 
 import java.util.List;
@@ -31,6 +32,14 @@ public interface ProjectDefenseService {
      * @return map of {@link ProjectDefenseDTO} grouped by date
      */
     Map<String, List<ProjectDefenseDTO>> getProjectDefenses(String studyYear, String username);
+
+    /**
+     * Returns all project defense slots for a study year to which a projects were assign to
+     *
+     * @param studyYear - study year that project defense objects are fetched for
+     * @return map of {@link ProjectDefenseSummaryDTO} grouped by date
+     */
+    Map<String, List<ProjectDefenseSummaryDTO>> getProjectDefensesSummary(String studyYear);
 
     /**
      * Assigns the project to selected project defense slot with additional validation if the change can be performed

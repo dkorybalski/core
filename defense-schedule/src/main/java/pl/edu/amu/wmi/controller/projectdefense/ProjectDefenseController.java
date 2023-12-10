@@ -1,5 +1,7 @@
 package pl.edu.amu.wmi.controller.projectdefense;
 
+import com.opencsv.exceptions.CsvException;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,7 +11,9 @@ import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
+import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseSummaryService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,9 +22,11 @@ import java.util.Map;
 public class ProjectDefenseController {
 
     private final ProjectDefenseService projectDefenseService;
+    private final ProjectDefenseSummaryService projectDefenseSummaryService;
 
-    public ProjectDefenseController(ProjectDefenseService projectDefenseService) {
+    public ProjectDefenseController(ProjectDefenseService projectDefenseService, ProjectDefenseSummaryService projectDefenseSummaryService) {
         this.projectDefenseService = projectDefenseService;
+        this.projectDefenseSummaryService = projectDefenseSummaryService;
     }
 
     @GetMapping("")
@@ -46,6 +52,16 @@ public class ProjectDefenseController {
     public ResponseEntity<List<ProjectNameDTO>> getProjectNames(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
                 .body(projectDefenseService.getProjectNames(studyYear));
+    }
+
+    @Secured({"COORDINATOR"})
+    @GetMapping("/summary")
+    public void exportDefenseScheduleSummary(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws IOException, CsvException {
+        servletResponse.setContentType("text/csv");
+        servletResponse.setCharacterEncoding("UTF-8");
+        servletResponse.addHeader("Content-Disposition", "attachment; filename=\"schedule.csv\"");
+
+        projectDefenseSummaryService.exportDefenseScheduleSummaryData(servletResponse.getWriter(), studyYear);
     }
 
 }
