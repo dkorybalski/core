@@ -15,7 +15,7 @@ import java.util.Objects;
 @Table(name = "PROJECT_DEFENSE")
 public class ProjectDefense extends AbstractEntity {
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "PROJECT_ID")
     private Project project;
 

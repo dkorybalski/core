@@ -9,4 +9,7 @@ import java.util.List;
 @Repository
 public interface ProjectDefenseDAO extends JpaRepository<ProjectDefense, Long> {
     List<ProjectDefense> findAllByStudyYear(String studyYear);
+
+    List<ProjectDefense> findAllByProjectId(Long projectId);
+
 }

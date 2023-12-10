@@ -17,9 +17,11 @@ import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.projectdefense.ProjectDefenseMapper;
 import pl.edu.amu.wmi.model.UserRoleType;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
 import pl.edu.amu.wmi.service.PermissionService;
 import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
+import pl.edu.amu.wmi.service.notification.DefenseNotificationService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.text.MessageFormat;
@@ -37,6 +39,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     private final DefenseTimeSlotService defenseTimeSlotService;
     private final ProjectMemberService projectMemberService;
     private final PermissionService permissionService;
+    private final DefenseNotificationService defenseNotificationService;
     private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final ProjectDefenseMapper projectDefenseMapper;
     private final ProjectDefenseDAO projectDefenseDAO;
@@ -45,6 +48,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     public ProjectDefenseServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
                                      ProjectMemberService projectMemberService,
                                      PermissionService permissionService,
+                                     DefenseNotificationService defenseNotificationService,
                                      DefenseScheduleConfigDAO defenseScheduleConfigDAO,
                                      ProjectDefenseMapper projectDefenseMapper,
                                      ProjectDefenseDAO projectDefenseDAO,
@@ -52,6 +56,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         this.defenseTimeSlotService = defenseTimeSlotService;
         this.projectMemberService = projectMemberService;
         this.permissionService = permissionService;
+        this.defenseNotificationService = defenseNotificationService;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.projectDefenseMapper = projectDefenseMapper;
         this.projectDefenseDAO = projectDefenseDAO;
@@ -73,6 +78,88 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     public Map<String, List<ProjectDefenseDTO>> getProjectDefenses(String studyYear, String indexNumber) {
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
         return createProjectDefenseDTOMap(studyYear, indexNumber, projectDefenses);
+    }
+
+    @Override
+    @Transactional
+    public void assignProjectToProjectDefense(String studyYear, String indexNumber, Long projectDefenseId, ProjectDefensePatchDTO projectDefensePatchDTO) {
+        ProjectDefense projectDefense = projectDefenseDAO.findById(projectDefenseId).orElseThrow(() ->
+                new BusinessException(MessageFormat.format("Project defense with id: {0} not found", projectDefenseId)));
+
+        Project previouslyAssignedProject = projectDefense.getProject();
+
+        if ((Objects.isNull(previouslyAssignedProject) && Objects.isNull(projectDefensePatchDTO.projectId()))
+                || (Objects.nonNull(previouslyAssignedProject) && Objects.nonNull(projectDefensePatchDTO.projectId()) && Objects.equals(previouslyAssignedProject.getId(), projectDefensePatchDTO.projectId()))) {
+            log.info("Update for project defense with id: {} was skipped - values from database and from request are the same", projectDefenseId);
+            return;
+        }
+
+        DefensePhase defensePhase = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear).getDefensePhase();
+
+        if (projectMemberService.isUserRoleCoordinator(indexNumber)) {
+            assignProjectToProjectDefenseAsCoordinator(projectDefensePatchDTO, previouslyAssignedProject, projectDefense);
+        }
+        if (isUserAProjectAdminAndDefensePhaseAllowTheModifications(indexNumber, defensePhase)) {
+            assignProjectToProjectDefenseAsProjectAdmin(indexNumber, projectDefensePatchDTO, previouslyAssignedProject, projectDefense);
+        }
+    }
+
+    private boolean isUserAProjectAdminAndDefensePhaseAllowTheModifications(String indexNumber, DefensePhase defensePhase) {
+        return Objects.equals(UserRole.PROJECT_ADMIN, projectMemberService.getUserRoleByUserIndex(indexNumber, UserRoleType.SPECIAL))
+                && Objects.equals(DefensePhase.DEFENSE_PROJECT_REGISTRATION, defensePhase);
+    }
+
+    private void assignProjectToProjectDefenseAsProjectAdmin(String indexNumber, ProjectDefensePatchDTO projectDefensePatchDTO, Project previouslyAssignedProject, ProjectDefense projectDefense) {
+        if (Objects.nonNull(previouslyAssignedProject) && !projectMemberService.isStudentAnAdminOfTheProject(indexNumber, previouslyAssignedProject.getId())) {
+            return;
+        }
+        Project newlyAssignedProject = null;
+        if (Objects.nonNull(projectDefensePatchDTO.projectId())) {
+            newlyAssignedProject = getProjectById(projectDefensePatchDTO.projectId());
+        }
+        if (Objects.isNull(newlyAssignedProject)) {
+            if (Objects.nonNull(previouslyAssignedProject)) {
+                projectDefense.setProject(null);
+                projectDefenseDAO.save(projectDefense);
+            }
+        } else if (permissionService.isProjectDefenseEditableForProjectAdmin(projectDefense, indexNumber, newlyAssignedProject)) {
+            removeExistingProjectDefenseAssignments(projectDefensePatchDTO);
+            projectDefense.setProject(newlyAssignedProject);
+            projectDefenseDAO.save(projectDefense);
+        }
+    }
+
+    private Project getProjectById(Long projectId) {
+        return projectDAO.findById(projectId).orElseThrow(() ->
+                new BusinessException(MessageFormat.format("Project id: {0} not found", projectId)));
+    }
+
+    private void assignProjectToProjectDefenseAsCoordinator(ProjectDefensePatchDTO projectDefensePatchDTO, Project previouslyAssignedProject, ProjectDefense projectDefense) {
+        // TODO: 12/9/2023 should the restriction, to not allow assign project to time slot where supervisor is not a committe member, be implemented? 
+        if (Objects.nonNull(projectDefensePatchDTO.projectId())) {
+            removeExistingProjectDefenseAssignments(projectDefensePatchDTO);
+        }
+        if (Objects.isNull(projectDefensePatchDTO.projectId())) {
+            if (Objects.nonNull(previouslyAssignedProject)) {
+                defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(previouslyAssignedProject.getStudents()));
+            }
+        } else {
+            Project newlyAssignedProject = getProjectById(projectDefensePatchDTO.projectId());
+            projectDefense.setProject(newlyAssignedProject);
+            projectDefenseDAO.save(projectDefense);
+            defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(newlyAssignedProject.getStudents()));
+            if (Objects.nonNull(previouslyAssignedProject)) {
+                defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(previouslyAssignedProject.getStudents()));
+            }
+        }
+    }
+
+    private void removeExistingProjectDefenseAssignments(ProjectDefensePatchDTO projectDefensePatchDTO) {
+        List<ProjectDefense> projectDefensesConnectedWithPreviousProject = projectDefenseDAO.findAllByProjectId(projectDefensePatchDTO.projectId());
+        projectDefensesConnectedWithPreviousProject.forEach(defense -> {
+            defense.setProject(null);
+            projectDefenseDAO.save(defense);
+        });
     }
 
     private Map<String, List<ProjectDefenseDTO>> createProjectDefenseDTOMap(String studyYear, String indexNumber, List<ProjectDefense> projectDefenses) {
@@ -156,6 +243,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
     /**
      * Maps a list of {@link ProjectDefense entities} to list of {@link ProjectDefenseDTO} with sorting by time
+     *
      * @param defenses
      * @return
      */

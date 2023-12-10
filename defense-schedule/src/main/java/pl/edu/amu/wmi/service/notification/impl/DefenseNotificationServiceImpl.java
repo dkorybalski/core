@@ -35,6 +35,11 @@ public class DefenseNotificationServiceImpl implements DefenseNotificationServic
             case DEFENSE_PROJECT_REGISTRATION -> notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_REGISTRATION_OPEN);
             default -> log.info("Sending notification for defense: {} phase not supported", defensePhase);
         }
+    }
 
+    @Override
+    public void notifyStudentsAboutProjectDefenseAssignment(List<Student> students) {
+        List<UserInfoDTO> userInfos = userInfoMapper.mapToUserInfos(students);
+        notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_ASSIGNMENT_CHANGE);
     }
 }

@@ -101,9 +101,13 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean isProjectDefenseEditableForProjectAdmin(ProjectDefense projectDefense, String indexNumber, Project project) {
-        Supervisor supervisor = project.getSupervisor();
-        return  isProjectAccepted(project) && isProjectSupervisorCommitteeMember(projectDefense, supervisor) &&
-                (isProjectDefenseSlotFree(projectDefense) || isProjectDefenseSlotAssignToUserProject(project, projectDefense));
+        if (Objects.isNull(project)) {
+            return false;
+        } else {
+            Supervisor supervisor = project.getSupervisor();
+            return isProjectAccepted(project) && isProjectSupervisorCommitteeMember(projectDefense, supervisor) &&
+                    (isProjectDefenseSlotFree(projectDefense) || isProjectDefenseSlotAssignToUserProject(project, projectDefense));
+        }
     }
 
     private boolean isProjectAccepted(Project project) {
