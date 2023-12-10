@@ -19,6 +19,7 @@ import pl.edu.amu.wmi.mapper.projectdefense.ProjectDefenseMapper;
 import pl.edu.amu.wmi.model.UserRoleType;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseSummaryDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 import pl.edu.amu.wmi.service.PermissionService;
 import pl.edu.amu.wmi.service.ProjectMemberService;
@@ -80,6 +81,21 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     public Map<String, List<ProjectDefenseDTO>> getProjectDefenses(String studyYear, String indexNumber) {
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
         return createProjectDefenseDTOMap(studyYear, indexNumber, projectDefenses);
+    }
+
+    @Override
+    public Map<String, List<ProjectDefenseSummaryDTO>> getProjectDefensesSummary(String studyYear) {
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
+        Map<LocalDate, List<ProjectDefense>> projectDefenseMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
+        Map<String, List<ProjectDefenseSummaryDTO>> projectDefenseDTOMap = new TreeMap<>();
+        projectDefenseMap.forEach((date, defenses) -> {
+            List<ProjectDefense> projectDefensesWithProjects = defenses.stream()
+                    .filter(defense -> Objects.nonNull(defense.getProject()))
+                    .toList();
+            projectDefenseDTOMap.put(date.format(dateTimeFormatter), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
+                }
+        );
+        return projectDefenseDTOMap;
     }
 
     @Override
