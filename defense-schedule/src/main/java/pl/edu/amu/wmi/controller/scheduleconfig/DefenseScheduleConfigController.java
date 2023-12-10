@@ -38,7 +38,18 @@ public class DefenseScheduleConfigController {
     public ResponseEntity<Void> openRegistrationForDefense(
             @RequestHeader("study-year") String studyYear) {
         defenseScheduleConfigService.openRegistrationForDefense(studyYear);
+        // TODO: 12/10/2023 consider making this call asynchronous
         defenseNotificationService.notifyStudents(studyYear, DefensePhase.DEFENSE_PROJECT_REGISTRATION);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @PatchMapping("/registration/close")
+    public ResponseEntity<Void> closeRegistrationForDefense(
+            @RequestHeader("study-year") String studyYear) {
+        defenseScheduleConfigService.closeRegistrationForDefense(studyYear);
+        // TODO: 12/10/2023 consider making this call asynchronous
+        defenseNotificationService.notifyStudents(studyYear, DefensePhase.DEFENSE_PROJECT);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

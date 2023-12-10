@@ -67,6 +67,21 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
 
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT_REGISTRATION);
         defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        log.info("Registration for projects defenses was opened for study year: {}", studyYear);
+    }
+
+    @Override
+    @Transactional
+    public void closeRegistrationForDefense(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndDefensePhase(studyYear, DefensePhase.DEFENSE_PROJECT_REGISTRATION);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.error("Closing registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
+            throw new BusinessException("Closing registration for defense unsuccessful - process in incorrect phase");
+        }
+
+        defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT);
+        defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        log.info("Registration for projects defenses was closed for study year: {}", studyYear);
     }
 
 }

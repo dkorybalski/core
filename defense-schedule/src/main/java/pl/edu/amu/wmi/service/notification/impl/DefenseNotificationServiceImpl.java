@@ -33,7 +33,8 @@ public class DefenseNotificationServiceImpl implements DefenseNotificationServic
         List<UserInfoDTO> userInfos = userInfoMapper.mapToUserInfos(students);
         switch (defensePhase) {
             case DEFENSE_PROJECT_REGISTRATION -> notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_REGISTRATION_OPEN);
-            default -> log.info("Sending notification for defense: {} phase not supported", defensePhase);
+            case DEFENSE_PROJECT -> notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_REGISTRATION_CLOSE);
+            default -> log.info("Sending notification for defense phase: {} not supported", defensePhase);
         }
     }
 
