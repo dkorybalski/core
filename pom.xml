@@ -14,6 +14,7 @@
         <module>auth</module>
         <module>notification-management</module>
         <module>defense-schedule</module>
+        <module>permission-management</module>
     </modules>
 
     <parent>

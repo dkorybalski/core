@@ -29,6 +29,8 @@ public class DefenseScheduleConfig extends AbstractEntity {
 
     private String studyYear;
 
+    private boolean isActive;
+
     @Enumerated(EnumType.STRING)
     private DefensePhase defensePhase;
 }

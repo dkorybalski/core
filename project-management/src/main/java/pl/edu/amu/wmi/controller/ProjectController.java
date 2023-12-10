@@ -20,10 +20,10 @@ import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.SupervisorAvailabilityDTO;
+import pl.edu.amu.wmi.service.PermissionService;
+import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
-import pl.edu.amu.wmi.service.permission.PermissionService;
-import pl.edu.amu.wmi.service.project.ProjectMemberService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 import pl.edu.amu.wmi.service.project.SupervisorProjectService;
 

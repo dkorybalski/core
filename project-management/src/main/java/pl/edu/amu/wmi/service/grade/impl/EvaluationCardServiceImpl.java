@@ -14,11 +14,14 @@ import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.grade.EvaluationCardException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.grade.ProjectCriteriaSectionMapper;
-import pl.edu.amu.wmi.model.grade.*;
+import pl.edu.amu.wmi.model.grade.CriteriaSectionDTO;
+import pl.edu.amu.wmi.model.grade.EvaluationCardDetailsDTO;
+import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
+import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
+import pl.edu.amu.wmi.service.PermissionService;
+import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
-import pl.edu.amu.wmi.service.permission.PermissionService;
-import pl.edu.amu.wmi.service.project.ProjectMemberService;
 
 import java.text.MessageFormat;
 import java.util.*;

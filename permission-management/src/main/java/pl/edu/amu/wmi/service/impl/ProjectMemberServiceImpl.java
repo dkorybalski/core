@@ -1,19 +1,24 @@
-package pl.edu.amu.wmi.service.project.impl;
+package pl.edu.amu.wmi.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
 import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.exception.BusinessException;
-import pl.edu.amu.wmi.service.project.ProjectMemberService;
+import pl.edu.amu.wmi.model.UserRoleType;
+import pl.edu.amu.wmi.service.ProjectMemberService;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static pl.edu.amu.wmi.enumerations.UserRole.*;
 
 @Service
+@Slf4j
 public class ProjectMemberServiceImpl implements ProjectMemberService {
 
     private final UserDataDAO userDataDAO;
@@ -25,14 +30,18 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
     @Override
-    public UserRole getUserRoleByUserIndex(String index) {
+    public UserRole getUserRoleByUserIndex(String index, UserRoleType userRoleType) {
         UserData userData = userDataDAO.findByIndexNumber(index).orElseThrow(()
                 -> new BusinessException(MessageFormat.format("User with index: {0} not found.", index)));
-        Role userRole = userData.getRoles().stream()
-                .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
-                .findFirst().orElseThrow(()
-                        -> new BusinessException(MessageFormat.format("User with index: {0} does not have required role.", index)));
-        return userRole.getName();
+        if (Objects.equals(UserRoleType.BASE, userRoleType)) {
+            Role userRole = userData.getRoles().stream()
+                    .filter(role -> role.getName().equals(STUDENT) || role.getName().equals(SUPERVISOR))
+                    .findFirst().orElseThrow(()
+                            -> new BusinessException(MessageFormat.format("User with index: {0} does not have required role.", index)));
+            return userRole.getName();
+        } else {
+            return findRoleWithTheHighestPermissions(userData.getRoles());
+        }
     }
 
     @Override
@@ -67,4 +76,16 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                 student.isProjectAdmin();
     }
 
+    private UserRole findRoleWithTheHighestPermissions(Set<Role> roles) {
+        List<UserRole> roleNames = extractRoleNames(roles);
+        return roleNames.contains(UserRole.COORDINATOR) ? UserRole.COORDINATOR :
+                roleNames.contains(UserRole.SUPERVISOR) ? UserRole.SUPERVISOR :
+                        roleNames.contains(UserRole.PROJECT_ADMIN) ? UserRole.PROJECT_ADMIN : UserRole.STUDENT;
+    }
+
+    private List<UserRole> extractRoleNames(Set<Role> roles) {
+        return roles.stream()
+                .map(Role::getName)
+                .toList();
+    }
 }

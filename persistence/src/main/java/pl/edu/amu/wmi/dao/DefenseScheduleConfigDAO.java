@@ -9,4 +9,6 @@ import pl.edu.amu.wmi.enumerations.DefensePhase;
 public interface DefenseScheduleConfigDAO extends JpaRepository<DefenseScheduleConfig, Long> {
 
     DefenseScheduleConfig findByStudyYearAndDefensePhase(String studyYear, DefensePhase defensePhase);
+
+    DefenseScheduleConfig findByStudyYearAndIsActiveIsTrue(String studyYear);
 }

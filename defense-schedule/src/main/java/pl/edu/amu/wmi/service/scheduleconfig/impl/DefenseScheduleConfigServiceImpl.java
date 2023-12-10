@@ -47,6 +47,7 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         DefenseScheduleConfig defenseScheduleConfigEntity = defenseScheduleConfigMapper.mapToEntity(defenseScheduleConfig);
         defenseScheduleConfigEntity.setStudyYear(studyYear);
         defenseScheduleConfigEntity.setDefensePhase(DefensePhase.SCHEDULE_PLANNING);
+        defenseScheduleConfigEntity.setActive(true);
         defenseScheduleConfigEntity = defenseScheduleConfigDAO.save(defenseScheduleConfigEntity);
         log.info("Defense schedule config was created with id: {}", defenseScheduleConfigEntity.getId());
 
