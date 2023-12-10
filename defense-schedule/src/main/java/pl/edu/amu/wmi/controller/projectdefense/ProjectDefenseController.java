@@ -1,13 +1,12 @@
 package pl.edu.amu.wmi.controller.projectdefense;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
+import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.util.List;
@@ -28,6 +27,17 @@ public class ProjectDefenseController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok()
                 .body(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
+    }
+
+    @Secured({"PROJECT_ADMIN", "COORDINATOR"})
+    @PatchMapping("/{projectDefenseId}")
+    public ResponseEntity<Void> assignProjectToProjectDefense(
+            @RequestHeader("study-year") String studyYear,
+            @PathVariable Long projectDefenseId,
+            @RequestBody ProjectDefensePatchDTO projectDefensePatchDTO) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        projectDefenseService.assignProjectToProjectDefense(studyYear, userDetails.getUsername(), projectDefenseId, projectDefensePatchDTO);
+        return ResponseEntity.ok().build();
     }
 
 }
