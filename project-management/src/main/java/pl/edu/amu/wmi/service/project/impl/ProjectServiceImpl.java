@@ -13,13 +13,14 @@ import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.project.ProjectMapper;
 import pl.edu.amu.wmi.mapper.project.StudentProjectMapper;
+import pl.edu.amu.wmi.model.UserRoleType;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
 import pl.edu.amu.wmi.model.project.ProjectDetailsDTO;
 import pl.edu.amu.wmi.model.project.StudentDTO;
+import pl.edu.amu.wmi.service.PermissionService;
+import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 import pl.edu.amu.wmi.service.grade.EvaluationCardService;
-import pl.edu.amu.wmi.service.permission.PermissionService;
-import pl.edu.amu.wmi.service.project.ProjectMemberService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 
 import java.text.MessageFormat;
@@ -422,7 +423,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
-        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber, UserRoleType.BASE).equals(STUDENT)) {
             StudentProject studentProjectEntity = getStudentProjectByStudentIndex(projectEntity, userIndexNumber);
             studentProjectEntity.setProjectConfirmed(true);
             studentProjectEntity.getStudent().setProjectConfirmed(true);
@@ -434,7 +435,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             studentProjectDAO.save(studentProjectEntity);
 
-        } else if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(SUPERVISOR)) {
+        } else if (projectMemberService.getUserRoleByUserIndex(userIndexNumber, UserRoleType.BASE).equals(SUPERVISOR)) {
             log.info("Project with id: {} was accepted by all students and a supervisor", projectId);
             projectEntity.setAcceptanceStatus(ACCEPTED);
         } else {
@@ -474,7 +475,7 @@ public class ProjectServiceImpl implements ProjectService {
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
-        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber).equals(STUDENT)) {
+        if (projectMemberService.getUserRoleByUserIndex(userIndexNumber, UserRoleType.BASE).equals(STUDENT)) {
             if (isProjectConfirmedByAllStudents(projectEntity)) {
                 projectEntity.setAcceptanceStatus(PENDING);
             }

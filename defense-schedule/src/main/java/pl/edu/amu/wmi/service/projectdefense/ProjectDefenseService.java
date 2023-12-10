@@ -22,6 +22,7 @@ public interface ProjectDefenseService {
 
     /**
      * Returns all project defense slots for a study year with an information, if a slot can be edited by a user
+     * Records are sorted by date (map keys) and time (map values)
      *
      * @param studyYear - study year that project defense objects are fetched for
      * @param username  - user index - define if user is allowed to edit the project defense slot
