@@ -14,6 +14,7 @@ import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -63,5 +64,11 @@ public class SupervisorDefenseAssignmentServiceImpl implements SupervisorDefense
         supervisorDefenseAssignment.setSupervisor(supervisor);
         supervisorDefenseAssignment.setDefenseTimeSlot(defenseTimeSlot);
         return supervisorDefenseAssignment;
+    }
+
+    @Override
+    public List<LocalDate> getAllDefenseAssignmentDaysForStudyYear(String studyYear) {
+        List<SupervisorDefenseAssignment> allSupervisorDefenseAssignmentsForStudyYear = supervisorDefenseAssignmentDAO.findAllByDefenseTimeSlot_StudyYear(studyYear);
+        return allSupervisorDefenseAssignmentsForStudyYear.stream().map(defenseAssignment -> defenseAssignment.getDefenseTimeSlot().getDate()).distinct().toList();
     }
 }

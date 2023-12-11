@@ -48,6 +48,14 @@ public class SupervisorAvailabilityController {
     }
 
     @Secured({"COORDINATOR"})
+    @GetMapping("/supervisor")
+    public ResponseEntity<Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>>> getSupervisorsAvailability(
+            @RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(supervisorAvailabilityService.getAggregatedSupervisorsAvailability(studyYear));
+    }
+
+    @Secured({"COORDINATOR"})
     @GetMapping("/statistics")
     public ResponseEntity<List<SupervisorStatisticsDTO>> getSupervisorStatistics(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
