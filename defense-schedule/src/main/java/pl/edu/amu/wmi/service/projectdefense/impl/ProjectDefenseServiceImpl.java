@@ -29,15 +29,14 @@ import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static pl.edu.amu.wmi.util.CommonDateFormatter.commonDateFormatter;
 
 @Service
 @Slf4j
 public class ProjectDefenseServiceImpl implements ProjectDefenseService {
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
     private final DefenseTimeSlotService defenseTimeSlotService;
     private final ProjectMemberService projectMemberService;
@@ -92,7 +91,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
             List<ProjectDefense> projectDefensesWithProjects = defenses.stream()
                     .filter(defense -> Objects.nonNull(defense.getProject()))
                     .toList();
-            projectDefenseDTOMap.put(date.format(dateTimeFormatter), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
+            projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
                 }
         );
         return projectDefenseDTOMap;
@@ -167,7 +166,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     }
 
     private void assignProjectToProjectDefenseAsCoordinator(ProjectDefensePatchDTO projectDefensePatchDTO, Project previouslyAssignedProject, ProjectDefense projectDefense) {
-        // TODO: 12/9/2023 should the restriction, to not allow assign project to time slot where supervisor is not a committe member, be implemented? 
+        // TODO: 12/9/2023 should the restriction, to not allow assign project to time slot where supervisor is not a committe member, be implemented?
         if (Objects.nonNull(projectDefensePatchDTO.projectId())) {
             removeExistingProjectDefenseAssignments(projectDefensePatchDTO);
         }
@@ -205,7 +204,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
         projectDefenseMap.forEach((date, defenses) -> {
             List<ProjectDefenseDTO> projectDefenseDTOs = mapProjectDefensesToDTOs(defenses, indexNumber, projectAdminProject, userRole, defensePhase);
-            projectDefenseDTOMap.put(date.format(dateTimeFormatter), projectDefenseDTOs);
+            projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseDTOs);
         });
         return projectDefenseDTOMap;
     }
