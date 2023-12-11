@@ -11,18 +11,16 @@ import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.service.supervisoravailability.SupervisorAvailabilityService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import static pl.edu.amu.wmi.util.CommonDateFormatter.commonDateFormatter;
+
 @Service
 @Slf4j
 public class SupervisorAvailabilityServiceImpl implements SupervisorAvailabilityService {
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
     private final SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO;
     private final SupervisorAvailabilityMapper supervisorAvailabilityMapper;
@@ -50,7 +48,7 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
      * Returns Supervisor availability survey for the supervisor of a given study year.
      */
     @Override
-    public Map<String, List<SupervisorDefenseAssignmentDTO>> getSupervisorAvailabilitySurvey(Long supervisorId) {
+    public Map<String, Map<String, SupervisorDefenseAssignmentDTO>> getSupervisorAvailabilitySurvey(Long supervisorId) {
         List<SupervisorDefenseAssignment> supervisorDefenseAssignments = supervisorDefenseAssignmentDAO.findAllBySupervisor_Id(supervisorId);
 
         Map<LocalDate, List<SupervisorDefenseAssignment>> supervisorDefenseAssignmentsByDate = mapSupervisorDefenseAssignmentsByDate(supervisorDefenseAssignments);
@@ -69,29 +67,24 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
     /**
      * Creates Supervisor availability survey based on Supervisor defense assignments aggregated by assignment date.
      */
-    private Map<String, List<SupervisorDefenseAssignmentDTO>> createSupervisorAvailabilitySurvey(Map<LocalDate, List<SupervisorDefenseAssignment>> defenseAssignmentsByDate) {
-        Map<String, List<SupervisorDefenseAssignmentDTO>> supervisorAvailabilitySurvey = new TreeMap<>();
-        defenseAssignmentsByDate.keySet()
-                .forEach(key -> supervisorAvailabilitySurvey.put(key.format(dateTimeFormatter),
-                        convertDefenseAssignmentsToDtoWithSorting(defenseAssignmentsByDate.get(key))));
+    private Map<String, Map<String, SupervisorDefenseAssignmentDTO>> createSupervisorAvailabilitySurvey(Map<LocalDate, List<SupervisorDefenseAssignment>> defenseAssignmentsByDate) {
+        Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilitySurvey = new TreeMap<>();
+
+        defenseAssignmentsByDate.forEach((key, value) -> supervisorAvailabilitySurvey.put(key.format(commonDateFormatter()), createDefenseAssignmentsByTime(value)));
+
         return supervisorAvailabilitySurvey;
     }
 
     /**
-     * Converts list of SupervisorDefenseAssignment to list of SupervisorDefenseAssignmentDTO sorted by assignment time.
+     * Creates Supervisor defense assignments per hour using the assignment list for the selected day.
      */
-    private List<SupervisorDefenseAssignmentDTO> convertDefenseAssignmentsToDtoWithSorting(List<SupervisorDefenseAssignment> defenseAssignments) {
-        return supervisorAvailabilityMapper.mapToDtoList(defenseAssignments)
-                .stream()
-                .sorted(defenseAvailabilityByTimeComparator())
-                .collect(Collectors.toList());
-    }
+    private Map<String, SupervisorDefenseAssignmentDTO> createDefenseAssignmentsByTime(List<SupervisorDefenseAssignment> defenseAssignmentsByDate) {
+        Map<String, SupervisorDefenseAssignmentDTO> defenseAssignmentsByTime = new TreeMap<>();
+        List<SupervisorDefenseAssignmentDTO> defenseAssignments = supervisorAvailabilityMapper.mapToDtoList(defenseAssignmentsByDate);
 
-    /**
-     * Supervisor defense assignment time comparator.
-     */
-    private Comparator<SupervisorDefenseAssignmentDTO> defenseAvailabilityByTimeComparator() {
-        return Comparator.comparing(SupervisorDefenseAssignmentDTO::getTime);
+        defenseAssignments.forEach(assignment -> defenseAssignmentsByTime.put(assignment.getTime(), assignment));
+
+        return defenseAssignmentsByTime;
     }
 
 }
