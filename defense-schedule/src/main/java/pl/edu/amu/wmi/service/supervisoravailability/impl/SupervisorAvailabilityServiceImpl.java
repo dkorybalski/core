@@ -43,14 +43,16 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
 
     @Override
     @Transactional
-    public void putSupervisorAvailability(String studyYear, Long supervisorId, SupervisorDefenseAssignmentDTO supervisorDefenseAssignment) {
-        Long changedTimeSlotId = supervisorDefenseAssignment.getDefenseSlotId();
-        boolean isTimeSlotSelected = supervisorDefenseAssignment.isAvailable();
+    public void putSupervisorAvailability(String studyYear, Long supervisorId, Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignments) {
+        supervisorDefenseAssignments.values().forEach(supervisorDefenseAssignment -> {
+            Long changedTimeSlotId = supervisorDefenseAssignment.getDefenseSlotId();
+            boolean isTimeSlotSelected = supervisorDefenseAssignment.isAvailable();
 
-        SupervisorDefenseAssignment supervisorDefenseAssignmentEntity = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(supervisorId, changedTimeSlotId);
-        supervisorDefenseAssignmentEntity.setAvailable(isTimeSlotSelected);
-        supervisorDefenseAssignmentDAO.save(supervisorDefenseAssignmentEntity);
-        log.info("Supervisor availability was updated for supervisor with id: {}", supervisorId);
+            SupervisorDefenseAssignment supervisorDefenseAssignmentEntity = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(supervisorId, changedTimeSlotId);
+            supervisorDefenseAssignmentEntity.setAvailable(isTimeSlotSelected);
+            supervisorDefenseAssignmentDAO.save(supervisorDefenseAssignmentEntity);
+            log.info("Supervisor availability was updated for supervisor with id: {}", supervisorId);
+        });
     }
 
     /**

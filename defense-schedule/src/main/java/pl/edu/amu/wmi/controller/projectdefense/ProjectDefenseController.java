@@ -15,7 +15,6 @@ import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseSummaryService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/schedule/defense")
@@ -30,7 +29,7 @@ public class ProjectDefenseController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Map<String, List<ProjectDefenseDTO>>> getProjectDefenses(@RequestHeader("study-year") String studyYear) {
+    public ResponseEntity<List<ProjectDefenseDTO>> getProjectDefenses(@RequestHeader("study-year") String studyYear) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok()
                 .body(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));

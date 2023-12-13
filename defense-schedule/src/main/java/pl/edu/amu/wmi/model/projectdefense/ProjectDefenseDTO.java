@@ -1,5 +1,6 @@
 package pl.edu.amu.wmi.model.projectdefense;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ public class ProjectDefenseDTO {
 
     private String projectName;
 
+    @JsonProperty("classRoom")
     private String classroom;
 
     /**

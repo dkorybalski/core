@@ -77,9 +77,9 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     }
 
     @Override
-    public Map<String, List<ProjectDefenseDTO>> getProjectDefenses(String studyYear, String indexNumber) {
+    public List<ProjectDefenseDTO> getProjectDefenses(String studyYear, String indexNumber) {
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
-        return createProjectDefenseDTOMap(studyYear, indexNumber, projectDefenses);
+        return createProjectDefenseDTOs(studyYear, indexNumber, projectDefenses);
     }
 
     @Override
@@ -193,25 +193,12 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         });
     }
 
-    private Map<String, List<ProjectDefenseDTO>> createProjectDefenseDTOMap(String studyYear, String indexNumber, List<ProjectDefense> projectDefenses) {
-        Map<LocalDate, List<ProjectDefense>> projectDefenseMap = mapProjectDefenseByDate(projectDefenses);
-
+    private List<ProjectDefenseDTO> createProjectDefenseDTOs(String studyYear, String indexNumber, List<ProjectDefense> projectDefenses) {
         UserRole userRole = projectMemberService.getUserRoleByUserIndex(indexNumber, UserRoleType.SPECIAL);
         Project projectAdminProject = Objects.equals(UserRole.PROJECT_ADMIN, userRole) ? projectDAO.findByProjectAdmin(indexNumber, studyYear) : null;
         DefensePhase defensePhase = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear).getDefensePhase();
 
-        Map<String, List<ProjectDefenseDTO>> projectDefenseDTOMap = new TreeMap<>();
-
-        projectDefenseMap.forEach((date, defenses) -> {
-            List<ProjectDefenseDTO> projectDefenseDTOs = mapProjectDefensesToDTOs(defenses, indexNumber, projectAdminProject, userRole, defensePhase);
-            projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseDTOs);
-        });
-        return projectDefenseDTOMap;
-    }
-
-    private Map<LocalDate, List<ProjectDefense>> mapProjectDefenseByDate(List<ProjectDefense> projectDefenses) {
-        return projectDefenses.stream()
-                .collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
+        return mapProjectDefensesToDTOs(projectDefenses, indexNumber, projectAdminProject, userRole, defensePhase);
     }
 
     /**
