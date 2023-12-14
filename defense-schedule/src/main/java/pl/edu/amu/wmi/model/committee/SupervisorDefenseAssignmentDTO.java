@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.model.supervisordefense;
+package pl.edu.amu.wmi.model.committee;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

@@ -10,10 +10,10 @@ import pl.edu.amu.wmi.enumerations.DefensePhase;
 import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
+import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
-import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
 
 import java.util.Objects;
 

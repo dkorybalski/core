@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.supervisoravailability.impl;
+package pl.edu.amu.wmi.service.committee.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,8 +8,8 @@ import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
-import pl.edu.amu.wmi.model.supervisordefense.SupervisorStatisticsDTO;
-import pl.edu.amu.wmi.service.supervisoravailability.SupervisorStatisticsService;
+import pl.edu.amu.wmi.model.committee.SupervisorStatisticsDTO;
+import pl.edu.amu.wmi.service.committee.SupervisorStatisticsService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.supervisordefense.impl;
+package pl.edu.amu.wmi.service.committee.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +10,8 @@ import pl.edu.amu.wmi.entity.DefenseTimeSlot;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.exception.BusinessException;
+import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
-import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;

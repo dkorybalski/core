@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.mapper.supervisoravailability;
+package pl.edu.amu.wmi.mapper.committee;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import pl.edu.amu.wmi.entity.DefenseTimeSlot;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
-import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
+import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 
 import java.util.List;
 
