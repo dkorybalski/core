@@ -3,7 +3,7 @@ package pl.edu.amu.wmi.security;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import pl.edu.amu.wmi.entity.UserData;
 
 import java.util.Collection;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements LdapUserDetails {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,15 +19,17 @@ public class UserDetailsImpl implements UserDetails {
 
     private String indexNumber;
 
-    private String email;
-
     @JsonIgnore
     private String password;
 
+    private String email;
+
+    private LdapUserDetails ldapUserDetails;
+
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String indexNumber, String email, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(Long id, String indexNumber, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+        super();
         this.id = id;
         this.indexNumber = indexNumber;
         this.email = email;
@@ -99,5 +101,15 @@ public class UserDetailsImpl implements UserDetails {
             return false;
         UserDetailsImpl user = (UserDetailsImpl) o;
         return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public String getDn() {
+        return null;
+    }
+
+    @Override
+    public void eraseCredentials() {
+
     }
 }
