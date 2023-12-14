@@ -51,4 +51,17 @@ public class ProjectDefense extends AbstractEntity {
         this.setSupervisorDefenseAssignments(supervisorDefenseAssignments);
         supervisorDefenseAssignments.forEach(supervisorDefenseAssignment -> supervisorDefenseAssignment.setProjectDefense(this));
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProjectDefense that = (ProjectDefense) o;
+        return Objects.equals(project, that.project) && Objects.equals(supervisorDefenseAssignments, that.supervisorDefenseAssignments) && Objects.equals(studyYear, that.studyYear) && Objects.equals(chairpersonDefenseAssignment, that.chairpersonDefenseAssignment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(project, supervisorDefenseAssignments, studyYear, chairpersonDefenseAssignment);
+    }
 }

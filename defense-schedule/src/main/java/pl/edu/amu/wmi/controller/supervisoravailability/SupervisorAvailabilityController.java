@@ -8,6 +8,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.model.supervisordefense.SupervisorStatisticsDTO;
+import pl.edu.amu.wmi.service.supervisoravailability.CommitteeService;
 import pl.edu.amu.wmi.service.supervisoravailability.SupervisorAvailabilityService;
 import pl.edu.amu.wmi.service.supervisoravailability.SupervisorStatisticsService;
 
@@ -21,19 +22,21 @@ public class SupervisorAvailabilityController {
 
     private final SupervisorAvailabilityService supervisorAvailabilityService;
     private final SupervisorStatisticsService supervisorStatisticsService;
+    private final CommitteeService committeeService;
 
     @Autowired
-    public SupervisorAvailabilityController(SupervisorAvailabilityService supervisorAvailabilityService, SupervisorStatisticsService supervisorStatisticsService) {
+    public SupervisorAvailabilityController(SupervisorAvailabilityService supervisorAvailabilityService, SupervisorStatisticsService supervisorStatisticsService, CommitteeService committeeService) {
         this.supervisorAvailabilityService = supervisorAvailabilityService;
         this.supervisorStatisticsService = supervisorStatisticsService;
+        this.committeeService = committeeService;
     }
 
     @Secured({"COORDINATOR", "SUPERVISOR"})
     @PutMapping("/supervisor/{supervisorId}")
-    public ResponseEntity<Void> putSupervisorAvailability(
+    public ResponseEntity<Void> putSupervisorAvailability( //todo convert to map
             @RequestHeader("study-year") String studyYear,
             @PathVariable Long supervisorId,
-            @Valid @RequestBody SupervisorDefenseAssignmentDTO supervisorDefenseAssignment) {
+            @Valid @RequestBody Map<String,SupervisorDefenseAssignmentDTO> supervisorDefenseAssignment) {
         supervisorAvailabilityService.putSupervisorAvailability(studyYear, supervisorId, supervisorDefenseAssignment);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -53,6 +56,16 @@ public class SupervisorAvailabilityController {
             @RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
                 .body(supervisorAvailabilityService.getAggregatedSupervisorsAvailability(studyYear));
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/supervisor")
+    public ResponseEntity<List<SupervisorStatisticsDTO>>updateCommittee(
+            @RequestHeader("study-year") String studyYear,
+            @RequestBody Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignmentDTOMap) {
+        committeeService.updateCommittee(studyYear, supervisorDefenseAssignmentDTOMap);
+        return ResponseEntity.ok()
+                .body(supervisorStatisticsService.getSupervisorStatistics(studyYear));
     }
 
     @Secured({"COORDINATOR"})

@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface SupervisorAvailabilityService {
 
-    void putSupervisorAvailability(String studyYear, Long supervisorId, SupervisorDefenseAssignmentDTO supervisorDefenseAssignment);
+    void putSupervisorAvailability(String studyYear, Long supervisorId, Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignments);
 
     Map<String, Map<String, SupervisorDefenseAssignmentDTO>> getSupervisorAvailabilitySurvey(Long supervisorId);
 

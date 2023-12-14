@@ -2,6 +2,7 @@ package pl.edu.amu.wmi.mapper.supervisoravailability;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import pl.edu.amu.wmi.entity.DefenseTimeSlot;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
@@ -24,5 +25,7 @@ public interface SupervisorAvailabilityMapper {
     default String defenseTimeSlotToString (DefenseTimeSlot defenseTimeSlot) {
         return defenseTimeSlot.getStartTime().toString() + " - " + defenseTimeSlot.getEndTime().toString();
     }
+
+    void update(@MappingTarget SupervisorDefenseAssignment entity, SupervisorDefenseAssignmentDTO dto);
 
 }

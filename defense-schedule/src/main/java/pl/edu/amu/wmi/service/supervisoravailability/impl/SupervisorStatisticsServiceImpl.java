@@ -69,7 +69,6 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
     private int countTheNumberOfDefensesAssignedToSupervisor(Supervisor supervisor, List<ProjectDefense> projectDefenses) {
         return (int) projectDefenses.stream()
                 .filter(defense -> isProjectSupervisorCommitteeMember(defense, supervisor))
-                .filter(defense -> Objects.nonNull(defense.getProject()))
                 .count();
     }
 
