@@ -52,7 +52,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
         Map<String, Integer> committeesPerDayMap = createSupervisorDefensesByDateMap(supervisor, projectDefenseByDateMap);
 
         return new SupervisorStatisticsDTO(
-                supervisor.getFullName(),
+                supervisor.getInitials(),
                 numberOfGroups,
                 numberOfAssignedProjectDefenses,
                 load,

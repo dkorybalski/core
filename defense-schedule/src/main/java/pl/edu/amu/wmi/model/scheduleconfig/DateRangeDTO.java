@@ -8,9 +8,9 @@ import java.time.LocalDate;
 @Data
 public class DateRangeDTO {
 
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="MM/dd/yyyy")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd.MM.yyyy")
     private LocalDate start;
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="MM/dd/yyyy")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd.MM.yyyy")
     private LocalDate end;
 
 }

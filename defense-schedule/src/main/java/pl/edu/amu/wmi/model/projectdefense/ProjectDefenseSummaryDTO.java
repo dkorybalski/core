@@ -10,7 +10,7 @@ import java.util.List;
 public class ProjectDefenseSummaryDTO {
 
     /**
-     * defense time send as string with format 7:00 - 7:30
+     * defense start time send as string with format 7:00
      */
     private String time;
 
@@ -19,12 +19,12 @@ public class ProjectDefenseSummaryDTO {
     private String classroom;
 
     /**
-     * names (first name and last name) of committee members
+     * names initials of committee members
      */
     private List<String> committee;
 
     /**
-     * name (first name and last name) of chairperson
+     * name initials of chairperson
      */
     private String chairperson;
 
