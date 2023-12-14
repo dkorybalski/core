@@ -53,8 +53,9 @@ To run the application use an IDE build in option (e.g. in IntelliJ) or execute 
 
 ```
 mvn clean package
-java -jar -Dspring.profiles.active=local -DPOSTGRES_URL=${POSTGRES_URL} -DPOSTGRES_DB=${POSTGRES_DB} -DPOSTGRES_USER=${POSTGRES_USER} -DPOSTGRES_PASSWORD=${POSTGRES_PASSWORD} -DJWT_TOKEN=${JWT_TOKEN} -DMAIL_HOST=${MAIL_HOST} -DMAIL_PORT=${MAIL_PORT} -DMAIL_USERNAME=${MAIL_USERNAME} -DMAIL_PASSWORD=${MAIL_PASSWORD} -DEMAIL_UNIVERSITY_DOMAIN=${EMAIL_UNIVERSITY_DOMAIN} pri-application/target/pri-application-1.0-SNAPSHOT.jar 
+java -jar -Dspring.profiles.active=local <environment variables> pri-application/target/pri-application-1.0-SNAPSHOT.jar 
 // before execution check the name of the jar file
+// as <environment variables> put all variables from config.env.example file (e.g. -DPOSTGRES_URL=${POSTGRES_URL} -DPOSTGRES_DB=${POSTGRES_DB})
 ```
 
 ## How to run application using Docker:

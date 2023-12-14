@@ -86,6 +86,11 @@ deploy:
     - sudo echo "MAIL_USERNAME=${MAIL_USERNAME}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "EMAIL_UNIVERSITY_DOMAIN=${EMAIL_UNIVERSITY_DOMAIN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_URL=${LDAP_URL}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_BASE=${LDAP_BASE}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_DOMAIN=${LDAP_DOMAIN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED=${FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "FF_LDAP_AUTHENTICATION_ENABLED=${FF_LDAP_AUTHENTICATION_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
     - sudo cat ${CI_PROJECT_DIR}/config.env
     - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env down
     - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env build

@@ -1,0 +1,60 @@
+dn: dc=springframework,dc=org
+objectclass: top
+objectclass: domain
+objectclass: extensibleObject
+dc: springframework
+
+dn: ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+dn: ou=subgroups,ou=groups,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: subgroups
+
+dn: ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+dn: uid=s123456,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Test1 Test1
+sn: Test1
+uid: s123456
+userPassword: $2a$12$1r2SNO6lLJk5D9zYgNbpyO0nk9kQo61JMjDSWQkgXrBMiWdjLn01q
+
+dn: uid=s111111,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Test2 Test2
+sn: Test2
+uid: s111111
+userPassword: $2a$12$1r2SNO6lLJk5D9zYgNbpyO0nk9kQo61JMjDSWQkgXrBMiWdjLn01q
+
+dn: uid=s222222,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Test3 Test3
+sn: Test3
+uid: s222222
+userPassword: $2a$12$1r2SNO6lLJk5D9zYgNbpyO0nk9kQo61JMjDSWQkgXrBMiWdjLn01q
+
+dn: uid=s762042,ou=people,dc=springframework,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Test4 Test4
+sn: Test3
+uid: s762042
+userPassword: $2a$12$1r2SNO6lLJk5D9zYgNbpyO0nk9kQo61JMjDSWQkgXrBMiWdjLn01q
