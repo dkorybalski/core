@@ -15,15 +15,15 @@ public interface SupervisorAvailabilityMapper {
 
     @Mapping(target = "supervisorId", source = "supervisor.id")
     @Mapping(target = "defenseSlotId", source = "defenseTimeSlot.id")
-    @Mapping(target = "time", source = "defenseTimeSlot", qualifiedByName = "DefenseTimeSlotToString")
+    @Mapping(target = "time", source = "defenseTimeSlot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectId", source = "projectDefense.project.id")
     SupervisorDefenseAssignmentDTO mapToDto(SupervisorDefenseAssignment entity);
 
     List<SupervisorDefenseAssignmentDTO> mapToDtoList(List<SupervisorDefenseAssignment> entities);
 
-    @Named("DefenseTimeSlotToString")
-    default String defenseTimeSlotToString (DefenseTimeSlot defenseTimeSlot) {
-        return defenseTimeSlot.getStartTime().toString() + " - " + defenseTimeSlot.getEndTime().toString();
+    @Named("DefenseTimeSlotStartTimeToString")
+    default String defenseTimeSlotStartDateToString (DefenseTimeSlot defenseTimeSlot) {
+        return defenseTimeSlot.getStartTime().toString();
     }
 
     void update(@MappingTarget SupervisorDefenseAssignment entity, SupervisorDefenseAssignmentDTO dto);

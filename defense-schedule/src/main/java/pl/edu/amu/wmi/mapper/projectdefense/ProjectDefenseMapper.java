@@ -16,42 +16,42 @@ public interface ProjectDefenseMapper {
 
     @Mapping(target = "projectDefenseId", source = "entity.id")
     @Mapping(target = "projectId", source = "entity.project.id")
-    @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotToString")
+    @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
-    @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorNames")
-    @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonName")
+    @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorsInitials")
+    @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonInitials")
     @Mapping(target = "classroom", source = "entity.classroom")
     @Mapping(target = "editable", ignore = true)
     ProjectDefenseDTO mapToDto(ProjectDefense entity);
 
     List<ProjectDefenseDTO> mapToDTOs(List<ProjectDefense> entities);
 
-    @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotToString")
+    @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
-    @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorNames")
-    @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonName")
+    @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorsInitials")
+    @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonInitials")
     @Mapping(target = "classroom", source = "entity.classroom")
     @Mapping(target = "students", source = "entity.project", qualifiedByName = "StudentsToStudentNames")
-    @Mapping(target = "supervisor", source = "entity.project", qualifiedByName = "SupervisorToSupervisorName")
+    @Mapping(target = "supervisor", source = "entity.project", qualifiedByName = "SupervisorToSupervisorInitials")
     ProjectDefenseSummaryDTO mapToSummaryDto(ProjectDefense entity);
 
     List<ProjectDefenseSummaryDTO> mapToSummaryDTOs(List<ProjectDefense> entities);
 
-    @Named("DefenseTimeSlotToString")
-    default String defenseTimeSlotToString (DefenseTimeSlot defenseTimeSlot) {
-        return defenseTimeSlot.getStartTime().toString() + " - " + defenseTimeSlot.getEndTime().toString();
+    @Named("DefenseTimeSlotStartTimeToString")
+    default String defenseTimeSlotStartDateToString (DefenseTimeSlot defenseTimeSlot) {
+        return defenseTimeSlot.getStartTime().toString();
     }
 
-    @Named("SupervisorDefenseAssignmentsToSupervisorNames")
-    default List<String> supervisorDefenseAssignmentsToSupervisorNames(List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
+    @Named("SupervisorDefenseAssignmentsToSupervisorsInitials")
+    default List<String> supervisorDefenseAssignmentsToSupervisorsInitials(List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
         return supervisorDefenseAssignments.stream()
-                .map(supervisorDefenseAssignment -> supervisorDefenseAssignment.getSupervisor().getFullName())
+                .map(supervisorDefenseAssignment -> supervisorDefenseAssignment.getSupervisor().getInitials())
                 .toList();
     }
 
-    @Named("ChairpersonToChairpersonName")
-    default String chairpersonToChairpersonName(SupervisorDefenseAssignment chairperson) {
-        return chairperson.getSupervisor().getFullName();
+    @Named("ChairpersonToChairpersonInitials")
+    default String chairpersonToChairpersonInitials(SupervisorDefenseAssignment chairperson) {
+        return chairperson.getSupervisor().getInitials();
     }
 
     @Named("StudentsToStudentNames")
@@ -65,8 +65,8 @@ public interface ProjectDefenseMapper {
         }
     }
 
-    @Named("SupervisorToSupervisorName")
-    default String supervisorToSupervisorName(Project project) {
-        return Objects.nonNull(project) ? project.getSupervisor().getFullName() : null;
+    @Named("SupervisorToSupervisorInitials")
+    default String supervisorToSupervisorInitials(Project project) {
+        return Objects.nonNull(project) ? project.getSupervisor().getInitials() : null;
     }
 }

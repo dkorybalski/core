@@ -130,9 +130,9 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
     private Map<String, Map<String, SupervisorDefenseAssignmentDTO>> createSupervisorsAvailabilityByDay(List<Supervisor> supervisors, LocalDate day) {
         Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityPerDay = new TreeMap<>();
         supervisors.forEach(supervisor -> {
-            String supervisorLastName = supervisor.getUserData().getLastName().toUpperCase();
+            String supervisorInitials = supervisor.getInitials();
             Map<String, Map<String, SupervisorDefenseAssignmentDTO>> availabilitySurvey = getSupervisorAvailabilitySurvey(supervisor.getId());
-            supervisorAvailabilityPerDay.put(supervisorLastName, availabilitySurvey.get(day.format(commonDateFormatter())));
+            supervisorAvailabilityPerDay.put(supervisorInitials, availabilitySurvey.get(day.format(commonDateFormatter())));
         });
 
         return supervisorAvailabilityPerDay;
