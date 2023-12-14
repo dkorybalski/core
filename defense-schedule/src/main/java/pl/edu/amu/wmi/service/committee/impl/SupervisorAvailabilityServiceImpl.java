@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.supervisoravailability.impl;
+package pl.edu.amu.wmi.service.committee.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +8,10 @@ import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.dao.SupervisorDefenseAssignmentDAO;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
-import pl.edu.amu.wmi.mapper.supervisoravailability.SupervisorAvailabilityMapper;
-import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
-import pl.edu.amu.wmi.service.supervisoravailability.SupervisorAvailabilityService;
-import pl.edu.amu.wmi.service.supervisordefense.SupervisorDefenseAssignmentService;
+import pl.edu.amu.wmi.mapper.committee.SupervisorAvailabilityMapper;
+import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
+import pl.edu.amu.wmi.service.committee.SupervisorAvailabilityService;
+import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 
 import java.time.LocalDate;
 import java.util.List;

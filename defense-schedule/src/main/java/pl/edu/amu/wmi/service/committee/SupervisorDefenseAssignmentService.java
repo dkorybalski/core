@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.service.supervisordefense;
+package pl.edu.amu.wmi.service.committee;
 
 import java.time.LocalDate;
 import java.util.List;

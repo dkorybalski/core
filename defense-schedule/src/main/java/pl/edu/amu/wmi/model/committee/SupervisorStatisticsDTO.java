@@ -1,4 +1,4 @@
-package pl.edu.amu.wmi.model.supervisordefense;
+package pl.edu.amu.wmi.model.committee;
 
 import java.util.Map;
 

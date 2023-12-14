@@ -1,6 +1,6 @@
-package pl.edu.amu.wmi.service.supervisoravailability;
+package pl.edu.amu.wmi.service.committee;
 
-import pl.edu.amu.wmi.model.supervisordefense.SupervisorDefenseAssignmentDTO;
+import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 
 import java.util.Map;
 
