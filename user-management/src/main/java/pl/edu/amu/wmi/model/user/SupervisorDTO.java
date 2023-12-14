@@ -15,4 +15,6 @@ public class SupervisorDTO {
 
     private String indexNumber;
 
+    private String initials;
+
 }
