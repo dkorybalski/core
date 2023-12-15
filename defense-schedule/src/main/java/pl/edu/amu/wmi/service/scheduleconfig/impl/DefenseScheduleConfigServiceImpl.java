@@ -12,7 +12,6 @@ import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
-import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
 
 import java.util.Objects;
@@ -23,7 +22,6 @@ import java.util.Objects;
 public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigService {
 
     private final DefenseTimeSlotService defenseTimeSlotService;
-    private final ProjectDefenseService projectDefenseService;
     private final SupervisorDefenseAssignmentService supervisorDefenseAssignmentService;
     private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final DefenseScheduleConfigMapper defenseScheduleConfigMapper;
@@ -31,11 +29,10 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
 
     @Autowired
     public DefenseScheduleConfigServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
-                                            ProjectDefenseService projectDefenseService, SupervisorDefenseAssignmentService supervisorDefenseAssignmentService,
+                                            SupervisorDefenseAssignmentService supervisorDefenseAssignmentService,
                                             DefenseScheduleConfigDAO defenseScheduleConfigDAO,
                                             DefenseScheduleConfigMapper defenseScheduleConfigMapper) {
         this.defenseTimeSlotService = defenseTimeSlotService;
-        this.projectDefenseService = projectDefenseService;
         this.supervisorDefenseAssignmentService = supervisorDefenseAssignmentService;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.defenseScheduleConfigMapper = defenseScheduleConfigMapper;
@@ -63,7 +60,6 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
             log.error("Opening registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
             throw new BusinessException("Opening registration for defense unsuccessful - process in incorrect phase");
         }
-        projectDefenseService.createProjectDefenses(defenseScheduleConfig.getId(), studyYear);
 
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT_REGISTRATION);
         defenseScheduleConfigDAO.save(defenseScheduleConfig);

@@ -11,4 +11,6 @@ public interface CommitteeService {
     void updateCommittee(String studyYear, Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignmentDTOMap);
 
     Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> getAggregatedChairpersonAssignments(String studyYear);
+
+    void updateChairpersonAssignment(ChairpersonAssignmentDTO chairpersonAssignmentDTO, String studyYear);
 }
