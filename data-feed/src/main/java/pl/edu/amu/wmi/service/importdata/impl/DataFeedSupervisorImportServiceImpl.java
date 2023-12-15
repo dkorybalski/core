@@ -34,8 +34,6 @@ import java.util.Set;
 @Slf4j
 public class DataFeedSupervisorImportServiceImpl implements DataFeedImportService {
 
-    private static final String INDEX_REGEX_PATTERN = "^s\\d{6}";
-
     private final SupervisorMapper supervisorMapper;
 
     private final SupervisorDAO supervisorDAO;
@@ -111,13 +109,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         List<Supervisor> entities = supervisorMapper.mapToEntities(newSupervisors);
         StudyYear studyYearEntity = studyYearDAO.findByStudyYear(studyYear);
         for (Supervisor supervisor : entities) {
-            String indexNumberWithPrefix;
-            if (!validateIndexNumber(supervisor.getIndexNumber())) {
-                indexNumberWithPrefix = addPrefixToIndex(supervisor.getIndexNumber());
-                supervisor.getUserData().setIndexNumber(indexNumberWithPrefix);
-            } else {
-                indexNumberWithPrefix = supervisor.getIndexNumber();
-            }
+            String indexNumberWithPrefix = supervisor.getIndexNumber();
             if (Boolean.TRUE.equals(userDataDAO.existsByIndexNumber(indexNumberWithPrefix))) {
                 UserData userData = userDataDAO.findByIndexNumber(indexNumberWithPrefix).orElseThrow(() ->
                         new BusinessException("Unexpected exception during fetching user data"));
@@ -128,13 +120,5 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
         }
         List<Supervisor> supervisors = supervisorDAO.saveAll(entities);
         return supervisorMapper.mapToDTOs(supervisors);
-    }
-
-    private String addPrefixToIndex(String indexNumber) {
-        return "s" + indexNumber;
-    }
-
-    private boolean validateIndexNumber(String indexNumber) {
-        return indexNumber.matches(INDEX_REGEX_PATTERN);
     }
 }
