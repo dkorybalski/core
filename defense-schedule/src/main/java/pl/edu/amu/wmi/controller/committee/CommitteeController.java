@@ -56,4 +56,13 @@ public class CommitteeController {
                 .body(committeeService.getAggregatedChairpersonAssignments(studyYear));
     }
 
+    @Secured({"COORDINATOR"})
+    @PutMapping("/chairperson")
+    public ResponseEntity<Void> updateChairpersonAssignment(
+            @RequestHeader("study-year") String studyYear,
+            @RequestBody ChairpersonAssignmentDTO chairpersonAssignmentDTO) {
+        committeeService.updateChairpersonAssignment(chairpersonAssignmentDTO, studyYear);
+        return ResponseEntity.ok().build();
+    }
+
 }

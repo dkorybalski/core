@@ -67,13 +67,8 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
     @Override
     @Transactional
-    public void createProjectDefenses(Long defenseScheduleConfigId, String studyYear) {
-        List<DefenseTimeSlot> timeSlots = defenseTimeSlotService.getAllTimeSlotsForDefenseConfig(defenseScheduleConfigId);
-
-        timeSlots.forEach(defenseTimeSlot ->
-                createProjectDefensesForTimeSlot(studyYear, defenseTimeSlot)
-        );
-        log.info("Project defense slots have been created for study year {}", studyYear);
+    public void createProjectDefense(String studyYear, List<SupervisorDefenseAssignment> committeeMembers) {
+        createNewProjectDefense(studyYear, committeeMembers);
     }
 
     @Override
@@ -88,10 +83,10 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         Map<LocalDate, List<ProjectDefense>> projectDefenseMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         Map<String, List<ProjectDefenseSummaryDTO>> projectDefenseDTOMap = new TreeMap<>();
         projectDefenseMap.forEach((date, defenses) -> {
-            List<ProjectDefense> projectDefensesWithProjects = defenses.stream()
-                    .filter(defense -> Objects.nonNull(defense.getProject()))
-                    .toList();
-            projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
+                    List<ProjectDefense> projectDefensesWithProjects = defenses.stream()
+                            .filter(defense -> Objects.nonNull(defense.getProject()))
+                            .toList();
+                    projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
                 }
         );
         return projectDefenseDTOMap;
@@ -127,6 +122,18 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         return projectsWithDefenseInfoForStudyYear.stream()
                 .map(this::mapTupleToProjectNameDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteProjectDefenses(List<Long> projectDefenseIdsToBeRemoved) {
+        projectDefenseIdsToBeRemoved.forEach(projectDefenseId -> {
+            Optional<ProjectDefense> entity = projectDefenseDAO.findById(projectDefenseId);
+            if (entity.isPresent()) {
+                projectDefenseDAO.delete(entity.get());
+                log.info("Project defense object with id: {} has been deleted", projectDefenseId);
+            }
+        });
     }
 
     private ProjectNameDTO mapTupleToProjectNameDto(Tuple tuple) {
@@ -275,20 +282,6 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         return Comparator.comparing(ProjectDefenseDTO::getTime);
     }
 
-    private void createProjectDefensesForTimeSlot(String studyYear, DefenseTimeSlot defenseTimeSlot) {
-        Map<CommitteeIdentifier, List<SupervisorDefenseAssignment>> committeeMap = mapCommitteesByCommitteeIdentifiers(defenseTimeSlot);
-        committeeMap.forEach((committeeIdentifier, supervisorDefenseAssignments) -> {
-            if (!supervisorDefenseAssignments.isEmpty()) {
-                if (!isChairpersonSetCorrectlyForCommittee(supervisorDefenseAssignments, defenseTimeSlot, committeeIdentifier)) {
-                    throw new BusinessException(MessageFormat.format("Project defense for committee with identifier: " +
-                                    "{0} for time slot {1} {2} cannot be created. Committee has to have exactly one chairperson selected",
-                            committeeIdentifier, defenseTimeSlot.getDate(), defenseTimeSlot.getStartTime()));
-                }
-                createNewProjectDefense(studyYear, supervisorDefenseAssignments);
-            }
-        });
-    }
-
     private void createNewProjectDefense(String studyYear, List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
         ProjectDefense projectDefense = new ProjectDefense();
         projectDefense.addSupervisorDefenseAssignments(supervisorDefenseAssignments);
@@ -302,21 +295,4 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
                 .collect(Collectors.groupingBy(SupervisorDefenseAssignment::getCommitteeIdentifier));
     }
 
-    private boolean isChairpersonSetCorrectlyForCommittee(List<SupervisorDefenseAssignment> supervisorDefenseAssignments,
-                                                          DefenseTimeSlot defenseTimeSlot, CommitteeIdentifier committeeIdentifier) {
-        long numberOfChairpersonsInCommittee = supervisorDefenseAssignments.stream()
-                .filter(SupervisorDefenseAssignment::isChairperson)
-                .count();
-        if (numberOfChairpersonsInCommittee == 0) {
-            log.error("Project defense for committee with identifier: {} for time slot {} {} cannot be created because none chairperson was selected.",
-                    committeeIdentifier, defenseTimeSlot.getDate(), defenseTimeSlot.getStartTime());
-            return false;
-        } else if (numberOfChairpersonsInCommittee > 1) {
-            log.error("Project defense for committee with identifier: {} for time slot {} {} cannot be created because more than one chairperson was selected.",
-                    committeeIdentifier, defenseTimeSlot.getDate(), defenseTimeSlot.getStartTime());
-            return false;
-        } else {
-            return true;
-        }
-    }
 }

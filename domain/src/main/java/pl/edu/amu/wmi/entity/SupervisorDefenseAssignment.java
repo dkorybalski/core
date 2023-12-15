@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 
+@NamedEntityGraph(
+        name = "graph.SupervisorDefenseAssignment.DefenseTimeSlot.ProjectDefense",
+        attributeNodes = {@NamedAttributeNode("defenseTimeSlot"),
+                        @NamedAttributeNode("projectDefense")})
 @Getter
 @Setter
 @Entity
