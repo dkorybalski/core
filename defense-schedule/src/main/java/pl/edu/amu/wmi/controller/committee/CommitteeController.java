@@ -3,6 +3,8 @@ package pl.edu.amu.wmi.controller.committee;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
+import pl.edu.amu.wmi.model.committee.ChairpersonAssignmentDTO;
 import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.model.committee.SupervisorStatisticsDTO;
 import pl.edu.amu.wmi.service.committee.CommitteeService;
@@ -44,6 +46,14 @@ public class CommitteeController {
         committeeService.updateCommittee(studyYear, supervisorDefenseAssignmentDTOMap);
         return ResponseEntity.ok()
                 .body(supervisorStatisticsService.getSupervisorStatistics(studyYear));
+    }
+
+    @Secured({"COORDINATOR"})
+    @GetMapping("/chairperson")
+    public ResponseEntity<Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>>> getChairpersonAssignments(
+            @RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(committeeService.getAggregatedChairpersonAssignments(studyYear));
     }
 
 }
