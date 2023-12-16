@@ -24,6 +24,8 @@ public class CommitteeMemberDAOImpl implements CommitteeMemberDAO {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private static final String entityGraphFull = "graph.SupervisorDefenseAssignment.FULL";
+
     @Override
     public List<Tuple> findCommitteeChairpersonsPerDayAndPerStudyYear(String studyYear) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -57,7 +59,7 @@ public class CommitteeMemberDAOImpl implements CommitteeMemberDAO {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<SupervisorDefenseAssignment> criteriaQuery = criteriaBuilder.createQuery(SupervisorDefenseAssignment.class);
 
-        EntityGraph entityGraph = entityManager.getEntityGraph("graph.SupervisorDefenseAssignment.DefenseTimeSlot.ProjectDefense");
+        EntityGraph entityGraph = entityManager.getEntityGraph(entityGraphFull);
 
         Metamodel metamodel = entityManager.getMetamodel();
         EntityType<SupervisorDefenseAssignment> supervisorDefenseAssignmentMetaModel = metamodel.entity(SupervisorDefenseAssignment.class);
@@ -97,6 +99,9 @@ public class CommitteeMemberDAOImpl implements CommitteeMemberDAO {
         }
         if (Objects.nonNull(criteria.getExcludedSupervisorIds()) && !criteria.getExcludedSupervisorIds().isEmpty()) {
             predicates.add(criteriaBuilder.not(supervisorJoin.get("id").in(criteria.getExcludedSupervisorIds())));
+        }
+        if (Objects.nonNull(criteria.getIsChairperson()) && Objects.equals(Boolean.TRUE, criteria.getIsChairperson())) {
+            predicates.add(criteriaBuilder.isTrue(root.get("isChairperson")));
         }
         return predicates;
     }
