@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class SupervisorDTO {
 
-    private Long id;
+    private String id;
 
     private String name;
 

@@ -57,7 +57,7 @@ public class CommitteeServiceImpl implements CommitteeService {
         List<SupervisorDefenseAssignmentDTO> supervisorDefenseAssignmentDTOs = new ArrayList<>(supervisorDefenseAssignmentDTOMap.values());
 
         supervisorDefenseAssignmentDTOs.forEach(sda -> {
-            SupervisorDefenseAssignment committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(sda.getSupervisorId(), sda.getDefenseSlotId());
+            SupervisorDefenseAssignment committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(Long.valueOf(sda.getSupervisorId()), sda.getDefenseSlotId());
 
             List<SupervisorDefenseAssignment> committeesWhereCommitteeMemberIsAChairperson = new ArrayList<>();
             if (!committeeMember.isChairperson() && Objects.nonNull(sda.getCommitteeIdentifier())) {
@@ -83,7 +83,7 @@ public class CommitteeServiceImpl implements CommitteeService {
                 }
                 case CHAIRPERSON_ASSIGNMENT_CHANGED_AND_PREVIOUS_COMMITTEE_SLOT_DELETED -> {
                     deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
-                    committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(sda.getSupervisorId(), sda.getDefenseSlotId());
+                    committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(Long.valueOf(sda.getSupervisorId()), sda.getDefenseSlotId());
                     committeeMember.setCommitteeIdentifier(sda.getCommitteeIdentifier());
                     supervisorDefenseAssignmentDAO.save(committeeMember);
                     // TODO: 12/16/2023 check if committee for time slot exists

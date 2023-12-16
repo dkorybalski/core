@@ -13,7 +13,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SupervisorAvailabilityMapper {
 
-    @Mapping(target = "supervisorId", source = "supervisor.id")
+    @Mapping(target = "supervisorId", expression = "java(entity.getSupervisor().getId().toString())")
     @Mapping(target = "defenseSlotId", source = "defenseTimeSlot.id")
     @Mapping(target = "time", source = "defenseTimeSlot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectId", source = "projectDefense.project.id")

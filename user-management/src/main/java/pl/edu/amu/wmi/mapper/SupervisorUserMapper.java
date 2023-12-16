@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SupervisorUserMapper {
 
-    @Mapping(target = "id", source = "id")
+    @Mapping(target = "id", expression = "java(entity.getId().toString())")
     @Mapping(target = "name", source = "entity", qualifiedByName = "SupervisorToSupervisorFullName")
     @Mapping(target = "email", source = "userData.email")
     @Mapping(target = "indexNumber", source = "userData.indexNumber")

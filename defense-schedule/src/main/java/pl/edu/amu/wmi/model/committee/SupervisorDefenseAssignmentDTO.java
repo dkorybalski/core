@@ -9,7 +9,7 @@ import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 @NoArgsConstructor
 public class SupervisorDefenseAssignmentDTO {
 
-    private Long supervisorId;
+    private String supervisorId;
 
     @NotNull
     private Long defenseSlotId;
