@@ -19,4 +19,9 @@ public class ChairpersonAssignmentDTO {
     private CommitteeIdentifier committeeIdentifier;
 
     private String date;
+
+    public ChairpersonAssignmentDTO(CommitteeIdentifier committeeIdentifier, String date) {
+        this.committeeIdentifier = committeeIdentifier;
+        this.date = date;
+    }
 }
