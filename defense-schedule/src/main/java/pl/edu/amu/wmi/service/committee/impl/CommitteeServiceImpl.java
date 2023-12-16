@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.CommitteeMemberDAO;
 import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.SupervisorDefenseAssignmentDAO;
+import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
@@ -17,10 +18,13 @@ import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.service.committee.CommitteeService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.time.temporal.ChronoUnit.DAYS;
 import static pl.edu.amu.wmi.util.CommonDateFormatter.commonDateFormatter;
 
 @Slf4j
@@ -142,7 +146,7 @@ public class CommitteeServiceImpl implements CommitteeService {
         List<Tuple> committeeChairpersonsPerDay = committeeMemberDAO.findCommitteeChairpersonsPerDayAndPerStudyYear(studyYear);
         List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs = mapTuplesToChairpersonDTOs(committeeChairpersonsPerDay);
 
-        return createChairpersonPerCommitteeIdentifierPerDayMap(chairpersonAssignmentDTOs);
+        return createChairpersonPerCommitteeIdentifierPerDayMap(chairpersonAssignmentDTOs, studyYear);
     }
 
     @Override
@@ -246,20 +250,45 @@ public class CommitteeServiceImpl implements CommitteeService {
                 .toList();
     }
 
-    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createChairpersonPerCommitteeIdentifierPerDayMap(List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs) {
+    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createChairpersonPerCommitteeIdentifierPerDayMap(List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs, String studyYear) {
         Map<String, List<ChairpersonAssignmentDTO>> chairpersonPerDayMap = chairpersonAssignmentDTOs.stream()
                 .collect(Collectors.groupingBy(ChairpersonAssignmentDTO::getDate));
 
-        Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> chairpersonPerCommitteeIdentifierPerDayMap = new TreeMap<>();
+        Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> chairpersonPerCommitteeIdentifierPerDayMap = createMapTemplate(studyYear);
 
         chairpersonPerDayMap.forEach((date, chairpersons) -> {
             Map<CommitteeIdentifier, ChairpersonAssignmentDTO> chairpersonPerCommitteeIdentifier = chairpersons.stream()
                     .collect(Collectors.groupingBy(ChairpersonAssignmentDTO::getCommitteeIdentifier,
                             Collectors.collectingAndThen(Collectors.toList(), list -> list.get(0))));
-            chairpersonPerCommitteeIdentifierPerDayMap.put(date, chairpersonPerCommitteeIdentifier);
+            chairpersonPerCommitteeIdentifier.forEach((committeeIdentifier, chairperson) -> {
+                chairpersonPerCommitteeIdentifierPerDayMap.get(date).put(committeeIdentifier, chairperson);
+            });
         });
 
         return chairpersonPerCommitteeIdentifierPerDayMap;
+    }
+
+    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createMapTemplate(String studyYear) {
+        Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> mapTemplate = new TreeMap<>();
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        List<LocalDate> dates = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
+        dates.forEach(day -> {
+            Map<CommitteeIdentifier, ChairpersonAssignmentDTO> map = new TreeMap<>();
+            Arrays.stream(CommitteeIdentifier.values()).forEach(committeeIdentifier -> {
+                map.put(committeeIdentifier, new ChairpersonAssignmentDTO(committeeIdentifier, day.format(commonDateFormatter())));
+            });
+            mapTemplate.put(day.format(commonDateFormatter()), map);
+        });
+        return mapTemplate;
+    }
+
+    private List<LocalDate> getDefenseDays(LocalDate startDate, LocalDate endDate) {
+        long numOfDaysBetween = Duration.ofDays(DAYS.between(startDate, endDate)).toDays();
+
+        return IntStream.iterate(0, i -> i + 1)
+                .limit(numOfDaysBetween + 1)
+                .mapToObj(startDate::plusDays)
+                .toList();
     }
 
     private List<ChairpersonAssignmentDTO> mapTuplesToChairpersonDTOs(List<Tuple> committeeChairpersonsPerDay) {
@@ -282,7 +311,6 @@ public class CommitteeServiceImpl implements CommitteeService {
                 date.format(commonDateFormatter())
         );
     }
-
 
     private enum CommitteeUpdateCase {
         COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED,
