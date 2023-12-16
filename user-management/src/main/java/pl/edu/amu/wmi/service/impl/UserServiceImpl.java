@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import pl.edu.amu.wmi.dao.StudentDAO;
+import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.dao.UserDataDAO;
 import pl.edu.amu.wmi.entity.*;
@@ -27,16 +28,18 @@ public class UserServiceImpl implements UserService {
     private final StudentDAO studentDAO;
 
     private final SupervisorDAO supervisorDAO;
+    private final StudyYearDAO studyYearDAO;
 
     private final UserMapper userMapper;
 
     private final SessionDataService sessionDataService;
 
 
-    public UserServiceImpl(UserDataDAO userDataDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, UserMapper userMapper, SessionDataService sessionDataService) {
+    public UserServiceImpl(UserDataDAO userDataDAO, StudentDAO studentDAO, SupervisorDAO supervisorDAO, StudyYearDAO studyYearDAO, UserMapper userMapper, SessionDataService sessionDataService) {
         this.userDataDAO = userDataDAO;
         this.studentDAO = studentDAO;
         this.supervisorDAO = supervisorDAO;
+        this.studyYearDAO = studyYearDAO;
         this.userMapper = userMapper;
         this.sessionDataService = sessionDataService;
     }
@@ -75,9 +78,23 @@ public class UserServiceImpl implements UserService {
                     acceptedProjects.add(acceptedProject.getId());
                 }
                 assignedProjects.addAll(getStudentAssignedProjects(entity));
-            }
+            } else if (hasRoleCoordinator(userData.getRoles())) {
 
-            if (hasRoleSupervisor(userData.getRoles())) {
+                final List<String> coordinatorStudyYears = studyYearDAO.findAll().stream()
+                        .map(StudyYear::getStudyYear)
+                        .toList();
+                studyYears.addAll(coordinatorStudyYears);
+
+                String actualStudyYear = findActualStudyYear(studyYearFromHeader, indexNumber, coordinatorStudyYears);
+                userDTO.setActualYear(actualStudyYear);
+
+                if (hasRoleSupervisor(userData.getRoles())) {
+                    final List<Supervisor> supervisors = this.supervisorDAO.findAllByUserData_IndexNumber(indexNumber);
+                    final Supervisor entity = findSupervisorByActualStudyYear(supervisors, actualStudyYear, indexNumber);
+                    acceptedProjects.addAll(getSupervisorAcceptedProjects(entity));
+                    assignedProjects.addAll(getSupervisorAssignedProjects(entity));
+                }
+            } else if (hasRoleSupervisor(userData.getRoles())) {
                 final List<Supervisor> supervisors = this.supervisorDAO.findAllByUserData_IndexNumber(indexNumber);
 
                 final List<String> supervisorStudyYears = getStudyYearsForSupervisor(supervisors);
@@ -102,6 +119,11 @@ public class UserServiceImpl implements UserService {
             log.error("Exception during fetching the user data with index number: {} and study year: {}", indexNumber, studyYearFromHeader, exception);
             throw exception;
         }
+    }
+
+    private boolean hasRoleCoordinator(Set<Role> roles) {
+        List<UserRole> roleNames = extractRoleNames(roles);
+        return roleNames.contains(UserRole.COORDINATOR);
     }
 
     private String findActualStudyYear(String studyYear, String indexNumber, List<String> studyYears) {
