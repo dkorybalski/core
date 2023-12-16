@@ -24,6 +24,8 @@ public interface EvaluationCardService {
 
     Optional<EvaluationCard> findTheMostRecentEvaluationCard(List<EvaluationCard> evaluationCards, Semester semester);
 
+    EvaluationCard findTheMostRecentEvaluationCardFromBothSemesters(List<EvaluationCard> evaluationCards);
+
     String getPointsForSemester(Project entity, Semester semester);
 
     void publishEvaluationCard(Long evaluationCardId);

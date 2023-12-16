@@ -49,4 +49,5 @@ public interface ProjectDefenseService {
     List<ProjectNameDTO> getProjectNames(String studyYear);
 
     void deleteProjectDefenses(List<Long> projectDefenseIdsToBeRemoved);
+
 }

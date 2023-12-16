@@ -58,4 +58,8 @@ public class Student extends AbstractEntity {
         return userData.getFirstName() + " " + userData.getLastName();
     }
 
+    public String getBasicData() {
+        return getFullName() + " " + getIndexNumber();
+    }
+
 }
