@@ -354,9 +354,17 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
     }
 
     @Override
+    public EvaluationCard findTheMostRecentEvaluationCardFromBothSemesters(List<EvaluationCard> evaluationCards) {
+        Optional<EvaluationCard> theMostRecentEvaluationCardFirstSemester = findTheMostRecentEvaluationCard(evaluationCards, Semester.FIRST);
+        Optional<EvaluationCard> theMostRecentEvaluationCardSecondSemester = findTheMostRecentEvaluationCard(evaluationCards, Semester.SECOND);
+
+        return theMostRecentEvaluationCardSecondSemester.orElseGet(() -> theMostRecentEvaluationCardFirstSemester.orElse(null));
+    }
+
+    @Override
     public String getPointsForSemester(Project entity, Semester semester) {
         Optional<EvaluationCard> theMostRecentEvaluationCard = findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
-        return theMostRecentEvaluationCard.map(evaluationCard -> pointsToOverallPercent(evaluationCard.getTotalPoints())).orElse("0%");
+        return theMostRecentEvaluationCard.map(evaluationCard -> pointsToOverallPercent(evaluationCard.getTotalPoints())).orElse("0,00%");
     }
 
     @Override

@@ -52,6 +52,10 @@ public class ProjectDefense extends AbstractEntity {
         supervisorDefenseAssignments.forEach(supervisorDefenseAssignment -> supervisorDefenseAssignment.setProjectDefense(this));
     }
 
+    public List<String> getCommitteeInitials() {
+        return supervisorDefenseAssignments.stream().map(assignment -> assignment.getSupervisor().getInitials()).toList();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -15,4 +15,6 @@ public interface ProjectDefenseDAO extends JpaRepository<ProjectDefense, Long> {
 
     List<ProjectDefense> findAllByProjectId(Long projectId);
 
+    ProjectDefense findByProjectId(Long projectId);
+
 }

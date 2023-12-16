@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -77,6 +78,10 @@ public class Project extends AbstractEntity {
     public void addEvaluationCard(EvaluationCard evaluationCard) {
         this.evaluationCards.add(evaluationCard);
         evaluationCard.setProject(this);
+    }
+
+    public String getStudentsBasicData() {
+        return assignedStudents.stream().map(studentProject -> studentProject.getStudent().getBasicData()).collect(Collectors.joining(", "));
     }
 
 }
