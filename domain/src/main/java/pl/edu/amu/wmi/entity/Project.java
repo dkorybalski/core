@@ -7,10 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.ProjectRole;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,7 +78,12 @@ public class Project extends AbstractEntity {
     }
 
     public String getStudentsBasicData() {
-        return assignedStudents.stream().map(studentProject -> studentProject.getStudent().getBasicData()).collect(Collectors.joining(", "));
+        return assignedStudents.stream().sorted(studentPojectsByIsAdminComparator())
+                .map(studentProject -> studentProject.getStudent().getBasicData()).collect(Collectors.joining(", "));
+    }
+
+    private Comparator<StudentProject> studentPojectsByIsAdminComparator() {
+        return Comparator.comparing(studentProject -> !studentProject.isProjectAdmin());
     }
 
 }
