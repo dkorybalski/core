@@ -21,5 +21,6 @@ public class CommitteeAssignmentCriteria {
     private String studyYear;
     private Long defenseTimeslotId;
     private List<Long> excludedSupervisorIds;
+    private Boolean isChairperson;
 
 }
