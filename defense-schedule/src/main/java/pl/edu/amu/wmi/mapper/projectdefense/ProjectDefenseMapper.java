@@ -22,6 +22,7 @@ public interface ProjectDefenseMapper {
     @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
     @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorsInitials")
+    @Mapping(target = "students", source = "entity.project", qualifiedByName = "StudentsToStudentsNames")
     @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonInitials")
     @Mapping(target = "classroom", source = "entity.classroom")
     @Mapping(target = "editable", ignore = true)
@@ -55,6 +56,15 @@ public interface ProjectDefenseMapper {
         return supervisorDefenseAssignments.stream()
                 .map(supervisorDefenseAssignment -> supervisorDefenseAssignment.getSupervisor().getInitials())
                 .toList();
+    }
+
+    @Named("StudentsToStudentsNames")
+    default String studentsToStudentsNames(Project project) {
+        if (Objects.nonNull(project)) {
+            return project.getStudentsBasicData();
+        } else {
+            return null;
+        }
     }
 
     @Named("ChairpersonToChairpersonInitials")
