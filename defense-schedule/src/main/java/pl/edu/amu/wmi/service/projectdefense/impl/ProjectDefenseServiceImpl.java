@@ -7,10 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
 import pl.edu.amu.wmi.dao.ProjectDefenseDAO;
-import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
-import pl.edu.amu.wmi.entity.Project;
-import pl.edu.amu.wmi.entity.ProjectDefense;
-import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
+import pl.edu.amu.wmi.entity.*;
 import pl.edu.amu.wmi.enumerations.DefensePhase;
 import pl.edu.amu.wmi.enumerations.UserRole;
 import pl.edu.amu.wmi.exception.BusinessException;
@@ -119,6 +116,50 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         if (isUserAProjectAdminAndDefensePhaseAllowTheModifications(indexNumber, defensePhase)) {
             assignProjectToProjectDefenseAsProjectAdmin(indexNumber, projectDefensePatchDTO, previouslyAssignedProject, projectDefense);
         }
+    }
+
+    @Override
+    @Transactional
+    public Set<Project> assignProjectsToProjectDefenses(List<ProjectDefenseDTO> projectDefenseDTOs) {
+        Set<Project> updatedProjects = new HashSet<>();
+        projectDefenseDTOs.forEach(defense -> {
+            Optional<Project> updatedProject = changeSingleAssignmentWhenNecessary(defense);
+            updatedProject.ifPresent(updatedProjects::add);
+        });
+        return updatedProjects;
+    }
+
+    private Optional<Project> changeSingleAssignmentWhenNecessary(ProjectDefenseDTO projectDefenseDTO) {
+        Long projectDefenseId = projectDefenseDTO.getProjectDefenseId();
+        ProjectDefense projectDefenseEntity = projectDefenseDAO.findById(projectDefenseId)
+                .orElseThrow(() -> new BusinessException(MessageFormat.format("Project defense with id: {0} not found", projectDefenseId)));
+
+        Project projectDefenseProject = projectDefenseEntity.getProject();
+        Long projectDefenseCurrentProjectId = Objects.nonNull(projectDefenseProject) ? projectDefenseProject.getId() : null;
+        Long projectDefenseNewProjectId = projectDefenseDTO.getProjectId();
+
+        boolean isDefenseChange = !Objects.equals(projectDefenseCurrentProjectId, projectDefenseNewProjectId);
+
+        Project updatedProject = null;
+
+        if (isDefenseChange)
+            updatedProject = updateSingleProjectDefense(projectDefenseNewProjectId, projectDefenseEntity);
+
+        return Optional.ofNullable(updatedProject);
+    }
+
+    private Project updateSingleProjectDefense(Long projectDefenseNewProjectId, ProjectDefense projectDefenseEntity) {
+        Project updatedProject;
+        if (projectDefenseNewProjectId != null) {
+            updatedProject = projectDAO.findById(projectDefenseNewProjectId).orElseThrow(() ->
+                    new BusinessException(MessageFormat.format("Project with id: {0} not found", projectDefenseNewProjectId)));
+            projectDefenseEntity.setProject(updatedProject);
+        } else {
+            updatedProject = projectDefenseEntity.getProject();
+            projectDefenseEntity.setProject(null);
+        }
+        projectDefenseDAO.save(projectDefenseEntity);
+        return updatedProject;
     }
 
     @Override
@@ -296,6 +337,13 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         projectDefense.addSupervisorDefenseAssignments(supervisorDefenseAssignments);
         projectDefense.setStudyYear(studyYear);
         projectDefenseDAO.save(projectDefense);
+    }
+
+    @Override
+    public List<Student> getStudentsFromProjectDefenses(Set<Project> projects) {
+        List<Student> students = new ArrayList<>();
+        projects.forEach(project -> students.addAll(project.getStudents()));
+        return students;
     }
 
 }

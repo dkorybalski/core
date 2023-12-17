@@ -43,4 +43,6 @@ public class DefenseNotificationServiceImpl implements DefenseNotificationServic
         List<UserInfoDTO> userInfos = userInfoMapper.mapToUserInfos(students);
         notificationService.sendEmails(userInfos, EMailTemplate.PROJECT_DEFENSE_ASSIGNMENT_CHANGE);
     }
+
+
 }
