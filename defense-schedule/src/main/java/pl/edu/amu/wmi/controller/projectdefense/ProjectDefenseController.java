@@ -45,24 +45,25 @@ public class ProjectDefenseController {
 
     @Secured({"PROJECT_ADMIN"})
     @PatchMapping("/{projectDefenseId}")
-    public ResponseEntity<Void> assignProjectToProjectDefense(
+    public ResponseEntity<List<ProjectDefenseDTO>> assignProjectToProjectDefense(
             @RequestHeader("study-year") String studyYear,
             @PathVariable Long projectDefenseId,
             @RequestBody ProjectDefensePatchDTO projectDefensePatchDTO) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         projectDefenseService.assignProjectToProjectDefense(studyYear, userDetails.getUsername(), projectDefenseId, projectDefensePatchDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
     }
 
     @Secured({"COORDINATOR"})
     @PatchMapping("")
-    public ResponseEntity<Void> updateProjectDefenses(
+    public ResponseEntity<List<ProjectDefenseDTO>> updateProjectDefenses(
             @RequestHeader("study-year") String studyYear,
             @RequestBody List<ProjectDefenseDTO> projectDefenseDTOs) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Set<Project> updatedProjectDefenses = projectDefenseService.assignProjectsToProjectDefenses(projectDefenseDTOs);
         List<Student> studentsToNotify = projectDefenseService.getStudentsFromProjectDefenses(updatedProjectDefenses);
         defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(studentsToNotify);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
     }
 
     @Secured({"COORDINATOR"})

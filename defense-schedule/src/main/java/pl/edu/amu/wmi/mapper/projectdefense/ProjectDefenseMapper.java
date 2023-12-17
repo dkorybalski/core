@@ -11,11 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
+
 @Mapper(componentModel = "spring")
 public interface ProjectDefenseMapper {
 
     @Mapping(target = "projectDefenseId", source = "entity.id")
     @Mapping(target = "projectId", source = "entity.project.id")
+    @Mapping(target = "date", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotDateToString")
     @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
     @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorsInitials")
@@ -40,6 +43,11 @@ public interface ProjectDefenseMapper {
     @Named("DefenseTimeSlotStartTimeToString")
     default String defenseTimeSlotStartDateToString (DefenseTimeSlot defenseTimeSlot) {
         return defenseTimeSlot.getStartTime().toString();
+    }
+
+    @Named("DefenseTimeSlotDateToString")
+    default String defenseTimeSlotDateToString (DefenseTimeSlot defenseTimeSlot) {
+        return defenseTimeSlot.getDate().format(commonDateFormatter());
     }
 
     @Named("SupervisorDefenseAssignmentsToSupervisorsInitials")

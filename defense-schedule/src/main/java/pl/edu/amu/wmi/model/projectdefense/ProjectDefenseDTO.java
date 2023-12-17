@@ -14,6 +14,8 @@ public class ProjectDefenseDTO {
 
     private Long projectId;
 
+    private String date;
+
     /**
      * defense start time send as string with format 7:00
      */
@@ -29,6 +31,8 @@ public class ProjectDefenseDTO {
      */
     private List<String> committee;
 
+    private String students;
+
     /**
      * name initials of chairperson
      */
@@ -37,5 +41,6 @@ public class ProjectDefenseDTO {
     /**
      * value depends on the project defense phase and on the user role
      */
+    @JsonProperty("isEditable")
     private boolean isEditable;
 }
