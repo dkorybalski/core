@@ -32,7 +32,7 @@ public class CustomLdapUserDetailsMapper extends LdapUserDetailsMapper {
             throw new UsernameNotFoundException("Username not found");
         }
         UserDetails userDetails = super.mapUserFromContext(ctx, username, getAuthorities(user));
-        return new UserDetailsImpl(user.getId(), userDetails.getUsername(), user.getEmail(), userDetails.getPassword(), userDetails.getAuthorities());
+        return new UserDetailsImpl(user.getId(), userDetails.getUsername(), user.getEmail(), userDetails.getAuthorities());
     }
 
     private Set<GrantedAuthority> getAuthorities(UserData user) {
