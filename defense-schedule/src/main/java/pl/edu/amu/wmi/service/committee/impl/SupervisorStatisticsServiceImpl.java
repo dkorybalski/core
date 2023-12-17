@@ -2,8 +2,10 @@ package pl.edu.amu.wmi.service.committee.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.ProjectDefenseDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
+import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
@@ -24,14 +26,21 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
 
     private final SupervisorDAO supervisorDAO;
     private final ProjectDefenseDAO projectDefenseDAO;
+    private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
 
-    public SupervisorStatisticsServiceImpl(SupervisorDAO supervisorDAO, ProjectDefenseDAO projectDefenseDAO) {
+    public SupervisorStatisticsServiceImpl(SupervisorDAO supervisorDAO, ProjectDefenseDAO projectDefenseDAO, DefenseScheduleConfigDAO defenseScheduleConfigDAO) {
         this.supervisorDAO = supervisorDAO;
         this.projectDefenseDAO = projectDefenseDAO;
+        this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
     }
 
     @Override
     public List<SupervisorStatisticsDTO> getSupervisorStatistics(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.info("Defense schedule has been not configured yet for the study year {}", studyYear);
+            return null;
+        }
         List<Supervisor> supervisors = supervisorDAO.findAllByStudyYear(studyYear);
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));

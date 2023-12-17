@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.ProjectDAO;
 import pl.edu.amu.wmi.dao.ProjectDefenseDAO;
+import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.entity.ProjectDefense;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
@@ -71,8 +72,14 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
     @Override
     public List<ProjectDefenseDTO> getProjectDefenses(String studyYear, String indexNumber) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.info("Defense schedule has been not configured yet for the study year {}", studyYear);
+            return null;
+        }
+        DefensePhase defensePhase = defenseScheduleConfig.getDefensePhase();
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
-        return createProjectDefenseDTOs(studyYear, indexNumber, projectDefenses);
+        return createProjectDefenseDTOs(studyYear, indexNumber, projectDefenses, defensePhase);
     }
 
     @Override
@@ -116,6 +123,11 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
     @Override
     public List<ProjectNameDTO> getProjectNames(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.info("Defense schedule has been not configured yet for the study year {}", studyYear);
+            return null;
+        }
         List<Tuple> projectsWithDefenseInfoForStudyYear = projectDAO.findAcceptedProjectsWithDefenseInfoForStudyYear(studyYear);
         return projectsWithDefenseInfoForStudyYear.stream()
                 .map(this::mapTupleToProjectNameDto)
@@ -198,10 +210,9 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         });
     }
 
-    private List<ProjectDefenseDTO> createProjectDefenseDTOs(String studyYear, String indexNumber, List<ProjectDefense> projectDefenses) {
+    private List<ProjectDefenseDTO> createProjectDefenseDTOs(String studyYear, String indexNumber, List<ProjectDefense> projectDefenses, DefensePhase defensePhase) {
         UserRole userRole = projectMemberService.getUserRoleByUserIndex(indexNumber, UserRoleType.SPECIAL);
         Project projectAdminProject = Objects.equals(UserRole.PROJECT_ADMIN, userRole) ? projectDAO.findByProjectAdmin(indexNumber, studyYear) : null;
-        DefensePhase defensePhase = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear).getDefensePhase();
 
         return mapProjectDefensesToDTOs(projectDefenses, indexNumber, projectAdminProject, userRole, defensePhase);
     }

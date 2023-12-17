@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.SupervisorDAO;
 import pl.edu.amu.wmi.dao.SupervisorDefenseAssignmentDAO;
+import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.mapper.committee.SupervisorAvailabilityMapper;
@@ -16,6 +18,7 @@ import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -28,16 +31,18 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
     private final SupervisorDefenseAssignmentService supervisorDefenseAssignmentService;
     private final SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO;
     private final SupervisorDAO supervisorDAO;
+    private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final SupervisorAvailabilityMapper supervisorAvailabilityMapper;
 
     @Autowired
     public SupervisorAvailabilityServiceImpl(SupervisorDefenseAssignmentService supervisorDefenseAssignmentService,
                                              SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO,
                                              SupervisorDAO supervisorDAO,
-                                             SupervisorAvailabilityMapper supervisorAvailabilityMapper) {
+                                             DefenseScheduleConfigDAO defenseScheduleConfigDAO, SupervisorAvailabilityMapper supervisorAvailabilityMapper) {
         this.supervisorDefenseAssignmentService = supervisorDefenseAssignmentService;
         this.supervisorDefenseAssignmentDAO = supervisorDefenseAssignmentDAO;
         this.supervisorDAO = supervisorDAO;
+        this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.supervisorAvailabilityMapper = supervisorAvailabilityMapper;
     }
 
@@ -103,6 +108,11 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
      */
     @Override
     public Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>> getAggregatedSupervisorsAvailability(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.info("Defense schedule has been not configured yet for the study year {}", studyYear);
+            return null;
+        }
         List<Supervisor> supervisorsByStudyYear = supervisorDAO.findAllByStudyYear(studyYear);
         List<LocalDate> defenseDays = supervisorDefenseAssignmentService.getAllDefenseAssignmentDaysForStudyYear(studyYear);
 
