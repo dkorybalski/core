@@ -11,8 +11,8 @@
             <column name="first_semester_code" value="2023/SL"/>
             <column name="is_active" value="true"/>
             <column name="second_semester_code" value="2023/SZ"/>
-            <column name="study_type" value="PART_TIME"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_type" value="FULL_TIME"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
             <column name="subject_code" value="06-DPRILI0"/>
             <column name="subject_type" value="LAB"/>
             <column name="year" value="2023"/>
