@@ -1,5 +1,7 @@
 package pl.edu.amu.wmi.service.projectdefense;
 
+import pl.edu.amu.wmi.entity.Project;
+import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
@@ -8,6 +10,7 @@ import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface ProjectDefenseService {
 
@@ -39,6 +42,10 @@ public interface ProjectDefenseService {
      * @param projectDefensePatchDTO - contains the project id (or null value), that should be assigned to the project defense
      */
     void assignProjectToProjectDefense(String studyYear, String indexNumber, Long projectDefenseId, ProjectDefensePatchDTO projectDefensePatchDTO);
+
+    Set<Project> assignProjectsToProjectDefenses(List<ProjectDefenseDTO> projectDefenseDTOs);
+
+    List<Student> getStudentsFromProjectDefenses(Set<Project> projectDefenses);
 
     /**
      * Returns a list with project ids, names and related project defenses

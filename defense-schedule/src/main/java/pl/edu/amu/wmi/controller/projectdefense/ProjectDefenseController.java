@@ -7,14 +7,18 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.entity.Project;
+import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefensePatchDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectNameDTO;
+import pl.edu.amu.wmi.service.notification.DefenseNotificationService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseSummaryService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/schedule/defense")
@@ -22,10 +26,14 @@ public class ProjectDefenseController {
 
     private final ProjectDefenseService projectDefenseService;
     private final ProjectDefenseSummaryService projectDefenseSummaryService;
+    private final DefenseNotificationService defenseNotificationService;
 
-    public ProjectDefenseController(ProjectDefenseService projectDefenseService, ProjectDefenseSummaryService projectDefenseSummaryService) {
+    public ProjectDefenseController(ProjectDefenseService projectDefenseService,
+                                    ProjectDefenseSummaryService projectDefenseSummaryService,
+                                    DefenseNotificationService defenseNotificationService) {
         this.projectDefenseService = projectDefenseService;
         this.projectDefenseSummaryService = projectDefenseSummaryService;
+        this.defenseNotificationService = defenseNotificationService;
     }
 
     @GetMapping("")
@@ -35,7 +43,7 @@ public class ProjectDefenseController {
                 .body(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
     }
 
-    @Secured({"PROJECT_ADMIN", "COORDINATOR"})
+    @Secured({"PROJECT_ADMIN"})
     @PatchMapping("/{projectDefenseId}")
     public ResponseEntity<Void> assignProjectToProjectDefense(
             @RequestHeader("study-year") String studyYear,
@@ -43,6 +51,17 @@ public class ProjectDefenseController {
             @RequestBody ProjectDefensePatchDTO projectDefensePatchDTO) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         projectDefenseService.assignProjectToProjectDefense(studyYear, userDetails.getUsername(), projectDefenseId, projectDefensePatchDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @PatchMapping("")
+    public ResponseEntity<Void> updateProjectDefenses(
+            @RequestHeader("study-year") String studyYear,
+            @RequestBody List<ProjectDefenseDTO> projectDefenseDTOs) {
+        Set<Project> updatedProjectDefenses = projectDefenseService.assignProjectsToProjectDefenses(projectDefenseDTOs);
+        List<Student> studentsToNotify = projectDefenseService.getStudentsFromProjectDefenses(updatedProjectDefenses);
+        defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(studentsToNotify);
         return ResponseEntity.ok().build();
     }
 
