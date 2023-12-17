@@ -23,8 +23,6 @@ public class UserData extends AbstractEntity {
      */
     private String indexNumber;
 
-    private String password;
-
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinTable(
             name = "USERS_ROLES",

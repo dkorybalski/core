@@ -9,8 +9,8 @@ INSERT INTO role(id, name)
 VALUES (10001, 'SUPERVISOR');
 
 --USER_DATA
-INSERT INTO user_data(id, creation_date, modification_date, version, email, first_name, index_number, last_name, password)
-VALUES (10000, '2023-06-20', '2023-06-20', 0, 'adanow@st.amu.edu.pl', 'Adam', '111111',  'Nowakowski', null);
+INSERT INTO user_data(id, creation_date, modification_date, version, email, first_name, index_number, last_name)
+VALUES (10000, '2023-06-20', '2023-06-20', 0, 'adanow@st.amu.edu.pl', 'Adam', '111111',  'Nowakowski');
 
 --USERS_ROLES
 INSERT INTO users_roles(user_data_id, role_id)
