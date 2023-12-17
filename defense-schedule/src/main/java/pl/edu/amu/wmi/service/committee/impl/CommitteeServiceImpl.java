@@ -8,6 +8,7 @@ import pl.edu.amu.wmi.dao.CommitteeMemberDAO;
 import pl.edu.amu.wmi.dao.DefenseScheduleConfigDAO;
 import pl.edu.amu.wmi.dao.SupervisorDefenseAssignmentDAO;
 import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
+import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
@@ -15,6 +16,7 @@ import pl.edu.amu.wmi.model.CommitteeAssignmentCriteria;
 import pl.edu.amu.wmi.model.committee.ChairpersonAssignmentDTO;
 import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.service.committee.CommitteeService;
+import pl.edu.amu.wmi.service.notification.DefenseNotificationService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.time.LocalDate;
@@ -33,16 +35,19 @@ public class CommitteeServiceImpl implements CommitteeService {
     private final CommitteeMemberDAO committeeMemberDAO;
     private final ProjectDefenseService projectDefenseService;
 
+    private final DefenseNotificationService defenseNotificationService;
+
 
     public CommitteeServiceImpl(SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO,
                                 DefenseScheduleConfigDAO defenseScheduleConfigDAO,
                                 CommitteeMemberDAO committeeMemberDAO,
-                                ProjectDefenseService projectDefenseService) {
+                                ProjectDefenseService projectDefenseService, DefenseNotificationService defenseNotificationService) {
 
         this.supervisorDefenseAssignmentDAO = supervisorDefenseAssignmentDAO;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.committeeMemberDAO = committeeMemberDAO;
         this.projectDefenseService = projectDefenseService;
+        this.defenseNotificationService = defenseNotificationService;
     }
 
     @Override
@@ -60,51 +65,83 @@ public class CommitteeServiceImpl implements CommitteeService {
             }
 
             CommitteeUpdateCase updateCase = determineCommitteeUpdateCase(sda, committeeMember, committeesWhereCommitteeMemberIsAChairperson);
+            log.info("Update type: {}", updateCase);
 
             switch (updateCase) {
-                case COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED -> {}
                 case CHAIRPERSON_COMMITTEE_SLOT_DELETED -> deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
+                case CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT -> {
+                    Project project = committeeMember.getProjectDefense().getProject();
+                    deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
+                    defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(project.getStudents()));
+                }
                 case COMMITTEE_MEMBER_ASSIGNMENT_DELETED -> {
                     committeeMember.setCommitteeIdentifier(null);
+                    committeeMember.setProjectDefense(null);
                     supervisorDefenseAssignmentDAO.save(committeeMember);
-                }
-                case CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT -> {
-                    // TODO: 12/16/2023 add implementation
                 }
                 case COMMITTEE_MEMBER_ASSIGNMENT_CHANGE, COMMITTEE_MEMBER_ASSIGNMENT_CREATED -> {
+                    SupervisorDefenseAssignment newCommitteeChairperson = findCommitteeChairperson(sda, committeeMember, studyYear);
                     committeeMember.setCommitteeIdentifier(sda.getCommitteeIdentifier());
+                    if (Objects.nonNull(newCommitteeChairperson)) {
+                        committeeMember.setProjectDefense(newCommitteeChairperson.getProjectDefense());
+                    } else {
+                        committeeMember.setProjectDefense(null);
+                    }
                     supervisorDefenseAssignmentDAO.save(committeeMember);
                 }
-                case CHAIRPERSON_ASSIGNMENT_CHANGED_AND_PREVIOUS_COMMITTEE_SLOT_DELETED -> {
+                case CHAIRPERSON_ASSIGNMENT_CHANGED_TO_COMMITTEE_MEMBER_AND_PREVIOUS_COMMITTEE_SLOT_DELETED -> {
+                    deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
+                    committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(Long.valueOf(sda.getSupervisorId()), sda.getDefenseSlotId());
+                    supervisorDefenseAssignmentDAO.save(committeeMember);
+                }
+                case COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE -> {
+                    createCommittee(studyYear, sda, committeesWhereCommitteeMemberIsAChairperson, committeeMember);
+                }
+                case CHAIRPERSON_ASSIGNMENT_CHANGED_TO_ANOTHER_CHAIRPERSON_AND_PREVIOUS_COMMITTEE_SLOT_DELETED -> {
                     deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
                     committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(Long.valueOf(sda.getSupervisorId()), sda.getDefenseSlotId());
                     committeeMember.setCommitteeIdentifier(sda.getCommitteeIdentifier());
-                    supervisorDefenseAssignmentDAO.save(committeeMember);
-                    // TODO: 12/16/2023 check if committee for time slot exists
+                    createCommittee(studyYear, sda, committeesWhereCommitteeMemberIsAChairperson, committeeMember);
                 }
                 case CHAIRPERSON_COMMITTEE_SLOT_CREATED -> {
-                    String classroom = committeesWhereCommitteeMemberIsAChairperson.get(0).getClassroom();
-                    committeeMember.setCommitteeIdentifier(sda.getCommitteeIdentifier());
-                    committeeMember.setChairperson(Boolean.TRUE);
-                    committeeMember.setClassroom(classroom);
-                    supervisorDefenseAssignmentDAO.save(committeeMember);
-                    List<SupervisorDefenseAssignment> otherCommitteeMembers = findOtherCommitteeMembers(
-                            committeeMember.getCommitteeIdentifier(),
-                            committeeMember.getDefenseTimeSlot().getId(),
-                            committeeMember.getId()
-                    );
-                    otherCommitteeMembers.forEach(otherMember -> {
-                        otherMember.setClassroom(classroom);
-                    });
-                    otherCommitteeMembers = supervisorDefenseAssignmentDAO.saveAll(otherCommitteeMembers);
-                    List<SupervisorDefenseAssignment> committeeMembers = new ArrayList<>();
-                    committeeMembers.addAll(otherCommitteeMembers);
-                    committeeMembers.add(committeeMember);
-                    projectDefenseService.createProjectDefense(studyYear, committeeMembers);
+                    createCommittee(studyYear, sda, committeesWhereCommitteeMemberIsAChairperson, committeeMember);
                 }
+                case COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED -> {}
             }
         });
 
+    }
+
+    private SupervisorDefenseAssignment findCommitteeChairperson(SupervisorDefenseAssignmentDTO sda, SupervisorDefenseAssignment committeeMember, String studyYear) {
+        CommitteeAssignmentCriteria criteria = CommitteeAssignmentCriteria.builder()
+                .committeeIdentifier(sda.getCommitteeIdentifier())
+                .defenseTimeslotId(committeeMember.getDefenseTimeSlot().getId())
+                .studyYear(studyYear)
+                .isChairperson(Boolean.TRUE)
+                .build();
+        List<SupervisorDefenseAssignment> chairpersons = committeeMemberDAO.findAllAssignmentsByCriteria(criteria);
+        return chairpersons.isEmpty() ? null : chairpersons.get(0);
+    }
+
+    private void createCommittee(String studyYear, SupervisorDefenseAssignmentDTO sda, List<SupervisorDefenseAssignment> committeesWhereCommitteeMemberIsAChairperson, SupervisorDefenseAssignment committeeMember) {
+        String classroom = committeesWhereCommitteeMemberIsAChairperson.get(0).getClassroom();
+        committeeMember.setCommitteeIdentifier(sda.getCommitteeIdentifier());
+        committeeMember.setChairperson(Boolean.TRUE);
+        committeeMember.setClassroom(classroom);
+        supervisorDefenseAssignmentDAO.save(committeeMember);
+        List<SupervisorDefenseAssignment> otherCommitteeMembers = findOtherCommitteeMembers(
+                committeeMember.getCommitteeIdentifier(),
+                committeeMember.getDefenseTimeSlot().getId(),
+                committeeMember.getId()
+        );
+        otherCommitteeMembers.forEach(otherMember -> {
+            otherMember.setClassroom(classroom);
+        });
+        otherCommitteeMembers = supervisorDefenseAssignmentDAO.saveAll(otherCommitteeMembers);
+        List<SupervisorDefenseAssignment> committeeMembers = new ArrayList<>();
+        committeeMembers.addAll(otherCommitteeMembers);
+        committeeMembers.add(committeeMember);
+        projectDefenseService.createProjectDefense(studyYear, committeeMembers);
     }
 
     private CommitteeUpdateCase determineCommitteeUpdateCase(SupervisorDefenseAssignmentDTO sda, SupervisorDefenseAssignment committeeMember,
@@ -114,22 +151,30 @@ public class CommitteeServiceImpl implements CommitteeService {
             return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED;
         } else if (Objects.isNull(sda.getCommitteeIdentifier()) && committeeMember.isChairperson() && Objects.isNull(committeeMember.getProjectDefense().getProject())) {
             return CommitteeUpdateCase.CHAIRPERSON_COMMITTEE_SLOT_DELETED;
-        } else if (Objects.isNull(sda.getCommitteeIdentifier()) && committeeMember.isChairperson() && Objects.nonNull(committeeMember.getProjectDefense().getProject())) {
+        } else if (Objects.isNull(sda.getCommitteeIdentifier()) && Objects.nonNull(committeeMember.getCommitteeIdentifier()) && committeeMember.isChairperson() && Objects.nonNull(committeeMember.getProjectDefense().getProject())) {
             return CommitteeUpdateCase.CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT;
-        } else if (Objects.isNull(sda.getCommitteeIdentifier()) && !committeeMember.isChairperson()) {
+        } else if (Objects.isNull(sda.getCommitteeIdentifier()) && Objects.nonNull(committeeMember.getCommitteeIdentifier()) && !committeeMember.isChairperson()) {
             return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_DELETED;
-        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(committeeMember.getCommitteeIdentifier())
+        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier())
                 && !Objects.equals(committeeMember.getCommitteeIdentifier(), sda.getCommitteeIdentifier())
                 && committeesWhereCommitteeMemberIsAChairperson.isEmpty() && !committeeMember.isChairperson()) {
             return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_CHANGE;
-        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(committeeMember.getCommitteeIdentifier())
+        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier())
                 && !Objects.equals(committeeMember.getCommitteeIdentifier(), sda.getCommitteeIdentifier())
                 && committeesWhereCommitteeMemberIsAChairperson.isEmpty() && committeeMember.isChairperson()) {
-            return CommitteeUpdateCase.CHAIRPERSON_ASSIGNMENT_CHANGED_AND_PREVIOUS_COMMITTEE_SLOT_DELETED;
-        } else if (!committeeMember.isChairperson() && !committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
+            return CommitteeUpdateCase.CHAIRPERSON_ASSIGNMENT_CHANGED_TO_COMMITTEE_MEMBER_AND_PREVIOUS_COMMITTEE_SLOT_DELETED;
+        } else if (Objects.isNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier()) && !committeeMember.isChairperson() && !committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
             return CommitteeUpdateCase.CHAIRPERSON_COMMITTEE_SLOT_CREATED;
-        } else if (!committeeMember.isChairperson() && Objects.isNull(committeeMember.getCommitteeIdentifier()) && committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
+        } else if (Objects.isNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier()) && committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
             return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_CREATED;
+        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier())
+                && !Objects.equals(committeeMember.getCommitteeIdentifier(), sda.getCommitteeIdentifier())
+                && !committeesWhereCommitteeMemberIsAChairperson.isEmpty() && committeeMember.isChairperson()) {
+            return CommitteeUpdateCase.CHAIRPERSON_ASSIGNMENT_CHANGED_TO_COMMITTEE_MEMBER_AND_PREVIOUS_COMMITTEE_SLOT_DELETED;
+        } else if (Objects.nonNull(committeeMember.getCommitteeIdentifier()) && Objects.nonNull(sda.getCommitteeIdentifier())
+                && !Objects.equals(committeeMember.getCommitteeIdentifier(), sda.getCommitteeIdentifier())
+                && !committeeMember.isChairperson() && !committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
+            return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE;
         }
         // TODO: 12/16/2023 remove null value (only for tests purposes)
         return null;
@@ -160,6 +205,7 @@ public class CommitteeServiceImpl implements CommitteeService {
             CommitteeAssignmentCriteria criteria = CommitteeAssignmentCriteria.builder()
                     .supervisorId(Long.valueOf(chairpersonAssignmentDTO.getChairpersonId()))
                     .committeeIdentifier(chairpersonAssignmentDTO.getCommitteeIdentifier())
+                    .date(date)
                     .studyYear(studyYear)
                     .build();
 
@@ -178,6 +224,7 @@ public class CommitteeServiceImpl implements CommitteeService {
                 .committeeIdentifier(committeeIdentifier)
                 .date(entity.getDefenseTimeSlot().getDate())
                 .studyYear(studyYear)
+                .supervisorId(entity.getSupervisor().getId())
                 .isChairperson(Boolean.TRUE)
                 .build();
         List<SupervisorDefenseAssignment> assignmentsByCriteria = committeeMemberDAO.findAllAssignmentsByCriteria(criteria);
@@ -236,6 +283,8 @@ public class CommitteeServiceImpl implements CommitteeService {
     }
 
     private static void resetSupervisorDefenseAssignmentData(SupervisorDefenseAssignment supervisorDefenseAssignment) {
+        log.info("Supervisor defense assignment are cleared: supervisorId: {}, projectDefenseId: {}, committeeIdentifier: {}",
+                supervisorDefenseAssignment.getSupervisor().getId(), supervisorDefenseAssignment.getProjectDefense().getId(), supervisorDefenseAssignment.getCommitteeIdentifier());
         supervisorDefenseAssignment.setChairperson(Boolean.FALSE);
         supervisorDefenseAssignment.setCommitteeIdentifier(null);
         supervisorDefenseAssignment.setProjectDefense(null);
@@ -308,9 +357,11 @@ public class CommitteeServiceImpl implements CommitteeService {
         COMMITTEE_MEMBER_ASSIGNMENT_CHANGE,
         COMMITTEE_MEMBER_ASSIGNMENT_CREATED,
         CHAIRPERSON_COMMITTEE_SLOT_DELETED,
-        CHAIRPERSON_ASSIGNMENT_CHANGED_AND_PREVIOUS_COMMITTEE_SLOT_DELETED,
+        CHAIRPERSON_ASSIGNMENT_CHANGED_TO_COMMITTEE_MEMBER_AND_PREVIOUS_COMMITTEE_SLOT_DELETED,
+        CHAIRPERSON_ASSIGNMENT_CHANGED_TO_ANOTHER_CHAIRPERSON_AND_PREVIOUS_COMMITTEE_SLOT_DELETED,
         CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT,
-        CHAIRPERSON_COMMITTEE_SLOT_CREATED
+        CHAIRPERSON_COMMITTEE_SLOT_CREATED,
+        COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE
 
     }
 
