@@ -14,7 +14,6 @@ import pl.edu.amu.wmi.model.committee.SupervisorStatisticsDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorStatisticsService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,8 +23,6 @@ import static pl.edu.amu.wmi.util.CommonDateUtils.getDefenseDays;
 @Service
 @Slf4j
 public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsService {
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
     private final SupervisorDAO supervisorDAO;
     private final ProjectDefenseDAO projectDefenseDAO;
@@ -96,7 +93,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
         Map<String, Integer> committeessPerDayMap = new TreeMap<>(statisticsTemplateMap);
         projectDefenseByDateMap.forEach((date, defenses) -> {
             int numberOfCommittees = countTheNumberOfDefensesAssignedToSupervisor(supervisor, defenses);
-            committeessPerDayMap.put(date.format(dateTimeFormatter), numberOfCommittees);
+            committeessPerDayMap.put(date.format(commonDateFormatter()), numberOfCommittees);
         });
         return committeessPerDayMap;
     }

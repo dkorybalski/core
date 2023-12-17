@@ -336,7 +336,8 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         ProjectDefense projectDefense = new ProjectDefense();
         projectDefense.addSupervisorDefenseAssignments(supervisorDefenseAssignments);
         projectDefense.setStudyYear(studyYear);
-        projectDefenseDAO.save(projectDefense);
+        projectDefense = projectDefenseDAO.save(projectDefense);
+        log.info("Project Defense with id: {} has been created", projectDefense.getId());
     }
 
     @Override
