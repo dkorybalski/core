@@ -17,7 +17,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static java.time.temporal.ChronoUnit.DAYS;
+import static pl.edu.amu.wmi.util.CommonDateUtils.getDefenseDays;
 
 @Service
 @Slf4j
@@ -56,19 +56,6 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
             });
             log.info("Defense timeslots were created for day: {}", day.toString());
         });
-    }
-
-    /**
-     * Calculate defense days between selected date range. Add 1 to numOfDaysBetween to also include the last day as
-     * selected.
-     */
-    private List<LocalDate> getDefenseDays(LocalDate startDate, LocalDate endDate) {
-        long numOfDaysBetween = Duration.ofDays(DAYS.between(startDate, endDate)).toDays();
-
-        return IntStream.iterate(0, i -> i + 1)
-                .limit(numOfDaysBetween + 1)
-                .mapToObj(startDate::plusDays)
-                .toList();
     }
 
     /**

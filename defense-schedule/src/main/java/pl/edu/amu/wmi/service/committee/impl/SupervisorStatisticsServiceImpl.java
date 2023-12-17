@@ -18,6 +18,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.getDefenseDays;
+
 @Service
 @Slf4j
 public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsService {
@@ -45,20 +48,28 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
         List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         List<SupervisorStatisticsDTO> supervisorStatisticsDTOs = new ArrayList<>();
+        Map<String, Integer> statisticsTemplateMap = createStatisticsTemplateMap(defenseScheduleConfig);
 
         supervisors.forEach(supervisor -> {
-            SupervisorStatisticsDTO supervisorStatisticsDTO = createStatisticsForSupervisor(supervisor, projectDefenses, projectDefenseByDateMap);
+            SupervisorStatisticsDTO supervisorStatisticsDTO = createStatisticsForSupervisor(supervisor, projectDefenses, projectDefenseByDateMap, statisticsTemplateMap);
             supervisorStatisticsDTOs.add(supervisorStatisticsDTO);
         });
 
         return supervisorStatisticsDTOs;
     }
 
-    private SupervisorStatisticsDTO createStatisticsForSupervisor(Supervisor supervisor, List<ProjectDefense> projectDefenses, Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap) {
+    private Map<String, Integer> createStatisticsTemplateMap(DefenseScheduleConfig defenseScheduleConfig) {
+        Map<String, Integer> statisticsTemplateMap = new TreeMap<>();
+        List<LocalDate> defenseDays = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
+        defenseDays.forEach(defenseDay -> statisticsTemplateMap.put(defenseDay.format(commonDateFormatter()), 0));
+        return statisticsTemplateMap;
+    }
+
+    private SupervisorStatisticsDTO createStatisticsForSupervisor(Supervisor supervisor, List<ProjectDefense> projectDefenses, Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap, Map<String, Integer> statisticsTemplateMap) {
         int numberOfGroups = countTheNumberOfAcceptedSupervisorProjects(supervisor);
         int numberOfAssignedProjectDefenses = countTheNumberOfDefensesAssignedToSupervisor(supervisor, projectDefenses);
         double load = numberOfGroups == 0 ? 0.0 : (double) numberOfAssignedProjectDefenses / (double) numberOfGroups;
-        Map<String, Integer> committeesPerDayMap = createSupervisorDefensesByDateMap(supervisor, projectDefenseByDateMap);
+        Map<String, Integer> committeesPerDayMap = createSupervisorDefensesByDateMap(supervisor, projectDefenseByDateMap, statisticsTemplateMap);
 
         return new SupervisorStatisticsDTO(
                 supervisor.getInitials(),
@@ -81,8 +92,8 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
                 .count();
     }
 
-    private Map<String, Integer> createSupervisorDefensesByDateMap(Supervisor supervisor, Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap) {
-        Map<String, Integer> committeessPerDayMap = new TreeMap<>();
+    private Map<String, Integer> createSupervisorDefensesByDateMap(Supervisor supervisor, Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap, Map<String, Integer> statisticsTemplateMap) {
+        Map<String, Integer> committeessPerDayMap = new TreeMap<>(statisticsTemplateMap);
         projectDefenseByDateMap.forEach((date, defenses) -> {
             int numberOfCommittees = countTheNumberOfDefensesAssignedToSupervisor(supervisor, defenses);
             committeessPerDayMap.put(date.format(dateTimeFormatter), numberOfCommittees);
