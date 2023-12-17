@@ -34,6 +34,10 @@
 Secrets must be defined as `java` command arguments (see **Starting the application**) 
 or provided to the IDE as e.g. ENV variables - depending on the run method.
 
+#### Coordinator user
+Coordinator user has to be added manually to the database, to the `user_data` table.
+The coordinator user index number corresponds to the LDAP username.
+
 #### Liquibase
 
 To autogenerate an xml file with changes (e.g. when new entities were added), first navigate to the domain module (`cd domain`), and then execute:
