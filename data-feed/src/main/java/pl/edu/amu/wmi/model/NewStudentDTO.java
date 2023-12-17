@@ -19,9 +19,6 @@ public class NewStudentDTO {
     @CsvBindByName(column = "nr_albumu")
     private String indexNumber;
 
-    @CsvBindByName(column = "pesel")
-    private String pesel;
-
     @CsvBindByName(column = "email")
     private String email;
 
