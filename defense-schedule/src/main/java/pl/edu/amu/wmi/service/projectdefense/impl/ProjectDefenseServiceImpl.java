@@ -329,7 +329,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     }
 
     private Comparator<ProjectDefenseDTO> projectDefenseByTimeComparator() {
-        return Comparator.comparing(ProjectDefenseDTO::getTime);
+        return Comparator.comparing(ProjectDefenseDTO::getDate).thenComparing(ProjectDefenseDTO::getTime);
     }
 
     private void createNewProjectDefense(String studyYear, List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
