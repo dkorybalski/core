@@ -11,7 +11,7 @@
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
             <column name="name" value="Git Repository"/>
             <column name="column_header" value="Git"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
         </insert>
     </changeSet>
     <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_2">
@@ -23,7 +23,7 @@
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
             <column name="name" value="Tasks Management"/>
             <column name="column_header" value="PM Tools"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
         </insert>
     </changeSet>
     <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_3">
@@ -35,7 +35,7 @@
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
             <column name="name" value="Documentation"/>
             <column name="column_header" value="Documentation"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
         </insert>
     </changeSet>
     <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_4">
@@ -47,7 +47,7 @@
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
             <column name="name" value="MS Teams Space"/>
             <column name="column_header" value="MS Teams"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
         </insert>
     </changeSet>
     <changeSet author="aleksandra.kacprzak" id="externalLinkDefinition_5">
@@ -59,7 +59,7 @@
             <column name="deadline" value="2023-05-28 00:00:00.00"/>
             <column name="name" value="UI UX"/>
             <column name="column_header" value="UI/UX Tools"/>
-            <column name="study_year" value="PART_TIME#2023"/>
+            <column name="study_year" value="FULL_TIME#2023"/>
         </insert>
     </changeSet>
 </databaseChangeLog>
