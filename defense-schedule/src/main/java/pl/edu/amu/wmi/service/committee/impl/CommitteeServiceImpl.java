@@ -143,10 +143,15 @@ public class CommitteeServiceImpl implements CommitteeService {
 
     @Override
     public Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> getAggregatedChairpersonAssignments(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            log.info("Defense schedule has been not configured yet for the study year {}", studyYear);
+            return null;
+        }
         List<Tuple> committeeChairpersonsPerDay = committeeMemberDAO.findCommitteeChairpersonsPerDayAndPerStudyYear(studyYear);
         List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs = mapTuplesToChairpersonDTOs(committeeChairpersonsPerDay);
 
-        return createChairpersonPerCommitteeIdentifierPerDayMap(chairpersonAssignmentDTOs, studyYear);
+        return createChairpersonPerCommitteeIdentifierPerDayMap(chairpersonAssignmentDTOs, studyYear, defenseScheduleConfig);
     }
 
     @Override
@@ -250,11 +255,12 @@ public class CommitteeServiceImpl implements CommitteeService {
                 .toList();
     }
 
-    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createChairpersonPerCommitteeIdentifierPerDayMap(List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs, String studyYear) {
+    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createChairpersonPerCommitteeIdentifierPerDayMap(
+            List<ChairpersonAssignmentDTO> chairpersonAssignmentDTOs, String studyYear, DefenseScheduleConfig defenseScheduleConfig) {
         Map<String, List<ChairpersonAssignmentDTO>> chairpersonPerDayMap = chairpersonAssignmentDTOs.stream()
                 .collect(Collectors.groupingBy(ChairpersonAssignmentDTO::getDate));
 
-        Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> chairpersonPerCommitteeIdentifierPerDayMap = createMapTemplate(studyYear);
+        Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> chairpersonPerCommitteeIdentifierPerDayMap = createMapTemplate(studyYear, defenseScheduleConfig);
 
         chairpersonPerDayMap.forEach((date, chairpersons) -> {
             Map<CommitteeIdentifier, ChairpersonAssignmentDTO> chairpersonPerCommitteeIdentifier = chairpersons.stream()
@@ -268,9 +274,8 @@ public class CommitteeServiceImpl implements CommitteeService {
         return chairpersonPerCommitteeIdentifierPerDayMap;
     }
 
-    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createMapTemplate(String studyYear) {
+    private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createMapTemplate(String studyYear, DefenseScheduleConfig defenseScheduleConfig) {
         Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> mapTemplate = new TreeMap<>();
-        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
         List<LocalDate> dates = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
         dates.forEach(day -> {
             Map<CommitteeIdentifier, ChairpersonAssignmentDTO> map = new TreeMap<>();
