@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pl.edu.amu.wmi.model.enumeration.DataFeedType;
@@ -25,6 +26,7 @@ public class DataFeedController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"COORDINATOR"})
     @PostMapping("/import/supervisor")
     public ResponseEntity<Void> createSupervisors(@RequestHeader("study-year") String studyYear,
                                                  @RequestHeader("index-number") String userIndexNumber,@RequestParam MultipartFile data) throws Exception {
@@ -33,6 +35,7 @@ public class DataFeedController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"COORDINATOR"})
     @GetMapping("export/student")
     public void exportStudentsData(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws Exception {
         servletResponse.setContentType("text/csv");
@@ -43,6 +46,7 @@ public class DataFeedController {
         service.exportData(servletResponse.getWriter(), studyYear);
     }
 
+    @Secured({"COORDINATOR"})
     @PostMapping("import/criteria")
     public ResponseEntity<Void> createCriteria(@RequestHeader("study-year") String studyYear, @RequestParam MultipartFile data) throws Exception {
         DataFeedImportService service = DataFeedImportServiceFactory.getService(DataFeedType.CRITERIA);
@@ -50,6 +54,7 @@ public class DataFeedController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"COORDINATOR"})
     @GetMapping("export/criteria")
     public void exportCriteria(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws Exception {
         servletResponse.setContentType("application/json");

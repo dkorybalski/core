@@ -116,24 +116,25 @@ public class ProjectController {
     @PostMapping("")
     public ResponseEntity<ProjectDetailsDTO> createProject(
             @RequestHeader("study-year") String studyYear,
-            @RequestHeader("index-number") String userIndexNumber,
             @Valid @RequestBody ProjectDetailsDTO project) {
         String supervisorIndexNumber = project.getSupervisor().getIndexNumber();
-        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (projectMemberService.isUserRoleCoordinator(userDetails.getUsername())) {
             if (!supervisorProjectService.isSupervisorAvailable(studyYear, supervisorIndexNumber)) {
                 return ResponseEntity.status(409).build();
             }
-            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
+            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userDetails.getUsername());
             projectService.acceptProjectByAllStudents(projectDetailsDTO.getId());
             projectService.acceptProjectBySingleUser(supervisorIndexNumber, projectDetailsDTO.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
         } else {
-            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userIndexNumber);
+            ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userDetails.getUsername());
             projectService.acceptProjectBySingleUser(project.getAdmin(), projectDetailsDTO.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
         }
     }
 
+    @Secured({"PROJECT_ADMIN", "COORDINATOR"})
     @PatchMapping("/{projectId}/admin-change/{studentIndex}")
     public ResponseEntity<ProjectDetailsDTO> updateProjectAdmin(
             @PathVariable Long projectId,
@@ -166,6 +167,7 @@ public class ProjectController {
                 .body(supervisorProjectService.getSupervisorsAvailability(studyYear));
     }
 
+    @Secured({"COORDINATOR"})
     @PutMapping("/supervisor/availability")
     public ResponseEntity<List<SupervisorAvailabilityDTO>> updateSupervisorsAvailability(@RequestHeader("study-year") String studyYear, @RequestBody List<SupervisorAvailabilityDTO> supervisorAvailabilityList) {
         return ResponseEntity.ok()

@@ -3,6 +3,7 @@ package pl.edu.amu.wmi.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +56,7 @@ public class UserController {
                 .body(supervisorService.findAll(studyYear));
     }
 
+    @Secured({"COORDINATOR"})
     @PostMapping("/supervisor")
     public ResponseEntity<SupervisorDTO> createSupervisor(@RequestHeader("study-year") String studyYear ,@RequestBody SupervisorCreationRequestDTO supervisor) {
         return ResponseEntity.ok()
@@ -68,6 +70,7 @@ public class UserController {
                 .body(studentService.findAll(studyYear));
     }
 
+    @Secured({"COORDINATOR"})
     @PostMapping("/student")
     public ResponseEntity<StudentDTO> createStudent(@RequestHeader("study-year") String studyYear, @RequestBody StudentCreationRequestDTO student) {
         return ResponseEntity.ok()
