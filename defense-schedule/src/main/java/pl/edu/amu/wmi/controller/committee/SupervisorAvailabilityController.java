@@ -7,11 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
-import pl.edu.amu.wmi.model.committee.SupervisorStatisticsDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorAvailabilityService;
-import pl.edu.amu.wmi.service.committee.SupervisorStatisticsService;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -20,12 +17,10 @@ import java.util.Map;
 public class SupervisorAvailabilityController {
 
     private final SupervisorAvailabilityService supervisorAvailabilityService;
-    private final SupervisorStatisticsService supervisorStatisticsService;
 
     @Autowired
-    public SupervisorAvailabilityController(SupervisorAvailabilityService supervisorAvailabilityService, SupervisorStatisticsService supervisorStatisticsService) {
+    public SupervisorAvailabilityController(SupervisorAvailabilityService supervisorAvailabilityService) {
         this.supervisorAvailabilityService = supervisorAvailabilityService;
-        this.supervisorStatisticsService = supervisorStatisticsService;
     }
 
     @Secured({"COORDINATOR", "SUPERVISOR"})
@@ -45,13 +40,6 @@ public class SupervisorAvailabilityController {
             @PathVariable Long supervisorId) {
         return ResponseEntity.ok()
                 .body(supervisorAvailabilityService.getSupervisorAvailabilitySurvey(supervisorId));
-    }
-
-    @Secured({"COORDINATOR"})
-    @GetMapping("/statistics")
-    public ResponseEntity<List<SupervisorStatisticsDTO>> getSupervisorStatistics(@RequestHeader("study-year") String studyYear) {
-        return ResponseEntity.ok()
-                .body(supervisorStatisticsService.getSupervisorStatistics(studyYear));
     }
 
 }

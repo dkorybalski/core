@@ -65,4 +65,11 @@ public class CommitteeController {
         return ResponseEntity.ok().build();
     }
 
+    @Secured({"COORDINATOR"})
+    @GetMapping("/statistics")
+    public ResponseEntity<List<SupervisorStatisticsDTO>> getSupervisorStatistics(@RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok()
+                .body(supervisorStatisticsService.getSupervisorStatistics(studyYear));
+    }
+
 }

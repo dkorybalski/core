@@ -31,7 +31,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateFormatter.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
 
 @Service
 @Slf4j

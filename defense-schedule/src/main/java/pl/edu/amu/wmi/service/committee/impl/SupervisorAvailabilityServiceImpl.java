@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateFormatter.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
 
 @Service
 @Slf4j
