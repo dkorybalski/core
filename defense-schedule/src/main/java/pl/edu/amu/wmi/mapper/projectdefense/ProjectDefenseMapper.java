@@ -70,6 +70,7 @@ public interface ProjectDefenseMapper {
     default String supervisorDefenseAssignmentsToSupervisorsInitials(List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
         return supervisorDefenseAssignments.stream()
                 .map(supervisorDefenseAssignment -> supervisorDefenseAssignment.getSupervisor().getInitials())
+                .sorted()
                 .collect(Collectors.joining(", "));
     }
 

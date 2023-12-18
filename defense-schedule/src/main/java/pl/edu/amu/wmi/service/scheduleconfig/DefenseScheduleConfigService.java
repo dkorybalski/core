@@ -2,6 +2,7 @@ package pl.edu.amu.wmi.service.scheduleconfig;
 
 import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.ProjectDefense;
+import pl.edu.amu.wmi.model.scheduleconfig.DefensePhaseDTO;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 
 public interface DefenseScheduleConfigService {
@@ -14,14 +15,14 @@ public interface DefenseScheduleConfigService {
      *
      * @param studyYear study year that defense registration is open for
      */
-    void openRegistrationForDefense(String studyYear);
+    DefensePhaseDTO openRegistrationForDefense(String studyYear);
 
     /**
      * Sets the defense phase of the object {@link DefenseScheduleConfig} to DEFENSE_PROJECT
      *
      * @param studyYear study year that defense registration is closed for
      */
-    void closeRegistrationForDefense(String studyYear);
+    DefensePhaseDTO closeRegistrationForDefense(String studyYear);
 
-    String getCurrentDefensePhase(String studyYear);
+    DefensePhaseDTO getCurrentDefensePhase(String studyYear);
 }

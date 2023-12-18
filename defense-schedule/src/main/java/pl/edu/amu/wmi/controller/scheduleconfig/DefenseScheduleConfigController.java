@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.amu.wmi.enumerations.DefensePhase;
+import pl.edu.amu.wmi.model.scheduleconfig.DefensePhaseDTO;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 import pl.edu.amu.wmi.service.notification.DefenseNotificationService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
@@ -35,29 +36,29 @@ public class DefenseScheduleConfigController {
 
     @Secured({"COORDINATOR"})
     @GetMapping("/phase")
-    public ResponseEntity<String> getCurrentDefensePhase(
+    public ResponseEntity<DefensePhaseDTO> getCurrentDefensePhase(
             @RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok(defenseScheduleConfigService.getCurrentDefensePhase(studyYear));
     }
 
     @Secured({"COORDINATOR"})
     @PatchMapping("/registration/open")
-    public ResponseEntity<Void> openRegistrationForDefense(
+    public ResponseEntity<DefensePhaseDTO> openRegistrationForDefense(
             @RequestHeader("study-year") String studyYear) {
-        defenseScheduleConfigService.openRegistrationForDefense(studyYear);
+        DefensePhaseDTO defensePhase = defenseScheduleConfigService.openRegistrationForDefense(studyYear);
         // TODO: 12/10/2023 consider making this call asynchronous
         defenseNotificationService.notifyStudents(studyYear, DefensePhase.DEFENSE_PROJECT_REGISTRATION);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(defensePhase);
     }
 
     @Secured({"COORDINATOR"})
     @PatchMapping("/registration/close")
-    public ResponseEntity<Void> closeRegistrationForDefense(
+    public ResponseEntity<DefensePhaseDTO> closeRegistrationForDefense(
             @RequestHeader("study-year") String studyYear) {
-        defenseScheduleConfigService.closeRegistrationForDefense(studyYear);
+        DefensePhaseDTO defensePhase = defenseScheduleConfigService.closeRegistrationForDefense(studyYear);
         // TODO: 12/10/2023 consider making this call asynchronous
         defenseNotificationService.notifyStudents(studyYear, DefensePhase.DEFENSE_PROJECT);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(defensePhase);
     }
 
 

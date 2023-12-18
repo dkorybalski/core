@@ -9,6 +9,7 @@ import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.enumerations.DefensePhase;
 import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
+import pl.edu.amu.wmi.model.scheduleconfig.DefensePhaseDTO;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
@@ -55,7 +56,7 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
 
     @Override
     @Transactional
-    public void openRegistrationForDefense(String studyYear) {
+    public DefensePhaseDTO openRegistrationForDefense(String studyYear) {
         DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndDefensePhase(studyYear, DefensePhase.SCHEDULE_PLANNING);
         if (Objects.isNull(defenseScheduleConfig)) {
             log.error("Opening registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
@@ -63,13 +64,14 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         }
 
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT_REGISTRATION);
-        defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        defenseScheduleConfig = defenseScheduleConfigDAO.save(defenseScheduleConfig);
         log.info("Registration for projects defenses was opened for study year: {}", studyYear);
+        return new DefensePhaseDTO(defenseScheduleConfig.getDefensePhase().getPhaseName());
     }
 
     @Override
     @Transactional
-    public void closeRegistrationForDefense(String studyYear) {
+    public DefensePhaseDTO closeRegistrationForDefense(String studyYear) {
         DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndDefensePhase(studyYear, DefensePhase.DEFENSE_PROJECT_REGISTRATION);
         if (Objects.isNull(defenseScheduleConfig)) {
             log.error("Closing registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
@@ -77,17 +79,18 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         }
 
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT);
-        defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        defenseScheduleConfig = defenseScheduleConfigDAO.save(defenseScheduleConfig);
         log.info("Registration for projects defenses was closed for study year: {}", studyYear);
+        return new DefensePhaseDTO(defenseScheduleConfig.getDefensePhase().getPhaseName());
     }
 
     @Override
-    public String getCurrentDefensePhase(String studyYear) {
+    public DefensePhaseDTO getCurrentDefensePhase(String studyYear) {
         DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
         if (Objects.isNull(defenseScheduleConfig)) {
             throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
         }
-        return defenseScheduleConfig.getDefensePhase().getPhaseName();
+        return new DefensePhaseDTO(defenseScheduleConfig.getDefensePhase().getPhaseName());
     }
 
 }
