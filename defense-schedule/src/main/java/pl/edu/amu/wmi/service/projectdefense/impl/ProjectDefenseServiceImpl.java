@@ -136,30 +136,45 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
         Project projectDefenseProject = projectDefenseEntity.getProject();
         Long projectDefenseCurrentProjectId = Objects.nonNull(projectDefenseProject) ? projectDefenseProject.getId() : null;
-        Long projectDefenseNewProjectId = Long.valueOf(projectDefenseDTO.getProjectId());
+        Long projectDefenseNewProjectId = Objects.nonNull(projectDefenseDTO.getProjectId()) ? Long.valueOf(projectDefenseDTO.getProjectId()) : null;
+        boolean isProjectDefenseChanged = !Objects.equals(projectDefenseCurrentProjectId, projectDefenseNewProjectId);
 
-        boolean isDefenseChange = !Objects.equals(projectDefenseCurrentProjectId, projectDefenseNewProjectId);
+        return updateProjectDefenseAssignment(isProjectDefenseChanged, projectDefenseNewProjectId, projectDefenseEntity);
+    }
 
+    private Optional<Project> updateProjectDefenseAssignment(boolean isProjectDefenseChanged, Long projectDefenseNewProjectId, ProjectDefense projectDefenseToUpdate) {
         Project updatedProject = null;
 
-        if (isDefenseChange)
-            updatedProject = updateSingleProjectDefense(projectDefenseNewProjectId, projectDefenseEntity);
+        if (isProjectDefenseChanged) {
+            if (Objects.nonNull(projectDefenseNewProjectId)) {
+                log.info("Trying to set project with id: {} for defense with id: {}", projectDefenseNewProjectId, projectDefenseToUpdate.getId());
+                updatedProject = projectDAO.findById(projectDefenseNewProjectId).orElseThrow(() ->
+                        new BusinessException(MessageFormat.format("Project with id: {0} not found", projectDefenseNewProjectId)));
+                removeProjectFromExistingDefenseIfNeeded(projectDefenseNewProjectId);
+                projectDefenseToUpdate.setProject(updatedProject);
+            } else {
+                log.info("Trying to remove project with id: {} for defense with id: {}", projectDefenseToUpdate.getProject().getId(), projectDefenseToUpdate.getId());
+                projectDefenseToUpdate.setProject(null);
+            }
+
+            projectDefenseDAO.save(projectDefenseToUpdate);
+            log.info("Project id: {} was successfully set for project defense with id: {}", projectDefenseNewProjectId, projectDefenseToUpdate.getId());
+        }
 
         return Optional.ofNullable(updatedProject);
     }
 
-    private Project updateSingleProjectDefense(Long projectDefenseNewProjectId, ProjectDefense projectDefenseEntity) {
-        Project updatedProject;
-        if (projectDefenseNewProjectId != null) {
-            updatedProject = projectDAO.findById(projectDefenseNewProjectId).orElseThrow(() ->
-                    new BusinessException(MessageFormat.format("Project with id: {0} not found", projectDefenseNewProjectId)));
-            projectDefenseEntity.setProject(updatedProject);
-        } else {
-            updatedProject = projectDefenseEntity.getProject();
-            projectDefenseEntity.setProject(null);
+    /**
+     * Check if project from request has existing ProjectDefense entity related with it.
+     * If yes remove project from ProjectDefense entity. Otherwise, do nothing.
+     */
+    private void removeProjectFromExistingDefenseIfNeeded(Long projectDefenseNewProjectId) {
+        ProjectDefense projectDefenseToClear = projectDefenseDAO.findByProjectId(projectDefenseNewProjectId);
+        if (Objects.nonNull(projectDefenseToClear)) {
+            projectDefenseToClear.setProject(null);
+            projectDefenseDAO.save(projectDefenseToClear);
+            log.info("Project with id: {} was successfully removed from project defense with id: {}", projectDefenseNewProjectId, projectDefenseToClear.getId());
         }
-        projectDefenseDAO.save(projectDefenseEntity);
-        return updatedProject;
     }
 
     @Override
