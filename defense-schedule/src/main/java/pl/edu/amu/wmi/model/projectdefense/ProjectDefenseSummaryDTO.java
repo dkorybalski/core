@@ -21,7 +21,7 @@ public class ProjectDefenseSummaryDTO {
     /**
      * names initials of committee members
      */
-    private List<String> committee;
+    private String committee;
 
     /**
      * name initials of chairperson

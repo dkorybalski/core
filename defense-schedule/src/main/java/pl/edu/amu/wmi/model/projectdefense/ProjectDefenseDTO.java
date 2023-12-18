@@ -3,8 +3,7 @@ package pl.edu.amu.wmi.model.projectdefense;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 
 @Data
 @NoArgsConstructor
@@ -29,7 +28,9 @@ public class ProjectDefenseDTO {
     /**
      * names initials of committee members
      */
-    private List<String> committee;
+    private String committee;
+
+    private CommitteeIdentifier committeeIdentifier;
 
     private String students;
 

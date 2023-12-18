@@ -75,13 +75,13 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
             return null;
         }
         DefensePhase defensePhase = defenseScheduleConfig.getDefensePhase();
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         return createProjectDefenseDTOs(studyYear, indexNumber, projectDefenses, defensePhase);
     }
 
     @Override
     public Map<String, List<ProjectDefenseSummaryDTO>> getProjectDefensesSummary(String studyYear) {
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         Map<String, List<ProjectDefenseSummaryDTO>> projectDefenseDTOMap = new TreeMap<>();
         projectDefenseMap.forEach((date, defenses) -> {
@@ -172,6 +172,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         List<Tuple> projectsWithDefenseInfoForStudyYear = projectDAO.findAcceptedProjectsWithDefenseInfoForStudyYear(studyYear);
         return projectsWithDefenseInfoForStudyYear.stream()
                 .map(this::mapTupleToProjectNameDto)
+                .sorted(Comparator.comparing(ProjectNameDTO::getName))
                 .toList();
     }
 
@@ -190,7 +191,13 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     private ProjectNameDTO mapTupleToProjectNameDto(Tuple tuple) {
         Project project = (Project) tuple.get("project");
         Long defenseId = (Long) tuple.get("projectDefenseId");
-        return new ProjectNameDTO(String.valueOf(project.getId()), project.getName(), defenseId);
+        String extendedProjectName = createExtendedProjectName(project);
+        return new ProjectNameDTO(String.valueOf(project.getId()), extendedProjectName, defenseId);
+    }
+
+    private String createExtendedProjectName(Project project) {
+        String supervisorInitials = project.getSupervisor().getInitials();
+        return supervisorInitials + ": " + project.getName();
     }
 
     private boolean isUserAProjectAdminAndDefensePhaseAllowTheModifications(String indexNumber, DefensePhase defensePhase) {
@@ -293,11 +300,20 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
                     yield projectDefenseDTOs.stream()
                             .sorted(projectDefenseByTimeComparator())
                             .toList();
+                } else if (Objects.equals(DefensePhase.SCHEDULE_PLANNING, defensePhase)) {
+                    yield Collections.emptyList();
                 } else {
                     yield mapProjectDefensesToDTOsWithSorting(defenses);
                 }
             }
-            case STUDENT, SUPERVISOR -> mapProjectDefensesToDTOsWithSorting(defenses);
+            case STUDENT -> {
+                if (Objects.equals(DefensePhase.SCHEDULE_PLANNING, defensePhase)) {
+                    yield Collections.emptyList();
+                } else {
+                    yield mapProjectDefensesToDTOsWithSorting(defenses);
+                }
+            }
+            case SUPERVISOR -> mapProjectDefensesToDTOsWithSorting(defenses);
         };
     }
 

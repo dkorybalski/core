@@ -10,11 +10,13 @@ import pl.edu.amu.wmi.dao.SupervisorDefenseAssignmentDAO;
 import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.committee.SupervisorAvailabilityMapper;
 import pl.edu.amu.wmi.model.committee.SupervisorDefenseAssignmentDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorAvailabilityService;
 import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +50,22 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
 
     @Override
     @Transactional
-    public void putSupervisorAvailability(String studyYear, Long supervisorId, Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignments) {
+    public void putSupervisorAvailability(String studyYear, String indexNumber, Map<String, SupervisorDefenseAssignmentDTO> supervisorDefenseAssignments) {
         supervisorDefenseAssignments.values().forEach(supervisorDefenseAssignment -> {
+
+            Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, indexNumber);
+            if (Objects.isNull(supervisor)) {
+                throw new BusinessException(MessageFormat.format("Supervisor with index {0} was not found for study year {1}",
+                        indexNumber, studyYear));
+            }
+
             Long changedTimeSlotId = supervisorDefenseAssignment.getDefenseSlotId();
             boolean isTimeSlotSelected = supervisorDefenseAssignment.isAvailable();
 
-            SupervisorDefenseAssignment supervisorDefenseAssignmentEntity = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(supervisorId, changedTimeSlotId);
+            SupervisorDefenseAssignment supervisorDefenseAssignmentEntity = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(supervisor.getId(), changedTimeSlotId);
             supervisorDefenseAssignmentEntity.setAvailable(isTimeSlotSelected);
             supervisorDefenseAssignmentDAO.save(supervisorDefenseAssignmentEntity);
-            log.info("Supervisor availability was updated for supervisor with id: {}", supervisorId);
+            log.info("Supervisor availability was updated for supervisor with username: {}", indexNumber);
         });
     }
 
@@ -64,11 +73,16 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
      * Returns Supervisor availability survey for the supervisor of a given study year.
      */
     @Override
-    public Map<String, Map<String, SupervisorDefenseAssignmentDTO>> getSupervisorAvailabilitySurvey(Long supervisorId) {
-        List<SupervisorDefenseAssignment> supervisorDefenseAssignments = supervisorDefenseAssignmentDAO.findAllBySupervisor_Id(supervisorId);
+    public Map<String, Map<String, SupervisorDefenseAssignmentDTO>> getSupervisorAvailabilitySurvey(String indexNumber, String studyYear) {
 
+        Supervisor supervisor = supervisorDAO.findByStudyYearAndUserData_IndexNumber(studyYear, indexNumber);
+        if (Objects.isNull(supervisor)) {
+            throw new BusinessException(MessageFormat.format("Supervisor with index {0} was not found for study year {1}",
+                    indexNumber, studyYear));
+        }
+
+        List<SupervisorDefenseAssignment> supervisorDefenseAssignments = supervisorDefenseAssignmentDAO.findAllBySupervisor_Id(supervisor.getId());
         Map<LocalDate, List<SupervisorDefenseAssignment>> supervisorDefenseAssignmentsByDate = mapSupervisorDefenseAssignmentsByDate(supervisorDefenseAssignments);
-
         return createSupervisorAvailabilitySurvey(supervisorDefenseAssignmentsByDate);
     }
 
@@ -116,17 +130,17 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
         List<Supervisor> supervisorsByStudyYear = supervisorDAO.findAllByStudyYear(studyYear);
         List<LocalDate> defenseDays = supervisorDefenseAssignmentService.getAllDefenseAssignmentDaysForStudyYear(studyYear);
 
-        return createAggregatedSupervisorAvailability(supervisorsByStudyYear, defenseDays);
+        return createAggregatedSupervisorAvailability(supervisorsByStudyYear, defenseDays, studyYear);
     }
 
     /**
      * Creates aggregated Supervisor availability for days for which defense is scheduled.
      */
-    private Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>> createAggregatedSupervisorAvailability(List<Supervisor> supervisorsByStudyYear, List<LocalDate> defenseDays) {
+    private Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>> createAggregatedSupervisorAvailability(List<Supervisor> supervisorsByStudyYear, List<LocalDate> defenseDays, String studyYear) {
         Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>> aggregatedSupervisorsAvailability = new TreeMap<>();
 
         defenseDays.forEach(day -> {
-            Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityByDay = createSupervisorsAvailabilityByDay(supervisorsByStudyYear, day);
+            Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityByDay = createSupervisorsAvailabilityByDay(supervisorsByStudyYear, day, studyYear);
             aggregatedSupervisorsAvailability.put(day.format(commonDateFormatter()), supervisorAvailabilityByDay);
         });
 
@@ -137,10 +151,10 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
      * Creates the Supervisor's availability aggregated by the Supervisor's last name and then by the time of each
      * time slot on the selected day.
      */
-    private Map<String, Map<String, SupervisorDefenseAssignmentDTO>> createSupervisorsAvailabilityByDay(List<Supervisor> supervisors, LocalDate day) {
+    private Map<String, Map<String, SupervisorDefenseAssignmentDTO>> createSupervisorsAvailabilityByDay(List<Supervisor> supervisors, LocalDate day, String studyYear) {
         Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityPerDay = new TreeMap<>();
         supervisors.forEach(supervisor -> {
-            Map<String, Map<String, SupervisorDefenseAssignmentDTO>> availabilitySurvey = getSupervisorAvailabilitySurvey(supervisor.getId());
+            Map<String, Map<String, SupervisorDefenseAssignmentDTO>> availabilitySurvey = getSupervisorAvailabilitySurvey(supervisor.getIndexNumber(), studyYear);
             supervisorAvailabilityPerDay.put(String.valueOf(supervisor.getId()), availabilitySurvey.get(day.format(commonDateFormatter())));
         });
 

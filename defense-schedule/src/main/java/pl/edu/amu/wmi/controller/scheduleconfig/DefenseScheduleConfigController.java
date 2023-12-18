@@ -34,6 +34,13 @@ public class DefenseScheduleConfigController {
     }
 
     @Secured({"COORDINATOR"})
+    @GetMapping("/phase")
+    public ResponseEntity<String> getCurrentDefensePhase(
+            @RequestHeader("study-year") String studyYear) {
+        return ResponseEntity.ok(defenseScheduleConfigService.getCurrentDefensePhase(studyYear));
+    }
+
+    @Secured({"COORDINATOR"})
     @PatchMapping("/registration/open")
     public ResponseEntity<Void> openRegistrationForDefense(
             @RequestHeader("study-year") String studyYear) {

@@ -22,4 +22,6 @@ public interface DefenseScheduleConfigService {
      * @param studyYear study year that defense registration is closed for
      */
     void closeRegistrationForDefense(String studyYear);
+
+    String getCurrentDefensePhase(String studyYear);
 }

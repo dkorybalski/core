@@ -42,7 +42,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
             return null;
         }
         List<Supervisor> supervisors = supervisorDAO.findAllByStudyYear(studyYear);
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYear(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         List<SupervisorStatisticsDTO> supervisorStatisticsDTOs = new ArrayList<>();
         Map<String, Integer> statisticsTemplateMap = createStatisticsTemplateMap(defenseScheduleConfig);
