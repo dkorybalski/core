@@ -56,6 +56,7 @@ public class CommitteeServiceImpl implements CommitteeService {
         List<SupervisorDefenseAssignmentDTO> supervisorDefenseAssignmentDTOs = new ArrayList<>(supervisorDefenseAssignmentDTOMap.values());
 
         supervisorDefenseAssignmentDTOs.forEach(sda -> {
+            log.info("Committee update started for object: {}", sda);
             SupervisorDefenseAssignment committeeMember = supervisorDefenseAssignmentDAO.findBySupervisor_IdAndDefenseTimeSlot_Id(Long.valueOf(sda.getSupervisorId()), sda.getDefenseSlotId());
 
             List<SupervisorDefenseAssignment> committeesWhereCommitteeMemberIsAChairperson = new ArrayList<>();
@@ -107,6 +108,9 @@ public class CommitteeServiceImpl implements CommitteeService {
                     createCommittee(studyYear, sda, committeesWhereCommitteeMemberIsAChairperson, committeeMember);
                 }
                 case COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED -> {}
+                case UNSUPPORTED_UPDATE_OPERATION -> {
+                    log.info("Committee update skipped - unsupported update operation");
+                }
             }
         });
 
@@ -176,8 +180,7 @@ public class CommitteeServiceImpl implements CommitteeService {
                 && !committeeMember.isChairperson() && !committeesWhereCommitteeMemberIsAChairperson.isEmpty()) {
             return CommitteeUpdateCase.COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE;
         }
-        // TODO: 12/16/2023 remove null value (only for tests purposes)
-        return null;
+        return CommitteeUpdateCase.UNSUPPORTED_UPDATE_OPERATION;
     }
 
     @Override
@@ -361,7 +364,8 @@ public class CommitteeServiceImpl implements CommitteeService {
         CHAIRPERSON_ASSIGNMENT_CHANGED_TO_ANOTHER_CHAIRPERSON_AND_PREVIOUS_COMMITTEE_SLOT_DELETED,
         CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT,
         CHAIRPERSON_COMMITTEE_SLOT_CREATED,
-        COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE
+        COMMITTEE_MEMBER_ASSIGNMENT_CHANGED_TO_CHAIRPERSON_ASSIGNMENT_IN_OTHER_COMMITTEE,
+        UNSUPPORTED_UPDATE_OPERATION
 
     }
 
