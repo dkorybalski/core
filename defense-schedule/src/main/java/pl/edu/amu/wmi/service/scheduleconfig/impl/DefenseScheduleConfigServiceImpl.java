@@ -14,6 +14,7 @@ import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
 
+import java.text.MessageFormat;
 import java.util.Objects;
 
 
@@ -78,6 +79,15 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT);
         defenseScheduleConfigDAO.save(defenseScheduleConfig);
         log.info("Registration for projects defenses was closed for study year: {}", studyYear);
+    }
+
+    @Override
+    public String getCurrentDefensePhase(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
+        }
+        return defenseScheduleConfig.getDefensePhase().getPhaseName();
     }
 
 }

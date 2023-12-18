@@ -11,7 +11,7 @@ import java.util.List;
 public interface ProjectDefenseDAO extends JpaRepository<ProjectDefense, Long> {
 
     @EntityGraph(attributePaths = {"supervisorDefenseAssignments", "supervisorDefenseAssignments.defenseTimeSlot"})
-    List<ProjectDefense> findAllByStudyYear(String studyYear);
+    List<ProjectDefense> findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(String studyYear);
 
     List<ProjectDefense> findAllByProjectId(Long projectId);
 
