@@ -190,7 +190,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     private ProjectNameDTO mapTupleToProjectNameDto(Tuple tuple) {
         Project project = (Project) tuple.get("project");
         Long defenseId = (Long) tuple.get("projectDefenseId");
-        return new ProjectNameDTO(project.getId(), project.getName(), defenseId);
+        return new ProjectNameDTO(String.valueOf(project.getId()), project.getName(), defenseId);
     }
 
     private boolean isUserAProjectAdminAndDefensePhaseAllowTheModifications(String indexNumber, DefensePhase defensePhase) {

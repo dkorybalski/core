@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProjectNameDTO {
 
-    Long id;
+    String id;
     String name;
     Long projectDefenseId;
 
