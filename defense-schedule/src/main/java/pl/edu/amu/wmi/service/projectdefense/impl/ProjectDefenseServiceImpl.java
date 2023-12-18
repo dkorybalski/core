@@ -136,7 +136,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
         Project projectDefenseProject = projectDefenseEntity.getProject();
         Long projectDefenseCurrentProjectId = Objects.nonNull(projectDefenseProject) ? projectDefenseProject.getId() : null;
-        Long projectDefenseNewProjectId = projectDefenseDTO.getProjectId();
+        Long projectDefenseNewProjectId = Long.valueOf(projectDefenseDTO.getProjectId());
 
         boolean isDefenseChange = !Objects.equals(projectDefenseCurrentProjectId, projectDefenseNewProjectId);
 
@@ -200,6 +200,8 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
 
     private void assignProjectToProjectDefenseAsProjectAdmin(String indexNumber, ProjectDefensePatchDTO projectDefensePatchDTO, Project previouslyAssignedProject, ProjectDefense projectDefense) {
         if (Objects.nonNull(previouslyAssignedProject) && !projectMemberService.isStudentAnAdminOfTheProject(indexNumber, previouslyAssignedProject.getId())) {
+            log.info("Project defense slot {} cannot be updated by user: {}. Assignment of the project with id: {} was skipped",
+                    indexNumber, projectDefense.getId(), projectDefensePatchDTO.projectId());
             return;
         }
         Project newlyAssignedProject = null;
@@ -209,11 +211,15 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         if (Objects.isNull(newlyAssignedProject)) {
             if (Objects.nonNull(previouslyAssignedProject)) {
                 projectDefense.setProject(null);
+                log.info("Project defense slot {} was updated by user: {}. Assignment of the project with id: {} was successful",
+                        indexNumber, projectDefense.getId(), projectDefensePatchDTO.projectId());
                 projectDefenseDAO.save(projectDefense);
             }
         } else if (permissionService.isProjectDefenseEditableForProjectAdmin(projectDefense, indexNumber, newlyAssignedProject)) {
             removeExistingProjectDefenseAssignments(projectDefensePatchDTO);
             projectDefense.setProject(newlyAssignedProject);
+            log.info("Project defense slot {} was updated by user: {}. Assignment of the project with id: {} was successful",
+                    indexNumber, projectDefense.getId(), projectDefensePatchDTO.projectId());
             projectDefenseDAO.save(projectDefense);
         }
     }

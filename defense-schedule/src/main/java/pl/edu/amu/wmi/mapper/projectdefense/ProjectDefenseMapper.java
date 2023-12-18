@@ -17,7 +17,7 @@ import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
 public interface ProjectDefenseMapper {
 
     @Mapping(target = "projectDefenseId", source = "entity.id")
-    @Mapping(target = "projectId", source = "entity.project.id")
+    @Mapping(target = "projectId", source = "entity.project", qualifiedByName = "ProjectToProjectId")
     @Mapping(target = "date", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotDateToString")
     @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
@@ -62,6 +62,15 @@ public interface ProjectDefenseMapper {
     default String studentsToStudentsNames(Project project) {
         if (Objects.nonNull(project)) {
             return project.getStudentsBasicData();
+        } else {
+            return null;
+        }
+    }
+
+    @Named("ProjectToProjectId")
+    default String projectToProjectId(Project project) {
+        if (Objects.nonNull(project)) {
+            return project.getId().toString();
         } else {
             return null;
         }

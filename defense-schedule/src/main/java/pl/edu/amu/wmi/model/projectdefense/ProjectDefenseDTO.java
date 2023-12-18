@@ -12,7 +12,7 @@ public class ProjectDefenseDTO {
 
     private Long projectDefenseId;
 
-    private Long projectId;
+    private String projectId;
 
     private String date;
 
