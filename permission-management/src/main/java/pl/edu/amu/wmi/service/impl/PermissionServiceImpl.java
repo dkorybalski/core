@@ -106,7 +106,7 @@ public class PermissionServiceImpl implements PermissionService {
         } else {
             Supervisor supervisor = project.getSupervisor();
             return isProjectAccepted(project) && isProjectSupervisorCommitteeMember(projectDefense, supervisor) &&
-                    (isProjectDefenseSlotFree(projectDefense) || isProjectDefenseSlotAssignToUserProject(project, projectDefense));
+                    (isProjectDefenseSlotFree(projectDefense));
         }
     }
 
