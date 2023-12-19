@@ -69,7 +69,8 @@ public class CommitteeServiceImpl implements CommitteeService {
             log.info("Update type: {}", updateCase);
 
             switch (updateCase) {
-                case CHAIRPERSON_COMMITTEE_SLOT_DELETED -> deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
+                case CHAIRPERSON_COMMITTEE_SLOT_DELETED ->
+                        deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
                 case CHAIRPERSON_COMMITTEE_SLOT_DELETED_WITH_PROJECT_UNASSIGNMENT -> {
                     Project project = committeeMember.getProjectDefense().getProject();
                     deleteProjectDefensesConnectedWithChairperson(committeeMember.getCommitteeIdentifier(), studyYear, null, committeeMember.getDefenseTimeSlot().getId());
@@ -107,7 +108,8 @@ public class CommitteeServiceImpl implements CommitteeService {
                 case CHAIRPERSON_COMMITTEE_SLOT_CREATED -> {
                     createCommittee(studyYear, sda, committeesWhereCommitteeMemberIsAChairperson, committeeMember);
                 }
-                case COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED -> {}
+                case COMMITTEE_MEMBER_ASSIGNMENT_NOT_CHANGED -> {
+                }
                 case UNSUPPORTED_UPDATE_OPERATION -> {
                     log.info("Committee update skipped - unsupported update operation");
                 }
@@ -205,21 +207,54 @@ public class CommitteeServiceImpl implements CommitteeService {
             deleteProjectDefensesConnectedWithChairperson(chairpersonAssignmentDTO.getCommitteeIdentifier(), studyYear, date, null);
 
         } else {
-            CommitteeAssignmentCriteria criteria = CommitteeAssignmentCriteria.builder()
+            CommitteeAssignmentCriteria newChairpersonCriteria = CommitteeAssignmentCriteria.builder()
                     .supervisorId(Long.valueOf(chairpersonAssignmentDTO.getChairpersonId()))
                     .committeeIdentifier(chairpersonAssignmentDTO.getCommitteeIdentifier())
                     .date(date)
                     .studyYear(studyYear)
                     .build();
 
-            List<SupervisorDefenseAssignment> chairpersonAssignments = committeeMemberDAO.findAllAssignmentsByCriteria(criteria);
-            chairpersonAssignments.forEach(chairpersonAssignment -> {
+            CommitteeAssignmentCriteria previousChairpersonCriteria = CommitteeAssignmentCriteria.builder()
+                    .committeeIdentifier(chairpersonAssignmentDTO.getCommitteeIdentifier())
+                    .date(date)
+                    .isChairperson(Boolean.TRUE)
+                    .studyYear(studyYear)
+                    .build();
+
+            List<SupervisorDefenseAssignment> newChairpersonAssignments = committeeMemberDAO.findAllAssignmentsByCriteria(newChairpersonCriteria);
+
+            List<SupervisorDefenseAssignment> previousChairpersonAssignments = committeeMemberDAO.findAllAssignmentsByCriteria(previousChairpersonCriteria);
+
+            List<SupervisorDefenseAssignment> committeesToBeDeleted = findCommitteesToBeDeleted(newChairpersonAssignments, previousChairpersonAssignments);
+
+            newChairpersonAssignments.forEach(chairpersonAssignment -> {
                 List<SupervisorDefenseAssignment> committeeMembersWithoutProjectDefense = updateCommitteeMembers(chairpersonAssignmentDTO, chairpersonAssignment, studyYear, date);
                 if (!committeeMembersWithoutProjectDefense.isEmpty()) {
                     projectDefenseService.createProjectDefense(studyYear, committeeMembersWithoutProjectDefense);
                 }
             });
+
+            committeesToBeDeleted.forEach(chairperson -> {
+                deleteProjectDefensesConnectedWithChairperson(chairperson.getCommitteeIdentifier(), studyYear, null, chairperson.getDefenseTimeSlot().getId());
+            });
         }
+    }
+
+    private List<SupervisorDefenseAssignment> findCommitteesToBeDeleted(List<SupervisorDefenseAssignment> newChairpersonAssignments,
+                                                                        List<SupervisorDefenseAssignment> previousChairpersonAssignments) {
+        List<SupervisorDefenseAssignment> assignmentsToBeDeleted = new ArrayList<>();
+        previousChairpersonAssignments.forEach(previousAssignment -> {
+            if (!doesTheNewAssignmentsContainThePreviousOne(newChairpersonAssignments, previousAssignment)) {
+                assignmentsToBeDeleted.add(previousAssignment);
+            }
+        });
+        return assignmentsToBeDeleted;
+    }
+
+    private boolean doesTheNewAssignmentsContainThePreviousOne(List<SupervisorDefenseAssignment> newChairpersonAssignments, SupervisorDefenseAssignment previousAssignment) {
+        return newChairpersonAssignments.stream()
+                .anyMatch(newAssignment -> (Objects.equals(newAssignment.getCommitteeIdentifier(), previousAssignment.getCommitteeIdentifier())
+                        && Objects.equals(newAssignment.getDefenseTimeSlot(), previousAssignment.getDefenseTimeSlot())));
     }
 
     private List<SupervisorDefenseAssignment> findCommitteeMemberAssignmentsWhenIsAChairpersonOfOtherCommitteeDuringTheDay(String studyYear, SupervisorDefenseAssignment entity, CommitteeIdentifier committeeIdentifier) {
