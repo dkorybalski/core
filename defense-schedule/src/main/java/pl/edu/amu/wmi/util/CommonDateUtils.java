@@ -4,7 +4,9 @@ package pl.edu.amu.wmi.util;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.IntStream;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -28,6 +30,16 @@ public class CommonDateUtils {
                 .limit(numOfDaysBetween + 1)
                 .mapToObj(startDate::plusDays)
                 .toList();
+    }
+
+    public static String getDateStringWithTheDayOfWeek(LocalDate date) {
+        String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.SHORT_STANDALONE, Locale.US);
+        return date.format(commonDateFormatter()) + " | " + dayOfWeek;
+    }
+
+    public static LocalDate parseDateStringWithTheDayOfWeekToLocalDate(String date) {
+        String dateWithoutTheDayOfTheWeek = date.split(" ")[0];
+        return LocalDate.parse(dateWithoutTheDayOfTheWeek, commonDateFormatter());
     }
 
 }

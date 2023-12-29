@@ -13,11 +13,12 @@ import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.model.committee.SupervisorStatisticsDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorStatisticsService;
 
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.getDateStringWithTheDayOfWeek;
 import static pl.edu.amu.wmi.util.CommonDateUtils.getDefenseDays;
 
 @Service
@@ -58,14 +59,15 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
     private Map<String, Integer> createStatisticsTemplateMap(DefenseScheduleConfig defenseScheduleConfig) {
         Map<String, Integer> statisticsTemplateMap = new TreeMap<>();
         List<LocalDate> defenseDays = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
-        defenseDays.forEach(defenseDay -> statisticsTemplateMap.put(defenseDay.format(commonDateFormatter()), 0));
+        defenseDays.forEach(defenseDay -> statisticsTemplateMap.put(getDateStringWithTheDayOfWeek(defenseDay), 0));
         return statisticsTemplateMap;
     }
 
     private SupervisorStatisticsDTO createStatisticsForSupervisor(Supervisor supervisor, List<ProjectDefense> projectDefenses, Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap, Map<String, Integer> statisticsTemplateMap) {
         int numberOfGroups = countTheNumberOfAcceptedSupervisorProjects(supervisor);
         int numberOfAssignedProjectDefenses = countTheNumberOfDefensesAssignedToSupervisor(supervisor, projectDefenses);
-        double load = numberOfGroups == 0 ? 0.0 : (double) numberOfAssignedProjectDefenses / (double) numberOfGroups;
+        DecimalFormat decimalFormat = new DecimalFormat("#.#");
+        double load = numberOfGroups == 0 ? 0.0 : Double.parseDouble(decimalFormat.format((double) numberOfAssignedProjectDefenses / (double) numberOfGroups));
         Map<String, Integer> committeesPerDayMap = createSupervisorDefensesByDateMap(supervisor, projectDefenseByDateMap, statisticsTemplateMap);
 
         return new SupervisorStatisticsDTO(
@@ -93,7 +95,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
         Map<String, Integer> committeessPerDayMap = new TreeMap<>(statisticsTemplateMap);
         projectDefenseByDateMap.forEach((date, defenses) -> {
             int numberOfCommittees = countTheNumberOfDefensesAssignedToSupervisor(supervisor, defenses);
-            committeessPerDayMap.put(date.format(commonDateFormatter()), numberOfCommittees);
+            committeessPerDayMap.put(getDateStringWithTheDayOfWeek(date), numberOfCommittees);
         });
         return committeessPerDayMap;
     }

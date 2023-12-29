@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.getDateStringWithTheDayOfWeek;
 
 @Service
 @Slf4j
@@ -100,7 +100,7 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
     private Map<String, Map<String, SupervisorDefenseAssignmentDTO>> createSupervisorAvailabilitySurvey(Map<LocalDate, List<SupervisorDefenseAssignment>> defenseAssignmentsByDate) {
         Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilitySurvey = new TreeMap<>();
 
-        defenseAssignmentsByDate.forEach((key, value) -> supervisorAvailabilitySurvey.put(key.format(commonDateFormatter()), createDefenseAssignmentsByTime(value)));
+        defenseAssignmentsByDate.forEach((key, value) -> supervisorAvailabilitySurvey.put(getDateStringWithTheDayOfWeek(key), createDefenseAssignmentsByTime(value)));
 
         return supervisorAvailabilitySurvey;
     }
@@ -141,7 +141,7 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
 
         defenseDays.forEach(day -> {
             Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityByDay = createSupervisorsAvailabilityByDay(supervisorsByStudyYear, day, studyYear);
-            aggregatedSupervisorsAvailability.put(day.format(commonDateFormatter()), supervisorAvailabilityByDay);
+            aggregatedSupervisorsAvailability.put(getDateStringWithTheDayOfWeek(day), supervisorAvailabilityByDay);
         });
 
         return aggregatedSupervisorsAvailability;
@@ -155,7 +155,7 @@ public class SupervisorAvailabilityServiceImpl implements SupervisorAvailability
         Map<String, Map<String, SupervisorDefenseAssignmentDTO>> supervisorAvailabilityPerDay = new TreeMap<>();
         supervisors.forEach(supervisor -> {
             Map<String, Map<String, SupervisorDefenseAssignmentDTO>> availabilitySurvey = getSupervisorAvailabilitySurvey(supervisor.getIndexNumber(), studyYear);
-            supervisorAvailabilityPerDay.put(String.valueOf(supervisor.getId()), availabilitySurvey.get(day.format(commonDateFormatter())));
+            supervisorAvailabilityPerDay.put(String.valueOf(supervisor.getId()), availabilitySurvey.get(getDateStringWithTheDayOfWeek(day)));
         });
 
         return supervisorAvailabilityPerDay;
