@@ -23,8 +23,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
-import static pl.edu.amu.wmi.util.CommonDateUtils.getDefenseDays;
+import static pl.edu.amu.wmi.util.CommonDateUtils.*;
 
 @Slf4j
 @Service
@@ -201,7 +200,7 @@ public class CommitteeServiceImpl implements CommitteeService {
     @Override
     @Transactional
     public void updateChairpersonAssignment(ChairpersonAssignmentDTO chairpersonAssignmentDTO, String studyYear) {
-        LocalDate date = LocalDate.parse(chairpersonAssignmentDTO.getDate(), commonDateFormatter());
+        LocalDate date = parseDateStringWithTheDayOfWeekToLocalDate(chairpersonAssignmentDTO.getDate());
 
         if (Objects.isNull(chairpersonAssignmentDTO.getChairpersonId())) {
             deleteProjectDefensesConnectedWithChairperson(chairpersonAssignmentDTO.getCommitteeIdentifier(), studyYear, date, null);
@@ -361,9 +360,9 @@ public class CommitteeServiceImpl implements CommitteeService {
         dates.forEach(day -> {
             Map<CommitteeIdentifier, ChairpersonAssignmentDTO> map = new TreeMap<>();
             Arrays.stream(CommitteeIdentifier.values()).forEach(committeeIdentifier -> {
-                map.put(committeeIdentifier, new ChairpersonAssignmentDTO(committeeIdentifier, day.format(commonDateFormatter())));
+                map.put(committeeIdentifier, new ChairpersonAssignmentDTO(committeeIdentifier, getDateStringWithTheDayOfWeek(day)));
             });
-            mapTemplate.put(day.format(commonDateFormatter()), map);
+            mapTemplate.put(getDateStringWithTheDayOfWeek(day), map);
         });
         return mapTemplate;
     }
@@ -385,7 +384,7 @@ public class CommitteeServiceImpl implements CommitteeService {
                 chairperson.getInitials(),
                 classroom,
                 committeeIdentifier,
-                date.format(commonDateFormatter())
+                getDateStringWithTheDayOfWeek(date)
         );
     }
 

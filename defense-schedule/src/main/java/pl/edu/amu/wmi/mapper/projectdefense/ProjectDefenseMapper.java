@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
+import static pl.edu.amu.wmi.util.CommonDateUtils.getDateStringWithTheDayOfWeek;
 
 @Mapper(componentModel = "spring")
 public interface ProjectDefenseMapper {
@@ -51,7 +51,7 @@ public interface ProjectDefenseMapper {
 
     @Named("DefenseTimeSlotDateToString")
     default String defenseTimeSlotDateToString (DefenseTimeSlot defenseTimeSlot) {
-        return defenseTimeSlot.getDate().format(commonDateFormatter());
+        return getDateStringWithTheDayOfWeek(defenseTimeSlot.getDate());
     }
 
     @Named("MapToCommitteeIdentifier")
