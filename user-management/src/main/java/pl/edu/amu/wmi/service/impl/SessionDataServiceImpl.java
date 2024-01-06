@@ -14,13 +14,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
-public class SessionDataImpl implements SessionDataService {
+public class SessionDataServiceImpl implements SessionDataService {
 
     private final SessionDataDAO sessionDataDAO;
 
     private final UserDataDAO userDataDAO;
 
-    public SessionDataImpl(SessionDataDAO sessionDataDAO, UserDataDAO userDataDAO) {
+    public SessionDataServiceImpl(SessionDataDAO sessionDataDAO, UserDataDAO userDataDAO) {
         this.sessionDataDAO = sessionDataDAO;
         this.userDataDAO = userDataDAO;
     }

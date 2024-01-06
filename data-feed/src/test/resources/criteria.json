@@ -1,0 +1,117 @@
+{
+  "studyYear": "PART_TIME#2023",
+  "minPointsThresholdFirstSemester": 0.8,
+  "minPointsThresholdSecondSemester": 0.7,
+  "criteriaSections" :
+  [
+    {
+      "name": "Documentation",
+      "criteriaSectionGradeWeightFirstSemester": 0.2,
+      "criteriaSectionGradeWeightSecondSemester": 0.1,
+      "isDefenseSection": false,
+      "criteriaGroups": [
+        {
+          "name": "Document 1 *",
+          "gradeWeightFirstSemester": 0.08,
+          "gradeWeightSecondSemester": 0.00,
+          "criteria": [
+            {
+              "category": "CRITERION_NOT_MET",
+              "points": 0,
+              "description": "missing document",
+              "isDisqualifying": true
+            },
+            {
+              "category": "UNSUCCESSFUL_ATTEMPT_TO_MEET_THE_CRITERION",
+              "points": 1,
+              "description": "not correct document",
+              "isDisqualifying": true
+            },
+            {
+              "category": "CRITERION_MET_WITH_RESERVATIONS",
+              "points": 3,
+              "description": "correct document with small remarks",
+              "isDisqualifying": false
+            },
+            {
+              "category": "CRITERION_MET",
+              "points": 4,
+              "description": "correct document",
+              "isDisqualifying": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Team work",
+      "criteriaSectionGradeWeightFirstSemester": 0.25,
+      "criteriaSectionGradeWeightSecondSemester": 0.25,
+      "isDefenseSection": false,
+      "criteriaGroups": [
+        {
+          "name": "Systematicity",
+          "gradeWeightFirstSemester": 0.05,
+          "gradeWeightSecondSemester": 0.05,
+          "criteria": [
+            {
+              "category": "CRITERION_NOT_MET",
+              "points": 0,
+              "description": "criterion not met",
+              "isDisqualifying": true
+            },
+            {
+              "category": "UNSUCCESSFUL_ATTEMPT_TO_MEET_THE_CRITERION",
+              "points": 1,
+              "description": "criterion partially met",
+              "isDisqualifying": false
+            },
+            {
+              "category": "CRITERION_MET_WITH_RESERVATIONS",
+              "points": 3,
+              "description": "criterion met with warrnings",
+              "isDisqualifying": false
+            },
+            {
+              "category": "CRITERION_MET",
+              "points": 4,
+              "description": "criterion met",
+              "isDisqualifying": false
+            }
+          ]
+        },
+        {
+          "name": "Divison of work",
+          "gradeWeightFirstSemester": 0.05,
+          "gradeWeightSecondSemester": 0.0,
+          "criteria": [
+            {
+              "category": "CRITERION_NOT_MET",
+              "points": 0,
+              "description": "all work done by one person",
+              "isDisqualifying": false
+            },
+            {
+              "category": "UNSUCCESSFUL_ATTEMPT_TO_MEET_THE_CRITERION",
+              "points": 1,
+              "description": "at least one person does not work as expected",
+              "isDisqualifying": false
+            },
+            {
+              "category": "CRITERION_MET_WITH_RESERVATIONS",
+              "points": 3,
+              "description": "all project members works on the project, but there are differences between their effort",
+              "isDisqualifying": false
+            },
+            {
+              "category": "CRITERION_MET",
+              "points": 4,
+              "description": "correct cooperation",
+              "isDisqualifying": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

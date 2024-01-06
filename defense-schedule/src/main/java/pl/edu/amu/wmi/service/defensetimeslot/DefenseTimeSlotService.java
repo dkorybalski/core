@@ -10,4 +10,5 @@ public interface DefenseTimeSlotService {
 
     List<DefenseTimeSlot> getAllTimeSlotsForDefenseConfig(Long defenseScheduleConfigId);
 
+    void deleteAllConnectedWithDefenseScheduleConfig(Long defenseScheduleConfigId);
 }

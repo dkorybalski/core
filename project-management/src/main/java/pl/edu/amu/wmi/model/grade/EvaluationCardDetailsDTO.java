@@ -11,11 +11,13 @@ import java.util.List;
 public class EvaluationCardDetailsDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     private String grade;
 
     private boolean editable;
+
+    private boolean active;
 
     private List<CriteriaSectionDTO> sections;
 

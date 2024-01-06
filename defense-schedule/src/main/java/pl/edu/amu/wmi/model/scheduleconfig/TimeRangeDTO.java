@@ -8,9 +8,9 @@ import java.time.LocalTime;
 @Data
 public class TimeRangeDTO {
 
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="HH:mm")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="[HH:mm][H:mm]")
     private LocalTime start;
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="HH:mm")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="[HH:mm][H:mm]")
     private LocalTime end;
 
 }

@@ -11,4 +11,6 @@ public interface DefenseTimeSlotDAO extends JpaRepository<DefenseTimeSlot, Long>
 
     List<DefenseTimeSlot> findAllByDefenseScheduleConfig_Id(Long defenseScheduleConfigId);
 
+    void deleteAllByDefenseScheduleConfig_Id(Long defenseScheduleCongifId);
+
 }

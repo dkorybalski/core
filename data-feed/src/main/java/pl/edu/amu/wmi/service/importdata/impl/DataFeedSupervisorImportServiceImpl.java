@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @Slf4j
@@ -116,7 +115,7 @@ public class DataFeedSupervisorImportServiceImpl implements DataFeedImportServic
                 supervisor.setUserData(userData);
             }
             supervisor.setStudyYear(studyYearEntity.getStudyYear());
-            supervisor.getUserData().setRoles(Set.of(roleDAO.findByName(UserRole.SUPERVISOR)));
+            supervisor.getUserData().getRoles().add(roleDAO.findByName(UserRole.SUPERVISOR));
         }
         List<Supervisor> supervisors = supervisorDAO.saveAll(entities);
         return supervisorMapper.mapToDTOs(supervisors);

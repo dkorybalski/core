@@ -23,7 +23,7 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${pri.app.jwtExpirationMs}")
-    private int jwtExpirationMs;
+    private Integer jwtExpirationMs;
 
     @Value("${pri.app.jwtCookieName}")
     private String jwtCookie;

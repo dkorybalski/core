@@ -23,5 +23,7 @@
     <include file="classpath:config/liquibase/database/2023-12-01-create_tables_for_defense_schedule_module.xml"/>
     <include file="classpath:config/liquibase/database/2023-12-09-add_field_is_active_for_defense_schedule_config.xml"/>
     <include file="classpath:config/liquibase/database/2023-12-17-remove-password-column-from-user-data-table.xml"/>
+    <include file="classpath:config/liquibase/database/2024-01-02-add_is_active_column_to_evaluation_card_table.xml"/>
+    <include file="classpath:config/liquibase/database/2024-01-02-add_table_evaluation_card_freeze_log.xml"/>
 
 </databaseChangeLog>

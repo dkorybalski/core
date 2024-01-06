@@ -57,7 +57,12 @@ public class PermissionServiceImpl implements PermissionService {
             return true;
         }
         if (projectMemberServiceImpl.isUserRoleCoordinator(indexNumber)) {
-            return true;
+            if (Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase())
+                    && !Objects.equals(EvaluationStatus.ACTIVE, evaluationCardEntity.getEvaluationStatus())) {
+                return false;
+            } else {
+                return true;
+            }
         }
         return false;
     }

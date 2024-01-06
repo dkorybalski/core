@@ -25,4 +25,8 @@ public interface DefenseScheduleConfigService {
     DefensePhaseDTO closeRegistrationForDefense(String studyYear);
 
     DefensePhaseDTO getCurrentDefensePhase(String studyYear);
+
+    void deleteActiveScheduleConfig(String studyYear);
+
+    void archiveDefenseScheduleConfig(String studyYear);
 }

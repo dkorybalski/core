@@ -69,7 +69,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot-maven-plugin.version}</version>
                 <configuration>
-                    <jvmArguments>-Dspring.application.admin.enabled=true</jvmArguments>
+                    <jvmArguments>-Dspring.application.admin.enabled=true -Dspring.profiles.active=test</jvmArguments>
                 </configuration>
                 <executions>
                     <execution>
@@ -99,7 +99,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <apiDocsUrl>http://localhost:8080/pri/v3/api-docs.yaml</apiDocsUrl>
+                    <apiDocsUrl>http://localhost:8081/pri/v3/api-docs.yaml</apiDocsUrl>
                     <outputFileName>pri-api.yaml</outputFileName>
                     <outputDir>${project.basedir}</outputDir>
                 </configuration>

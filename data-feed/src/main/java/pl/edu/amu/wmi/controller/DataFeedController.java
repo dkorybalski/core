@@ -64,4 +64,14 @@ public class DataFeedController {
         service.exportData(servletResponse.getWriter(), studyYear);
     }
 
+    @Secured({"COORDINATOR"})
+    @GetMapping("export/grades")
+    public void exportGrades(@RequestHeader("study-year") String studyYear, HttpServletResponse servletResponse) throws Exception {
+        servletResponse.setContentType("text/csv");
+        servletResponse.setCharacterEncoding("UTF-8");
+        servletResponse.addHeader("Content-Disposition", "attachment; filename=\"grades.csv\"");
+        DataFeedExportService service = DataFeedExportServiceFactory.getService(DataFeedType.GRADES);
+        service.exportData(servletResponse.getWriter(), studyYear);
+    }
+
 }

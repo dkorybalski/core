@@ -15,6 +15,9 @@ public interface SupervisorDefenseAssignmentDAO extends JpaRepository<Supervisor
 
     List<SupervisorDefenseAssignment> findAllBySupervisor_Id(Long supervisorId);
 
-    List<SupervisorDefenseAssignment> findAllByDefenseTimeSlot_StudyYear(String studyYear);
+    List<SupervisorDefenseAssignment> findAllByDefenseTimeSlot_StudyYearAndDefenseTimeSlot_DefenseScheduleConfig_IsActiveIsTrue(String studyYear);
+
+    @EntityGraph(attributePaths = {"projectDefense"})
+    List<SupervisorDefenseAssignment> findAllByDefenseTimeSlot_DefenseScheduleConfig_Id(Long id);
 
 }
