@@ -87,5 +87,12 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
         return defenseTimeSlotDAO.findAllByDefenseScheduleConfig_Id(defenseScheduleConfigId);
     }
 
+    @Override
+    @Transactional
+    public void deleteAllConnectedWithDefenseScheduleConfig(Long defenseScheduleConfigId) {
+        defenseTimeSlotDAO.deleteAllByDefenseScheduleConfig_Id(defenseScheduleConfigId);
+        log.info("All defense time slots have been deleted for defense schedule config: {}", defenseScheduleConfigId);
+    }
+
 }
 

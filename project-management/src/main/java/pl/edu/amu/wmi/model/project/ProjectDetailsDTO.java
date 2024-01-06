@@ -2,7 +2,8 @@ package pl.edu.amu.wmi.model.project;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class ProjectDetailsDTO {
 
-    private Long id;
+    private String id;
 
     @NotNull
     private String name;
@@ -26,6 +27,12 @@ public class ProjectDetailsDTO {
     private boolean confirmed;
 
     private boolean accepted;
+
+    private boolean freezeButtonShown;
+
+    private boolean publishButtonShown;
+
+    private boolean retakeButtonShown;
 
     @NotNull
     private SupervisorDTO supervisor;

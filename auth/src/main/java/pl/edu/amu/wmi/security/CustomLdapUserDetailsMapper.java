@@ -28,9 +28,6 @@ public class CustomLdapUserDetailsMapper extends LdapUserDetailsMapper {
         UserData user = userDataDAO.findByIndexNumber(username)
                 .orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format("User with index number not found: {0}", username)));
 
-        if (user == null) {
-            throw new UsernameNotFoundException("Username not found");
-        }
         UserDetails userDetails = super.mapUserFromContext(ctx, username, getAuthorities(user));
         return new UserDetailsImpl(user.getId(), userDetails.getUsername(), user.getEmail(), userDetails.getAuthorities());
     }

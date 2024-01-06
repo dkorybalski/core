@@ -93,4 +93,40 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         return new DefensePhaseDTO(defenseScheduleConfig.getDefensePhase().getPhaseName());
     }
 
+    @Override
+    @Transactional
+    public void deleteActiveScheduleConfig(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
+        }
+        Long defenseScheduleConfigId = defenseScheduleConfig.getId();
+        try {
+            // delete supervisor availability and related project defenses
+            supervisorDefenseAssignmentService.deleteAllConnectedWithDefenseScheduleConfig(defenseScheduleConfigId);
+            // delete defense time slot
+            defenseTimeSlotService.deleteAllConnectedWithDefenseScheduleConfig(defenseScheduleConfigId);
+            // delete defense schedule config
+            defenseScheduleConfigDAO.delete(defenseScheduleConfig);
+            log.info("All objects connected with defense schedule config: {} have been sucessfully deleted", defenseScheduleConfigId);
+        } catch (Exception e) {
+            log.error("Deleting defense schedule config: {} unsuccessful", defenseScheduleConfig, e);
+            throw new BusinessException("Defense schedule config deletion unsuccessful");
+        }
+
+
+    }
+
+    @Override
+    @Transactional
+    public void archiveDefenseScheduleConfig(String studyYear) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
+        }
+        defenseScheduleConfig.setActive(Boolean.FALSE);
+        defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        log.info("Defense schedule config for study year: {} with id: {} has beed archived", studyYear, defenseScheduleConfig.getId());
+    }
+
 }

@@ -95,6 +95,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                                 .requestMatchers(antMatcher("/auth/**")).permitAll()
                                 .requestMatchers(antMatcher("pri/auth/**")).permitAll()
+                                .requestMatchers(antMatcher("/v3/api-docs**")).permitAll()
+                                .requestMatchers(antMatcher("pri/v3/api-docs**")).permitAll()
                                 .anyRequest().authenticated()
                 );
 

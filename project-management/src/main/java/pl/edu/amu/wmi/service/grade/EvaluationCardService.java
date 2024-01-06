@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public interface EvaluationCardService {
 
-    void createEvaluationCard(Project project, String studyYear, Semester semester, EvaluationPhase phase, EvaluationStatus status);
+    void createEvaluationCard(Project project, String studyYear, Semester semester, EvaluationPhase phase, EvaluationStatus status, boolean isActive);
 
     UpdatedGradeDTO updateEvaluationCard(Long evaluationCardId, SingleGroupGradeUpdateDTO singleGroupGradeUpdate);
 
@@ -24,12 +24,26 @@ public interface EvaluationCardService {
 
     Optional<EvaluationCard> findTheMostRecentEvaluationCard(List<EvaluationCard> evaluationCards, Semester semester);
 
-    EvaluationCard findTheMostRecentEvaluationCardFromBothSemesters(List<EvaluationCard> evaluationCards);
-
     String getPointsForSemester(Project entity, Semester semester);
 
-    void publishEvaluationCard(Long evaluationCardId);
+    void publishEvaluationCard(Long projectId);
 
     void publishEvaluationCards(String studyYear);
 
+    /**
+     * Changes the status of evaluation card in semester phase to FROZEN and creates new card in defense phase, based on
+     * a previous card in phase semester
+     *
+     * @param projectId        project id that the evaluation card is connected with
+     */
+    void freezeEvaluationCard(Long projectId);
+
+    /**
+     * Creates an evaluation card in phase retake
+     *
+     * @param projectId        project id that the evaluation card is connected with
+     */
+    void retakeEvaluationCard(Long projectId);
+
+    void activateEvaluationCardsForSecondSemester(String studyYear);
 }

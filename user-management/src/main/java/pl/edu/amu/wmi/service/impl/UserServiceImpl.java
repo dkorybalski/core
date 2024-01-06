@@ -91,8 +91,10 @@ public class UserServiceImpl implements UserService {
                 if (hasRoleSupervisor(userData.getRoles())) {
                     final List<Supervisor> supervisors = this.supervisorDAO.findAllByUserData_IndexNumber(indexNumber);
                     final Supervisor entity = findSupervisorByActualStudyYear(supervisors, actualStudyYear, indexNumber);
-                    acceptedProjects.addAll(getSupervisorAcceptedProjects(entity));
-                    assignedProjects.addAll(getSupervisorAssignedProjects(entity));
+                    if (Objects.nonNull(entity)) {
+                        acceptedProjects.addAll(getSupervisorAcceptedProjects(entity));
+                        assignedProjects.addAll(getSupervisorAssignedProjects(entity));
+                    }
                 }
             } else if (hasRoleSupervisor(userData.getRoles())) {
                 final List<Supervisor> supervisors = this.supervisorDAO.findAllByUserData_IndexNumber(indexNumber);
@@ -105,6 +107,10 @@ public class UserServiceImpl implements UserService {
                 userDTO.setActualYear(actualStudyYear);
 
                 final Supervisor entity = findSupervisorByActualStudyYear(supervisors, actualStudyYear, indexNumber);
+                if (Objects.isNull(entity)) {
+                    throw new UserManagementException(
+                            "Supervisor with index: " + indexNumber + " not found for study year: " + actualStudyYear);
+                }
                 acceptedProjects.addAll(getSupervisorAcceptedProjects(entity));
                 assignedProjects.addAll(getSupervisorAssignedProjects(entity));
             }
@@ -161,8 +167,7 @@ public class UserServiceImpl implements UserService {
     private Supervisor findSupervisorByActualStudyYear(List<Supervisor> supervisors, String actualStudyYear, String indexNumber) {
         return supervisors.stream()
                 .filter(supervisor -> Objects.equals(supervisor.getStudyYear(), actualStudyYear))
-                .findFirst().orElseThrow(() -> new UserManagementException(
-                        "Supervisor with index: " + indexNumber + " not found for study year: " + actualStudyYear));
+                .findFirst().orElse(null);
     }
 
     private List<String> getStudyYearsForSupervisor(List<Supervisor> supervisors) {

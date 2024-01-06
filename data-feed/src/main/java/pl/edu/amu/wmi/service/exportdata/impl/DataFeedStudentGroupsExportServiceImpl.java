@@ -40,7 +40,7 @@ public class DataFeedStudentGroupsExportServiceImpl implements DataFeedExportSer
 
             csvWriter.writeNext(createHeaders());
 
-            List<Student> students = studentDAO.findAll();
+            List<Student> students = studentDAO.findAllByStudyYear(studyYearName);
             StudyYear studyYear = studyYearDAO.findByStudyYear(studyYearName);
 
             for (Student student : students) {

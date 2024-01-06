@@ -9,6 +9,7 @@ import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
 import org.springframework.stereotype.Repository;
 import pl.edu.amu.wmi.dao.CommitteeMemberDAO;
+import pl.edu.amu.wmi.entity.DefenseScheduleConfig;
 import pl.edu.amu.wmi.entity.DefenseTimeSlot;
 import pl.edu.amu.wmi.entity.Supervisor;
 import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
@@ -33,15 +34,19 @@ public class CommitteeMemberDAOImpl implements CommitteeMemberDAO {
 
         Metamodel metamodel = entityManager.getMetamodel();
         EntityType<SupervisorDefenseAssignment> supervisorDefenseAssignmentMetaModel = metamodel.entity(SupervisorDefenseAssignment.class);
+        EntityType<DefenseTimeSlot> defenseTimeSlotMetaModel = metamodel.entity(DefenseTimeSlot.class);
 
         Root<SupervisorDefenseAssignment> root = criteriaQuery.from(SupervisorDefenseAssignment.class);
         Join<SupervisorDefenseAssignment, DefenseTimeSlot> defenseTimeSlotJoin =
                 root.join(supervisorDefenseAssignmentMetaModel.getSingularAttribute("defenseTimeSlot", DefenseTimeSlot.class));
+        Join<DefenseTimeSlot, DefenseScheduleConfig> defenseScheduleConfigJoin =
+                defenseTimeSlotJoin.join(defenseTimeSlotMetaModel.getSingularAttribute("defenseScheduleConfig", DefenseScheduleConfig.class));
 
         List<Predicate> predicates = new ArrayList<>();
 
         predicates.add(criteriaBuilder.isTrue(root.get("isChairperson")));
         predicates.add(criteriaBuilder.equal(defenseTimeSlotJoin.get("studyYear"), studyYear));
+        predicates.add(criteriaBuilder.isTrue(defenseScheduleConfigJoin.get("isActive")));
 
         criteriaQuery.multiselect(
                         root.get("supervisor").alias("supervisor"),

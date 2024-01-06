@@ -6,18 +6,23 @@ servers:
 - url: http://localhost:8080/pri
   description: Generated server url
 paths:
-  /project/{projectId}/external-link:
-    get:
+  /user/study-year:
+    put:
       tags:
-      - project-controller
-      operationId: getExternalLinksByProjectId
+      - user-controller
+      operationId: updateStudyYear
       parameters:
-      - name: projectId
-        in: path
+      - name: study-year
+        in: header
         required: true
         schema:
-          type: integer
-          format: int64
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActualStudyYearDTO'
+        required: true
       responses:
         "500":
           description: Internal Server Error
@@ -54,16 +59,331 @@ paths:
           content:
             '*/*':
               schema:
-                uniqueItems: true
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLinkDTO'
+                $ref: '#/components/schemas/UserDTO'
+  /schedule/committee/supervisor:
+    get:
+      tags:
+      - committee-controller
+      operationId: getSupervisorsAvailability
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/SupervisorDefenseAssignmentDTO'
+    put:
+      tags:
+      - committee-controller
+      operationId: updateCommittee
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/SupervisorDefenseAssignmentDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CommitteeAssignmentSummaryDTO'
+  /schedule/committee/chairperson:
+    get:
+      tags:
+      - committee-controller
+      operationId: getChairpersonAssignments
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/ChairpersonAssignmentDTO'
+    put:
+      tags:
+      - committee-controller
+      operationId: updateChairpersonAssignment
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChairpersonAssignmentDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CommitteeAssignmentSummaryDTO'
+  /schedule/availability/supervisor:
+    get:
+      tags:
+      - supervisor-availability-controller
+      operationId: getSupervisorAvailability
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/SupervisorDefenseAssignmentDTO'
+    put:
+      tags:
+      - supervisor-availability-controller
+      operationId: putSupervisorAvailability
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/SupervisorDefenseAssignmentDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /project/{projectId}/evaluation-card/{evaluationCardId}:
     put:
       tags:
       - project-controller
-      operationId: updateExternalLinkData
+      operationId: updateEvaluationCardGrade
       parameters:
-      - name: projectId
+      - name: evaluationCardId
         in: path
         required: true
         schema:
@@ -73,10 +393,7 @@ paths:
         content:
           application/json:
             schema:
-              uniqueItems: true
-              type: array
-              items:
-                $ref: '#/components/schemas/ExternalLinkDTO'
+              $ref: '#/components/schemas/SingleGroupGradeUpdateDTO'
         required: true
       responses:
         "500":
@@ -114,10 +431,135 @@ paths:
           content:
             '*/*':
               schema:
-                uniqueItems: true
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLinkDTO'
+                $ref: '#/components/schemas/UpdatedGradeDTO'
+  /project/{projectId}/evaluation-card/{evaluationCardId}/retake:
+    put:
+      tags:
+      - project-controller
+      operationId: retakeEvaluationCard
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: evaluationCardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/EvaluationCardDetailsDTO'
+  /project/{projectId}/evaluation-card/{evaluationCardId}/freeze:
+    put:
+      tags:
+      - project-controller
+      operationId: freezeEvaluationCard
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: evaluationCardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/EvaluationCardDetailsDTO'
   /project/{id}:
     get:
       tags:
@@ -130,6 +572,11 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
         "500":
           description: Internal Server Error
@@ -173,11 +620,6 @@ paths:
       operationId: updateProject
       parameters:
       - name: study-year
-        in: header
-        required: true
-        schema:
-          type: string
-      - name: index-number
         in: header
         required: true
         schema:
@@ -279,7 +721,7 @@ paths:
     get:
       tags:
       - project-controller
-      operationId: getSupervisorsAvailability
+      operationId: getSupervisorsAvailability_1
       parameters:
       - name: study-year
         in: header
@@ -387,6 +829,12 @@ paths:
       tags:
       - user-controller
       operationId: getSupervisors
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
       responses:
         "500":
           description: Internal Server Error
@@ -582,6 +1030,56 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/StudentDTO'
+  /schedule/config:
+    post:
+      tags:
+      - defense-schedule-config-controller
+      operationId: createDefenseScheduleConfig
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DefenseScheduleConfigDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
   /project:
     get:
       tags:
@@ -638,11 +1136,6 @@ paths:
       operationId: createProject
       parameters:
       - name: study-year
-        in: header
-        required: true
-        schema:
-          type: string
-      - name: index-number
         in: header
         required: true
         schema:
@@ -955,6 +1448,271 @@ paths:
             '*/*':
               schema:
                 type: object
+  /schedule/defense:
+    get:
+      tags:
+      - project-defense-controller
+      operationId: getProjectDefenses
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectDefenseDTO'
+    patch:
+      tags:
+      - project-defense-controller
+      operationId: updateProjectDefenses
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProjectDefenseDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectDefenseDTO'
+  /schedule/defense/{projectDefenseId}:
+    patch:
+      tags:
+      - project-defense-controller
+      operationId: assignProjectToProjectDefense
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectDefenseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectDefensePatchDTO'
+        required: true
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectDefenseDTO'
+  /schedule/config/registration/open:
+    patch:
+      tags:
+      - defense-schedule-config-controller
+      operationId: openRegistrationForDefense
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DefensePhaseDTO'
+  /schedule/config/registration/close:
+    patch:
+      tags:
+      - defense-schedule-config-controller
+      operationId: closeRegistrationForDefense
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DefensePhaseDTO'
   /project/{projectId}/unaccept:
     patch:
       tags:
@@ -1014,6 +1772,95 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ProjectDetailsDTO'
+  /project/{projectId}/evaluation-card/{evaluationCardId}/publish:
+    patch:
+      tags:
+      - project-controller
+      operationId: publishEvaluationCard
+      parameters:
+      - name: evaluationCardId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /project/{projectId}/evaluation-card/publish:
+    patch:
+      tags:
+      - project-controller
+      operationId: publishEvaluationCards
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
   /project/{projectId}/admin-change/{studentIndex}:
     patch:
       tags:
@@ -1175,20 +2022,286 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserDTO'
-  /project/{projectId}/grade:
+  /schedule/defense/summary:
+    get:
+      tags:
+      - project-defense-controller
+      operationId: exportDefenseScheduleSummary
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /schedule/defense/projects:
+    get:
+      tags:
+      - project-defense-controller
+      operationId: getProjectNames
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectNameDTO'
+  /schedule/config/phase:
+    get:
+      tags:
+      - defense-schedule-config-controller
+      operationId: getCurrentDefensePhase
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DefensePhaseDTO'
+  /schedule/committee/statistics:
+    get:
+      tags:
+      - committee-controller
+      operationId: getSupervisorStatistics
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupervisorStatisticsDTO'
+  /project/{projectId}/evaluationCard/create:
     get:
       tags:
       - project-controller
-      operationId: getGradeDetailsByProjectId
+      operationId: createEvaluationCard
       parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
       - name: semester
         in: query
         required: true
         schema:
           type: string
           enum:
-          - SEMESTER_I
-          - SEMESTER_II
+          - FIRST
+          - SECOND
+      - name: evaluationPhase
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - SEMESTER_PHASE
+          - DEFENSE_PHASE
+          - RETAKE_PHASE
+      - name: evaluationStatus
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - ACTIVE
+          - FROZEN
+          - PUBLISHED
+          - RETAKE
+      responses:
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "409":
+          description: Conflict
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorInfo'
+        "200":
+          description: OK
+  /project/{projectId}/evaluation-card:
+    get:
+      tags:
+      - project-controller
+      operationId: getGradeDetailsByProjectId
+      parameters:
+      - name: study-year
+        in: header
+        required: true
+        schema:
+          type: string
       - name: projectId
         in: path
         required: true
@@ -1231,51 +2344,11 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ProjectGradeDetailsDTO'
-  /project/external-link:
-    get:
-      tags:
-      - project-controller
-      operationId: getExternalLinkData
-      responses:
-        "500":
-          description: Internal Server Error
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "404":
-          description: Not Found
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "403":
-          description: Forbidden
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "409":
-          description: Conflict
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "400":
-          description: Bad Request
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ErrorInfo'
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ExternalLinkDataDTO'
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/EvaluationCardDetailsDTO'
   /project/external-link/column-header:
     get:
       tags:
@@ -1470,6 +2543,228 @@ components:
           format: int32
         errorMessage:
           type: string
+    ActualStudyYearDTO:
+      type: object
+      properties:
+        studyYear:
+          type: string
+    UserDTO:
+      type: object
+      properties:
+        indexNumber:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        actualYear:
+          type: string
+        studyYears:
+          type: array
+          items:
+            type: string
+        projects:
+          type: array
+          items:
+            type: integer
+            format: int64
+        acceptedProjects:
+          type: array
+          items:
+            type: integer
+            format: int64
+    SupervisorDefenseAssignmentDTO:
+      required:
+      - defenseSlotId
+      type: object
+      properties:
+        supervisorId:
+          type: string
+        defenseSlotId:
+          type: integer
+          format: int64
+        time:
+          type: string
+        available:
+          type: boolean
+        chairperson:
+          type: boolean
+        committeeIdentifier:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+          - D
+        classroom:
+          type: string
+        projectId:
+          type: integer
+          format: int64
+    CommitteeAssignmentSummaryDTO:
+      type: object
+      properties:
+        statistics:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupervisorStatisticsDTO'
+        defenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectDefenseDTO'
+    ProjectDefenseDTO:
+      type: object
+      properties:
+        projectDefenseId:
+          type: integer
+          format: int64
+        projectId:
+          type: string
+        date:
+          type: string
+        time:
+          type: string
+        projectName:
+          type: string
+        committee:
+          type: string
+        committeeIdentifier:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+          - D
+        students:
+          type: string
+        chairperson:
+          type: string
+        classRoom:
+          type: string
+        isEditable:
+          type: boolean
+    SupervisorStatisticsDTO:
+      type: object
+      properties:
+        supervisor:
+          type: string
+        numberOfGroups:
+          type: integer
+          format: int32
+        totalNumberOfCommittees:
+          type: integer
+          format: int32
+        load:
+          type: number
+          format: double
+        committeesPerDay:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+    ChairpersonAssignmentDTO:
+      type: object
+      properties:
+        chairpersonId:
+          type: string
+        chairpersonInitials:
+          type: string
+        classroom:
+          type: string
+        committeeIdentifier:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+          - D
+        date:
+          type: string
+    SingleGroupGradeUpdateDTO:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        selectedCriterion:
+          type: string
+          enum:
+          - CRITERION_NOT_MET
+          - UNSUCCESSFUL_ATTEMPT_TO_MEET_THE_CRITERION
+          - CRITERION_MET_WITH_RESERVATIONS
+          - CRITERION_MET
+    UpdatedGradeDTO:
+      type: object
+      properties:
+        grade:
+          type: string
+        criteriaMet:
+          type: boolean
+    CriteriaGroupDTO:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        selectedCriterion:
+          type: string
+          enum:
+          - CRITERION_NOT_MET
+          - UNSUCCESSFUL_ATTEMPT_TO_MEET_THE_CRITERION
+          - CRITERION_MET_WITH_RESERVATIONS
+          - CRITERION_MET
+        gradeWeight:
+          type: string
+        modificationDate:
+          type: string
+          format: date
+        criteria:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CriterionDTO'
+    CriteriaSectionDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        gradeWeight:
+          type: string
+        criteriaGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriteriaGroupDTO'
+    CriterionDTO:
+      type: object
+      properties:
+        description:
+          type: string
+        isDisqualifying:
+          type: boolean
+    EvaluationCardDetailsDTO:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        grade:
+          type: string
+        editable:
+          type: boolean
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriteriaSectionDTO'
     ExternalLinkDTO:
       required:
       - id
@@ -1592,6 +2887,47 @@ components:
           type: string
         pesel:
           type: string
+    DateRangeDTO:
+      type: object
+      properties:
+        start:
+          type: string
+          format: date
+        end:
+          type: string
+          format: date
+    DefenseScheduleConfigDTO:
+      type: object
+      properties:
+        dateRange:
+          $ref: '#/components/schemas/DateRangeDTO'
+        slotDuration:
+          type: integer
+          format: int32
+        timeRange:
+          $ref: '#/components/schemas/TimeRangeDTO'
+    LocalTime:
+      type: object
+      properties:
+        hour:
+          type: integer
+          format: int32
+        minute:
+          type: integer
+          format: int32
+        second:
+          type: integer
+          format: int32
+        nano:
+          type: integer
+          format: int32
+    TimeRangeDTO:
+      type: object
+      properties:
+        start:
+          $ref: '#/components/schemas/LocalTime'
+        end:
+          $ref: '#/components/schemas/LocalTime'
     LoginRequest:
       required:
       - login
@@ -1602,31 +2938,27 @@ components:
           type: string
         password:
           type: string
-    UserDTO:
+    ProjectDefensePatchDTO:
       type: object
       properties:
-        indexNumber:
+        projectId:
+          type: integer
+          format: int64
+    DefensePhaseDTO:
+      type: object
+      properties:
+        phase:
+          type: string
+    ProjectNameDTO:
+      type: object
+      properties:
+        id:
           type: string
         name:
           type: string
-        role:
-          type: string
-        actualYear:
-          type: string
-        studyYears:
-          type: array
-          items:
-            type: string
-        projects:
-          type: array
-          items:
-            type: integer
-            format: int64
-        acceptedProjects:
-          type: array
-          items:
-            type: integer
-            format: int64
+        projectDefenseId:
+          type: integer
+          format: int64
     ProjectDTO:
       type: object
       properties:
@@ -1639,93 +2971,29 @@ components:
           $ref: '#/components/schemas/SupervisorDTO'
         accepted:
           type: boolean
-        pointsFirstSemester:
-          type: string
-        pointsSecondSemester:
-          type: string
         criteriaMet:
           type: boolean
-    ProjectCriteriaGroupDTO:
-      required:
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        selectedCriterion:
-          type: integer
-          format: int32
-        gradeWeight:
-          type: string
-        modificationDate:
-          type: string
-          format: date
-        criteria:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCriterionDTO'
-    ProjectCriteriaSectionDTO:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        gradeWeight:
-          type: string
-        criteriaGroups:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCriteriaGroupDTO'
-    ProjectCriterionDTO:
-      type: object
-      properties:
-        category:
-          type: string
-        description:
-          type: string
-        disqualifying:
-          type: boolean
-    ProjectGradeDetailsDTO:
-      required:
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        projectName:
-          type: string
-        semester:
-          type: string
-          enum:
-          - SEMESTER_I
-          - SEMESTER_II
-        grade:
-          type: string
-        sections:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectCriteriaSectionDTO'
-    ExternalLinkDataDTO:
-      required:
-      - externalLinks
-      - projectId
-      type: object
-      properties:
-        projectId:
-          type: integer
-          format: int64
-        projectName:
-          type: string
-        supervisor:
-          $ref: '#/components/schemas/SupervisorDTO'
         externalLinks:
           uniqueItems: true
           type: array
           items:
             $ref: '#/components/schemas/ExternalLinkDTO'
+        defenseDay:
+          type: string
+          format: date
+        defenseHour:
+          $ref: '#/components/schemas/LocalTime'
+        evaluationPhase:
+          type: string
+        classroom:
+          type: string
+        committee:
+          type: array
+          items:
+            type: string
+        students:
+          type: string
+        firstSemesterGrade:
+          type: string
+        secondSemesterGrade:
+          type: string

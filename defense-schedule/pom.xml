@@ -19,7 +19,6 @@
         <rest-assured.version>5.3.0</rest-assured.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
-        <jackson-databind.version>2.15.3</jackson-databind.version>
     </properties>
 
     <dependencies>
@@ -59,11 +58,23 @@
 
         <!--tests-->
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <version>${rest-assured.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.16.1</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

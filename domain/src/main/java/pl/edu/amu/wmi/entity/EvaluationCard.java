@@ -49,4 +49,7 @@ public class EvaluationCard extends AbstractEntity {
 
     @Column(name = "FINAL_GRADE")
     private Double finalGrade;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean isActive = false;
 }

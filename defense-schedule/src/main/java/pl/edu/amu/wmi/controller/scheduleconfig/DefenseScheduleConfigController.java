@@ -61,5 +61,22 @@ public class DefenseScheduleConfigController {
         return ResponseEntity.ok(defensePhase);
     }
 
+    @Secured({"COORDINATOR"})
+    @PutMapping("/rebuild")
+    public ResponseEntity<Void> rebuildDefenseScheduleConfig(
+            @RequestHeader("study-year") String studyYear) {
+        defenseScheduleConfigService.deleteActiveScheduleConfig(studyYear);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/archive")
+    public ResponseEntity<Void> archiveDefenseScheduleConfig(
+            @RequestHeader("study-year") String studyYear) {
+        // TODO: 1/5/2024 finish implementation - all searches for defense related data havo to filter by active config
+//        defenseScheduleConfigService.archiveDefenseScheduleConfig(studyYear);
+//        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
 }

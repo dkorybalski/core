@@ -12,24 +12,28 @@ import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
+import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
 public class SupervisorDefenseAssignmentServiceImpl implements SupervisorDefenseAssignmentService {
 
     private final DefenseTimeSlotService defenseTimeSlotService;
+    private final ProjectDefenseService projectDefenseService;
     private final SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO;
     private final SupervisorDAO supervisorDAO;
 
     @Autowired
     public SupervisorDefenseAssignmentServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
-                                                  SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO,
+                                                  ProjectDefenseService projectDefenseService, SupervisorDefenseAssignmentDAO supervisorDefenseAssignmentDAO,
                                                   SupervisorDAO supervisorDAO) {
         this.defenseTimeSlotService = defenseTimeSlotService;
+        this.projectDefenseService = projectDefenseService;
         this.supervisorDefenseAssignmentDAO = supervisorDefenseAssignmentDAO;
         this.supervisorDAO = supervisorDAO;
     }
@@ -68,7 +72,28 @@ public class SupervisorDefenseAssignmentServiceImpl implements SupervisorDefense
 
     @Override
     public List<LocalDate> getAllDefenseAssignmentDaysForStudyYear(String studyYear) {
-        List<SupervisorDefenseAssignment> allSupervisorDefenseAssignmentsForStudyYear = supervisorDefenseAssignmentDAO.findAllByDefenseTimeSlot_StudyYear(studyYear);
+        List<SupervisorDefenseAssignment> allSupervisorDefenseAssignmentsForStudyYear =
+                supervisorDefenseAssignmentDAO.findAllByDefenseTimeSlot_StudyYearAndDefenseTimeSlot_DefenseScheduleConfig_IsActiveIsTrue(studyYear);
         return allSupervisorDefenseAssignmentsForStudyYear.stream().map(defenseAssignment -> defenseAssignment.getDefenseTimeSlot().getDate()).distinct().toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllConnectedWithDefenseScheduleConfig(Long defenseScheduleConfigId) {
+        List<SupervisorDefenseAssignment> supervisorDefenseAssignmentsToBeDeleted =
+                supervisorDefenseAssignmentDAO.findAllByDefenseTimeSlot_DefenseScheduleConfig_Id(defenseScheduleConfigId);
+        List<Long> projectDefenseIdsToBeDeleted = extractProjectDefenseIdsForDeletion(supervisorDefenseAssignmentsToBeDeleted);
+
+        supervisorDefenseAssignmentDAO.deleteAll(supervisorDefenseAssignmentsToBeDeleted);
+        projectDefenseService.deleteProjectDefenses(projectDefenseIdsToBeDeleted);
+
+        log.info("Project defenses and supervisor defense assignments was deleted for defenseScheduleConfig: {}", defenseScheduleConfigId);
+    }
+
+    private List<Long> extractProjectDefenseIdsForDeletion(List<SupervisorDefenseAssignment> supervisorDefenseAssignments) {
+        return supervisorDefenseAssignments.stream()
+                .filter(sda -> Objects.equals(Boolean.TRUE, sda.isChairperson()))
+                .map(sda -> sda.getProjectDefense().getId())
+                .toList();
     }
 }

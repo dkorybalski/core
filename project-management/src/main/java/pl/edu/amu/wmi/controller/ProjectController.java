@@ -15,6 +15,7 @@ import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 import pl.edu.amu.wmi.enumerations.Semester;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.model.grade.EvaluationCardDetailsDTO;
+import pl.edu.amu.wmi.model.grade.EvaluationCardsDTO;
 import pl.edu.amu.wmi.model.grade.SingleGroupGradeUpdateDTO;
 import pl.edu.amu.wmi.model.grade.UpdatedGradeDTO;
 import pl.edu.amu.wmi.model.project.ProjectDTO;
@@ -124,12 +125,12 @@ public class ProjectController {
                 return ResponseEntity.status(409).build();
             }
             ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userDetails.getUsername());
-            projectService.acceptProjectByAllStudents(projectDetailsDTO.getId());
-            projectService.acceptProjectBySingleUser(supervisorIndexNumber, projectDetailsDTO.getId());
+            projectService.acceptProjectByAllStudents(Long.valueOf(projectDetailsDTO.getId()));
+            projectService.acceptProjectBySingleUser(supervisorIndexNumber, Long.valueOf(projectDetailsDTO.getId()));
             return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
         } else {
             ProjectDetailsDTO projectDetailsDTO = projectService.saveProject(project, studyYear, userDetails.getUsername());
-            projectService.acceptProjectBySingleUser(project.getAdmin(), projectDetailsDTO.getId());
+            projectService.acceptProjectBySingleUser(project.getAdmin(), Long.valueOf(projectDetailsDTO.getId()));
             return ResponseEntity.status(HttpStatus.CREATED).body(projectDetailsDTO);
         }
     }
@@ -192,27 +193,65 @@ public class ProjectController {
     }
 
     @Secured({"COORDINATOR"})
-    @PatchMapping("/{projectId}/evaluation-card/{evaluationCardId}/publish")
-    public ResponseEntity<Void> publishEvaluationCard(@PathVariable Long evaluationCardId) {
-        evaluationCardService.publishEvaluationCard(evaluationCardId);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{projectId}/evaluation-card/publish")
+    public ResponseEntity<EvaluationCardsDTO> publishEvaluationCard(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        evaluationCardService.publishEvaluationCard(projectId);
+        return ResponseEntity.ok().body(prepareEvaluationCardsDTO(projectId, studyYear, userDetails.getUsername(), EvaluationStatus.PUBLISHED));
     }
 
     @Secured({"COORDINATOR"})
-    @PatchMapping("/{projectId}/evaluation-card/publish")
+    @PutMapping("/evaluation-card/publish")
     public ResponseEntity<Void> publishEvaluationCards(@RequestHeader("study-year") String studyYear) {
         evaluationCardService.publishEvaluationCards(studyYear);
         return ResponseEntity.ok().build();
     }
 
     // TODO: 11/22/2023 remove this endpoint (only for tests)
+    @Secured({"COORDINATOR"})
     @GetMapping("/{projectId}/evaluationCard/create")
     public ResponseEntity<Void> createEvaluationCard(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId,
                                                      @RequestParam Semester semester,
                                                      @RequestParam EvaluationPhase evaluationPhase,
-                                                     @RequestParam EvaluationStatus evaluationStatus) {
+                                                     @RequestParam EvaluationStatus evaluationStatus,
+                                                     @RequestParam boolean isActive) {
         Project project = projectDAO.findById(projectId).orElse(null);
-        evaluationCardService.createEvaluationCard(project, studyYear, semester, evaluationPhase, evaluationStatus);
+        evaluationCardService.createEvaluationCard(project, studyYear, semester, evaluationPhase, evaluationStatus, isActive);
+        return ResponseEntity.ok().build();
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/{projectId}/evaluation-card/freeze")
+    public ResponseEntity<EvaluationCardsDTO> freezeEvaluationCard(@RequestHeader("study-year") String studyYear,
+                                                                                                              @PathVariable Long projectId) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        evaluationCardService.freezeEvaluationCard(projectId);
+        return ResponseEntity.ok()
+                .body(prepareEvaluationCardsDTO(projectId, studyYear, userDetails.getUsername(), EvaluationStatus.FROZEN));
+    }
+
+    private EvaluationCardsDTO prepareEvaluationCardsDTO(Long projectId, String studyYear, String indexNumber, EvaluationStatus status) {
+        return new EvaluationCardsDTO(
+                evaluationCardService.findEvaluationCards(projectId, studyYear, indexNumber),
+                status.label
+        );
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/{projectId}/evaluation-card/retake")
+    public ResponseEntity<EvaluationCardsDTO> retakeEvaluationCard(@RequestHeader("study-year") String studyYear,
+                                                                                                              @PathVariable Long projectId) {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        evaluationCardService.retakeEvaluationCard(projectId);
+        return ResponseEntity.ok()
+                .body(prepareEvaluationCardsDTO(projectId, studyYear, userDetails.getUsername(), EvaluationStatus.RETAKE));
+    }
+
+    @Secured({"COORDINATOR"})
+    @PutMapping("/evaluation-card/activate-second-semester")
+    public ResponseEntity<Void> activateEvaluationCardsForSecondSemester
+            (@RequestHeader("study-year") String studyYear) {
+        evaluationCardService.activateEvaluationCardsForSecondSemester(studyYear);
         return ResponseEntity.ok().build();
     }
 }

@@ -8,6 +8,8 @@ stages:
   - deploy
 
 clean:
+  tags:
+    - test
   extends:
     - .common-rule
   stage: build
@@ -20,6 +22,8 @@ clean:
     - mvn $MAVEN_CLI_OPTS clean -B
 
 build:
+  tags:
+    - test
   extends:
     - .common-rule
   stage: build
@@ -35,15 +39,9 @@ build:
     paths:
       - "**/target"
 
-code-analysis:
-  extends:
-    - .common-rule
-  stage: test
-  script:
-    - echo "Running SonarQube..."
-    - echo "To be done..."
-
-unit-test:
+test:
+  tags:
+    - test
   extends:
     - .common-rule
   stage: test
@@ -52,19 +50,23 @@ unit-test:
     paths:
       - .m2/repository
   script:
-    - echo "Running unit tests..."
-    - mvn $MAVEN_CLI_OPTS test
+    - echo "Running unit and integration tests..."
+    - mvn $MAVEN_CLI_OPTS verify
 
 swagger:
+  tags:
+    - test
   extends:
     - .after-merge-rule
   stage: deploy
   script:
-    - sudo docker stop swagger || true && sudo docker rm swagger || true 
+    - sudo docker stop swagger || true && sudo docker rm swagger || true
     - sudo docker rmi swaggerapi/swagger-ui || true
     - sudo docker run -d --name swagger -e BASE_URL=/swagger --network=pri-network -p 81:8080 -e SWAGGER_JSON=/swagger-api/pri-api.yaml -v /${CI_PROJECT_DIR}/pri-application/:/swagger-api swaggerapi/swagger-ui
 
-deploy:
+deploy_test_env:
+  tags:
+    - test
   extends:
     - .after-merge-rule
   stage: deploy
@@ -72,9 +74,9 @@ deploy:
     - sudo docker version
     - sudo docker compose version
   script:
+    - sudo echo "Test env deployment..."
     - sudo echo "Creating db backup..."
     - sudo cp -Rf /pri-system/db/* /pri-db-backup/ || true
-    - sudo echo "Deployment..."
     - sudo echo "Project dir=${CI_PROJECT_DIR}"
     - sudo echo "POSTGRES_URL=${POSTGRES_URL}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "POSTGRES_USER=${POSTGRES_USER}" >> ${CI_PROJECT_DIR}/config.env
@@ -90,7 +92,43 @@ deploy:
     - sudo echo "LDAP_BASE=${LDAP_BASE}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "LDAP_DOMAIN=${LDAP_DOMAIN}" >> ${CI_PROJECT_DIR}/config.env
     - sudo echo "FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED=${FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
-    - sudo echo "FF_LDAP_AUTHENTICATION_ENABLED=${FF_LDAP_AUTHENTICATION_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "FF_LDAP_AUTHENTICATION_ENABLED=false" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "SCHEDULED_JOBS_ENABLED=${SCHEDULED_JOBS_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo cat ${CI_PROJECT_DIR}/config.env
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-test.yml --env-file ${CI_PROJECT_DIR}/config.env down
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-test.yml --env-file ${CI_PROJECT_DIR}/config.env build
+    - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-test.yml --env-file ${CI_PROJECT_DIR}/config.env up -d
+
+deploy_prod_env:
+  tags:
+    - prod
+  extends:
+    - .after-merge-rule-prod
+  stage: deploy
+  before_script:
+    - sudo docker version
+    - sudo docker compose version
+  script:
+    - sudo echo "Prod env deployment..."
+    - sudo echo "Creating db backup..."
+    - sudo cp -Rf /pri-system/db/* /pri-db-backup/ || true
+    - sudo echo "Project dir=${CI_PROJECT_DIR}"
+    - sudo echo "POSTGRES_URL=${POSTGRES_URL}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_USER=${POSTGRES_USER}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "POSTGRES_DB=${POSTGRES_DB}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "JWT_TOKEN=${JWT_TOKEN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "MAIL_HOST=${MAIL_HOST}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "MAIL_PORT=${MAIL_PORT}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "MAIL_USERNAME=${MAIL_USERNAME}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "MAIL_PASSWORD=${MAIL_PASSWORD}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "EMAIL_UNIVERSITY_DOMAIN=${EMAIL_UNIVERSITY_DOMAIN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_URL=${LDAP_URL}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_BASE=${LDAP_BASE}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "LDAP_DOMAIN=${LDAP_DOMAIN}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED=${FF_EMAIL_TO_UNIVERSITY_DOMAIN_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "FF_LDAP_AUTHENTICATION_ENABLED=true" >> ${CI_PROJECT_DIR}/config.env
+    - sudo echo "SCHEDULED_JOBS_ENABLED=${SCHEDULED_JOBS_ENABLED}" >> ${CI_PROJECT_DIR}/config.env
     - sudo cat ${CI_PROJECT_DIR}/config.env
     - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env down
     - sudo docker compose -f ${CI_PROJECT_DIR}/docker-compose-prod.yml --env-file ${CI_PROJECT_DIR}/config.env build

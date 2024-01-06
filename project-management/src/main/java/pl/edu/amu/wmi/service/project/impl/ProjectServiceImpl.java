@@ -10,6 +10,7 @@ import pl.edu.amu.wmi.enumerations.AcceptanceStatus;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
 import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 import pl.edu.amu.wmi.enumerations.Semester;
+import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.exception.project.ProjectManagementException;
 import pl.edu.amu.wmi.mapper.project.ProjectMapper;
 import pl.edu.amu.wmi.mapper.project.StudentProjectMapper;
@@ -29,6 +30,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static pl.edu.amu.wmi.enumerations.AcceptanceStatus.*;
+import static pl.edu.amu.wmi.enumerations.EvaluationPhase.DEFENSE_PHASE;
+import static pl.edu.amu.wmi.enumerations.EvaluationPhase.SEMESTER_PHASE;
+import static pl.edu.amu.wmi.enumerations.EvaluationStatus.*;
 import static pl.edu.amu.wmi.enumerations.UserRole.*;
 
 
@@ -98,15 +102,42 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<StudentDTO> studentDTOs = prepareStudentDTOs(project);
         ProjectDetailsDTO projectDetailsDTO;
-        if (permissionService.isUserAllowedToSeeProjectDetails(studyYear, userIndexNumber, project.getId()))
+        if (permissionService.isUserAllowedToSeeProjectDetails(studyYear, userIndexNumber, project.getId())) {
             // TODO: 11/25/2023 what with external links in defense / retake phase ??
             projectDetailsDTO = projectMapper.mapToProjectDetailsDto(project);
-        else
+            EvaluationCard activeEvaluationCard = project.getEvaluationCards().stream()
+                    .filter(evaluationCard -> Objects.equals(Boolean.TRUE, evaluationCard.isActive()))
+                    .findFirst().orElseThrow(()
+                            -> new BusinessException(MessageFormat.format("There is none active evaluation card for project with id: {0}", id)));
+            if (shouldfreezeButtonBeShown(activeEvaluationCard)) {
+                projectDetailsDTO.setFreezeButtonShown(true);
+            } else if (shouldPublishButtonBeShown(activeEvaluationCard)) {
+                projectDetailsDTO.setPublishButtonShown(true);
+            } else if (shouldRetakeButtonBeShown(activeEvaluationCard)) {
+                projectDetailsDTO.setRetakeButtonShown(true);
+            }
+        } else {
             projectDetailsDTO = projectMapper.mapToProjectDetailsWithRestrictionsDto(project);
+        }
 
         projectDetailsDTO.setStudents(studentDTOs);
         projectDetailsDTO.setAdmin(getIndexNumberOfProjectAdmin(project));
         return projectDetailsDTO;
+    }
+
+    private boolean shouldRetakeButtonBeShown(EvaluationCard activeEvaluationCard) {
+        return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
+                && Objects.equals(PUBLISHED, activeEvaluationCard.getEvaluationStatus());
+    }
+
+    private boolean shouldPublishButtonBeShown(EvaluationCard activeEvaluationCard) {
+        return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
+                && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
+    }
+
+    private boolean shouldfreezeButtonBeShown(EvaluationCard activeEvaluationCard) {
+        return Objects.equals(SEMESTER_PHASE, activeEvaluationCard.getEvaluationPhase())
+                && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
     }
 
     private List<StudentDTO> prepareStudentDTOs(Project project) {
@@ -181,8 +212,10 @@ public class ProjectServiceImpl implements ProjectService {
         projects.sort(comparator);
         List<ProjectDTO> projectDTOs = new ArrayList<>();
         projects.forEach(project -> {
-            if (userProjectIds.contains(project.getId()) || isCoordinator) {
+            if ((userProjectIds.contains(project.getId()) && !isEvaluationCardFreeze(project)) || isCoordinator) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL));
+            } else if (userProjectIds.contains(project.getId()) && isEvaluationCardFreeze(project)) {
+                projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL_WITHOUT_GRADES));
             } else if (isSupervisor && isProjectInDefenseOrRetakePhase(project)) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.WITH_PARTIAL_RESTRICTIONS));
             } else {
@@ -192,11 +225,23 @@ public class ProjectServiceImpl implements ProjectService {
         return projectDTOs;
     }
 
+    private boolean isEvaluationCardFreeze(Project project) {
+        return project.getEvaluationCards().stream()
+                .anyMatch(evaluationCard -> Objects.equals(FROZEN, evaluationCard.getEvaluationStatus()));
+    }
+
     private ProjectDTO mapToProjectDTO(Project entity, MappingMode mode) {
         switch (mode) {
             case FULL -> {
                 ProjectDTO projectDTO = projectMapper.mapToProjectDto(entity);
                 return fillProjectDtoWithNecessaryData(projectDTO, entity);
+            }
+            case FULL_WITHOUT_GRADES -> {
+                ProjectDTO projectDTO = projectMapper.mapToProjectDto(entity);
+                ProjectDTO updatedProjectDTO = fillProjectDtoWithNecessaryData(projectDTO, entity);
+                updatedProjectDTO.setPointsSecondSemester(null);
+                updatedProjectDTO.setPointsFirstSemester(null);
+                return updatedProjectDTO;
             }
             case WITH_PARTIAL_RESTRICTIONS -> {
                 ProjectDTO projectDTO = projectMapper.mapToProjectDtoWithRestrictionsInPhaseDefense(entity);
@@ -220,45 +265,37 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (Objects.nonNull(projectDefense)) {
             projectDTO.setDefenseDay(projectDefense.getDefenseTimeslot().getDate());
-            projectDTO.setDefenseHour(projectDefense.getDefenseTimeslot().getStartTime());
+            projectDTO.setDefenseTime(projectDefense.getDefenseTimeslot().getStartTime());
             projectDTO.setClassroom(projectDefense.getClassroom());
             projectDTO.setCommittee(projectDefense.getCommitteeInitials());
         }
 
-        projectDTO.setEvaluationShown(isEvaluationShown(entity));
+        projectDTO.setEvaluationPhase(getDetailedEvaluationPhase(entity));
         projectDTO.setStudents(entity.getStudentsBasicData());
 
         return projectDTO;
     }
 
-    private boolean isEvaluationShown(Project project) {
-        EvaluationCard theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCardFromBothSemesters(project.getEvaluationCards());
-
-        if (Objects.isNull(theMostRecentEvaluationCard))
-            return false;
+    private String getDetailedEvaluationPhase(Project project) {
+        EvaluationCard theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCard(project.getEvaluationCards(), null)
+                .orElseThrow(() ->  new BusinessException(MessageFormat.format("The most recent evaluation card was not found for project with id: {0}", project.getId())));
 
         EvaluationPhase evaluationPhase = theMostRecentEvaluationCard.getEvaluationPhase();
         EvaluationStatus evaluationStatus = theMostRecentEvaluationCard.getEvaluationStatus();
 
-        return isEvaluationPhaseSemesterOrRetake(evaluationPhase) || isEvaluationPhaseDefenseAndEvaluationStatusPublished(evaluationPhase, evaluationStatus);
-    }
-
-    private boolean isEvaluationPhaseSemesterOrRetake(EvaluationPhase evaluationPhase) {
-        return Objects.equals(evaluationPhase, EvaluationPhase.SEMESTER_PHASE) || Objects.equals(evaluationPhase, EvaluationPhase.RETAKE_PHASE);
-    }
-
-    private boolean isEvaluationPhaseDefenseAndEvaluationStatusPublished(EvaluationPhase evaluationPhase, EvaluationStatus evaluationStatus) {
-        return Objects.equals(evaluationPhase, EvaluationPhase.DEFENSE_PHASE) && Objects.equals(evaluationStatus, EvaluationStatus.PUBLISHED);
+        if (Objects.equals(evaluationPhase, SEMESTER_PHASE))
+            return ACTIVE.label;
+        else if (Objects.equals(evaluationPhase, DEFENSE_PHASE) && !Objects.equals(evaluationStatus, PUBLISHED))
+            return FROZEN.label;
+        else if (Objects.equals(evaluationPhase, DEFENSE_PHASE) && Objects.equals(evaluationStatus, PUBLISHED))
+            return PUBLISHED.label;
+        else
+            return RETAKE.label;
     }
 
     private boolean getCriteriaMet(Project entity) {
-        Semester semester = determineTheMostRecentSemester(entity.getEvaluationCards());
-        Optional<EvaluationCard> theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCard(entity.getEvaluationCards(), semester);
+        Optional<EvaluationCard> theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCard(entity.getEvaluationCards(), null);
         return theMostRecentEvaluationCard.map(evaluationCard -> !evaluationCard.isDisqualified()).orElse(false);
-    }
-
-    private Semester determineTheMostRecentSemester(List<EvaluationCard> evaluationCards) {
-        return evaluationCards.size() <= NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER ? Semester.FIRST : Semester.SECOND;
     }
 
     private boolean isProjectInDefenseOrRetakePhase(Project project) {
@@ -293,8 +330,10 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setAcceptanceStatus(acceptanceStatusByStudentsAmount(projectDTO));
         projectEntity.setExternalLinks(externalLinkService.createEmptyExternalLinks(studyYear));
 
-        addFirstEvaluationCardToProject(projectEntity, studyYear);
+        addEvaluationCardToProject(projectEntity, studyYear, Semester.FIRST);
+        projectEntity = projectDAO.save(projectEntity);
 
+        addEvaluationCardToProject(projectEntity, studyYear, Semester.SECOND);
         projectEntity = projectDAO.save(projectEntity);
 
         return projectMapper.mapToProjectDetailsDto(projectEntity);
@@ -315,13 +354,18 @@ public class ProjectServiceImpl implements ProjectService {
         student.getUserData().getRoles().add(roleDAO.findByName(PROJECT_ADMIN));
     }
 
-    private void addFirstEvaluationCardToProject(Project project, String studyYear) {
+    private void addEvaluationCardToProject(Project project, String studyYear, Semester semester) {
         EvaluationCard evaluationCard = new EvaluationCard();
         project.addEvaluationCard(evaluationCard);
         evaluationCard.setProject(project);
 
-        evaluationCardService.createEvaluationCard(project, studyYear,
-                Semester.FIRST, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE);
+        switch (semester) {
+            case FIRST -> evaluationCardService.createEvaluationCard(project, studyYear,
+                    Semester.FIRST, EvaluationPhase.SEMESTER_PHASE, EvaluationStatus.ACTIVE, Boolean.TRUE);
+            case SECOND -> evaluationCardService.createEvaluationCard(project, studyYear,
+                    Semester.SECOND, EvaluationPhase.SEMESTER_PHASE, INACTIVE, Boolean.FALSE);
+        }
+
     }
 
     @Override
@@ -603,7 +647,7 @@ public class ProjectServiceImpl implements ProjectService {
         Set<StudentProject> studentProjectsForUpdate = new HashSet<>();
         projectDetailsDTO.getStudents().forEach(studentDTO -> {
             Student student = studentDAO.findByUserData_IndexNumber(studentDTO.getIndexNumber());
-            StudentProject studentProject = studentProjectDAO.findByStudent_IdAndProject_Id(student.getId(), projectDetailsDTO.getId());
+            StudentProject studentProject = studentProjectDAO.findByStudent_IdAndProject_Id(student.getId(), Long.valueOf(projectDetailsDTO.getId()));
             studentProjectsForUpdate.add(studentProject);
         });
         return studentProjectsForUpdate;
@@ -617,6 +661,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private enum MappingMode {
         FULL,
+        FULL_WITHOUT_GRADES,
         WITH_PARTIAL_RESTRICTIONS,
         WITH_FULL_RESTRICTIONS
     }

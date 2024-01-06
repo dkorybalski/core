@@ -9,4 +9,5 @@ public interface SupervisorDefenseAssignmentService {
 
     List<LocalDate> getAllDefenseAssignmentDaysForStudyYear(String studyYear);
 
+    void deleteAllConnectedWithDefenseScheduleConfig(Long defenseScheduleConfigId);
 }
