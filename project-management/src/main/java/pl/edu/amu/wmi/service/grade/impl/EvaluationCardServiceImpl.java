@@ -129,7 +129,8 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
                 .orElseThrow(() -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
 
         if (projectMemberService.isStudentAMemberOfProject(indexNumber, project) && isAnyEvaluationCardInFrozenStatus(project.getEvaluationCards())) {
-            return Collections.emptyMap();
+            log.info("User is not allowed to see evaluation card during defense evaluation process (when any card is in status frozen)");
+            return null;
         }
 
         EvaluationCardTemplate evaluationCardTemplate = evaluationCardTemplateDAO.findByStudyYear(studyYear)
@@ -172,6 +173,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         evaluationCardDetailsDTO.setId(evaluationCardEntity.getId().toString());
         evaluationCardDetailsDTO.setActive(evaluationCardEntity.isActive());
         evaluationCardDetailsDTO.setGrade(pointsToOverallPercent(evaluationCardEntity.getTotalPoints()));
+        evaluationCardDetailsDTO.setCriteriaMet(!evaluationCardEntity.isDisqualified());
 
         boolean isEditable = permissionService.isEvaluationCardEditableForUser(evaluationCardEntity, project, indexNumber);
 

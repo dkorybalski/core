@@ -77,13 +77,18 @@ public class Project extends AbstractEntity {
         evaluationCard.setProject(this);
     }
 
-    public String getStudentsBasicData() {
-        return assignedStudents.stream().sorted(studentPojectsByIsAdminComparator())
-                .map(studentProject -> studentProject.getStudent().getBasicData()).collect(Collectors.joining(", "));
+    public String getSortedStudentsBasicData() {
+        return assignedStudents.stream()
+                .map(StudentProject::getStudent)
+                .sorted(studentsByProjectAdminAndAlphabeticalComparator())
+                .map(Student::getBasicData)
+                .collect(Collectors.joining(", "));
     }
 
-    private Comparator<StudentProject> studentPojectsByIsAdminComparator() {
-        return Comparator.comparing(studentProject -> !studentProject.isProjectAdmin());
+    private Comparator<Student> studentsByProjectAdminAndAlphabeticalComparator() {
+        return Comparator
+                .comparing((Student student) -> !student.isProjectAdmin())
+                .thenComparing(Student::getFullName);
     }
 
 }

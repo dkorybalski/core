@@ -34,7 +34,7 @@ public class DefenseScheduleConfigController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR", "SUPERVISOR"})
     @GetMapping("/phase")
     public ResponseEntity<DefensePhaseDTO> getCurrentDefensePhase(
             @RequestHeader("study-year") String studyYear) {

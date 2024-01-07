@@ -25,6 +25,9 @@ import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -40,7 +43,7 @@ import static pl.edu.amu.wmi.enumerations.UserRole.*;
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
-    public static final Integer NUMBER_OF_EVALUATION_CARDS_IN_SINGLE_SEMESTER = 3;
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private final ProjectDAO projectDAO;
 
@@ -109,7 +112,7 @@ public class ProjectServiceImpl implements ProjectService {
                     .filter(evaluationCard -> Objects.equals(Boolean.TRUE, evaluationCard.isActive()))
                     .findFirst().orElseThrow(()
                             -> new BusinessException(MessageFormat.format("There is none active evaluation card for project with id: {0}", id)));
-            if (shouldfreezeButtonBeShown(activeEvaluationCard)) {
+            if (shouldFreezeButtonBeShown(activeEvaluationCard)) {
                 projectDetailsDTO.setFreezeButtonShown(true);
             } else if (shouldPublishButtonBeShown(activeEvaluationCard)) {
                 projectDetailsDTO.setPublishButtonShown(true);
@@ -135,13 +138,21 @@ public class ProjectServiceImpl implements ProjectService {
                 && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
     }
 
-    private boolean shouldfreezeButtonBeShown(EvaluationCard activeEvaluationCard) {
+    private boolean shouldFreezeButtonBeShown(EvaluationCard activeEvaluationCard) {
         return Objects.equals(SEMESTER_PHASE, activeEvaluationCard.getEvaluationPhase())
                 && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
     }
 
     private List<StudentDTO> prepareStudentDTOs(Project project) {
-        return project.getAssignedStudents().stream().map(this::prepareStudentDTO).toList();
+        List<StudentDTO> studentDTOs = new ArrayList<>(project.getAssignedStudents().stream().map(this::prepareStudentDTO).toList());
+        studentDTOs.sort(createComparatorByStudentAdminAndStudentsAlphabetical(project));
+        return studentDTOs;
+    }
+
+    private Comparator<StudentDTO> createComparatorByStudentAdminAndStudentsAlphabetical(Project project) {
+        return Comparator
+                .comparing((StudentDTO s) -> !projectMemberService.isStudentAnAdminOfTheProject(s.getIndexNumber(), project.getId()))
+                .thenComparing(StudentDTO::getName);
     }
 
     private StudentDTO prepareStudentDTO(StudentProject studentProject) {
@@ -214,7 +225,7 @@ public class ProjectServiceImpl implements ProjectService {
         projects.forEach(project -> {
             if ((userProjectIds.contains(project.getId()) && !isEvaluationCardFreeze(project)) || isCoordinator) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL));
-            } else if (userProjectIds.contains(project.getId()) && isEvaluationCardFreeze(project)) {
+            } else if (userProjectIds.contains(project.getId()) && isEvaluationCardFreeze(project) && !isSupervisor) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL_WITHOUT_GRADES));
             } else if (isSupervisor && isProjectInDefenseOrRetakePhase(project)) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.WITH_PARTIAL_RESTRICTIONS));
@@ -234,46 +245,65 @@ public class ProjectServiceImpl implements ProjectService {
         switch (mode) {
             case FULL -> {
                 ProjectDTO projectDTO = projectMapper.mapToProjectDto(entity);
-                return fillProjectDtoWithNecessaryData(projectDTO, entity);
+                return fillProjectDtoWithNecessaryData(projectDTO, entity, true);
             }
             case FULL_WITHOUT_GRADES -> {
                 ProjectDTO projectDTO = projectMapper.mapToProjectDto(entity);
-                ProjectDTO updatedProjectDTO = fillProjectDtoWithNecessaryData(projectDTO, entity);
-                updatedProjectDTO.setPointsSecondSemester(null);
-                updatedProjectDTO.setPointsFirstSemester(null);
-                return updatedProjectDTO;
+                return fillProjectDtoWithNecessaryData(projectDTO, entity, false);
             }
             case WITH_PARTIAL_RESTRICTIONS -> {
-                ProjectDTO projectDTO = projectMapper.mapToProjectDtoWithRestrictionsInPhaseDefense(entity);
-                return fillProjectDtoWithNecessaryData(projectDTO, entity);
+                ProjectDTO projectDTO = projectMapper.mapToProjectDtoWithRestrictions(entity);
+                projectDTO = fillProjectDtoWithNecessaryData(projectDTO, entity, true);
+                if (isSemesterPhaseForSecondSemester(entity.getEvaluationCards())) {
+                    projectDTO.setPointsSecondSemester(null);
+                }
+                return projectDTO;
             }
             case WITH_FULL_RESTRICTIONS -> {
                 ProjectDTO projectDTO = projectMapper.mapToProjectDtoWithRestrictions(entity);
-                projectDTO.setStudents(entity.getStudentsBasicData());
-                return projectDTO;
+                return fillProjectDtoWithNecessaryData(projectDTO, entity, false);
             }
             default -> throw new IllegalArgumentException("Unknown mapping mode: " + mode);
         }
     }
 
-    private ProjectDTO fillProjectDtoWithNecessaryData(ProjectDTO projectDTO, Project entity) {
-        projectDTO.setPointsFirstSemester(evaluationCardService.getPointsForSemester(entity, Semester.FIRST));
-        projectDTO.setPointsSecondSemester(evaluationCardService.getPointsForSemester(entity, Semester.SECOND));
-        projectDTO.setCriteriaMet(getCriteriaMet(entity));
+    private boolean isSemesterPhaseForSecondSemester(List<EvaluationCard> evaluationCards) {
+        Predicate<EvaluationCard> isSecondSemester = evaluationCard -> Objects.equals(Semester.SECOND, evaluationCard.getSemester());
+        Predicate<EvaluationCard> isSemesterPhase = evaluationCard -> Objects.equals(SEMESTER_PHASE, evaluationCard.getEvaluationPhase());
+        Predicate<EvaluationCard>isActiveStatus = evaluationCard -> Objects.equals(ACTIVE, evaluationCard.getEvaluationStatus());
+        return evaluationCards.stream()
+                .anyMatch(isSecondSemester.and(isSemesterPhase.and(isActiveStatus)));
+    }
+
+    private ProjectDTO fillProjectDtoWithNecessaryData(ProjectDTO projectDTO, Project entity, boolean isGradeMapping) {
+        if (isGradeMapping) {
+            projectDTO.setPointsFirstSemester(evaluationCardService.getPointsForSemester(entity, Semester.FIRST));
+            projectDTO.setPointsSecondSemester(evaluationCardService.getPointsForSemester(entity, Semester.SECOND));
+            projectDTO.setCriteriaMet(getCriteriaMet(entity));
+        }
 
         ProjectDefense projectDefense = projectDefenseDAO.findByProjectId(entity.getId());
 
         if (Objects.nonNull(projectDefense)) {
-            projectDTO.setDefenseDay(projectDefense.getDefenseTimeslot().getDate());
-            projectDTO.setDefenseTime(projectDefense.getDefenseTimeslot().getStartTime());
+            projectDTO.setDefenseDay(extractDateAndTime(projectDefense));
             projectDTO.setClassroom(projectDefense.getClassroom());
             projectDTO.setCommittee(projectDefense.getCommitteeInitials());
         }
 
         projectDTO.setEvaluationPhase(getDetailedEvaluationPhase(entity));
-        projectDTO.setStudents(entity.getStudentsBasicData());
+        projectDTO.setStudents(entity.getSortedStudentsBasicData());
 
         return projectDTO;
+    }
+
+    private static String extractDateAndTime(ProjectDefense projectDefense) {
+        LocalDate date = projectDefense.getDefenseTimeslot().getDate();
+        return date.format(dateTimeFormatter)
+                + " " + projectDefense.getDefenseTimeslot().getStartTime() + " | " + getDayOfWeek(date);
+    }
+
+    public static String getDayOfWeek(LocalDate date) {
+        return date.getDayOfWeek().getDisplayName(TextStyle.SHORT_STANDALONE, Locale.US);
     }
 
     private String getDetailedEvaluationPhase(Project project) {

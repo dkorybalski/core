@@ -19,6 +19,8 @@ public class EvaluationCardDetailsDTO {
 
     private boolean active;
 
+    private boolean criteriaMet;
+
     private List<CriteriaSectionDTO> sections;
 
 }

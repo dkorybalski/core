@@ -37,7 +37,7 @@ public class CommitteeController {
         this.projectDefenseService = projectDefenseService;
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR", "SUPERVISOR"})
     @GetMapping("/supervisor")
     public ResponseEntity<Map<String, Map<String, Map<String, SupervisorDefenseAssignmentDTO>>>> getSupervisorsAvailability(
             @RequestHeader("study-year") String studyYear) {
@@ -55,7 +55,7 @@ public class CommitteeController {
                 .body(prepareCommitteeAssignmentSummary(studyYear));
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR", "SUPERVISOR"})
     @GetMapping("/chairperson")
     public ResponseEntity<Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>>> getChairpersonAssignments(
             @RequestHeader("study-year") String studyYear) {
@@ -72,7 +72,7 @@ public class CommitteeController {
         return ResponseEntity.ok(prepareCommitteeAssignmentSummary(studyYear));
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR", "SUPERVISOR"})
     @GetMapping("/statistics")
     public ResponseEntity<List<SupervisorStatisticsDTO>> getSupervisorStatistics(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()
