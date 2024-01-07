@@ -22,13 +22,12 @@ import pl.edu.amu.wmi.service.ProjectMemberService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
 import pl.edu.amu.wmi.service.notification.DefenseNotificationService;
 import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
+import pl.edu.amu.wmi.util.CommonDateUtils;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
 
 @Service
 @Slf4j
@@ -88,7 +87,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
                     List<ProjectDefense> projectDefensesWithProjects = defenses.stream()
                             .filter(defense -> Objects.nonNull(defense.getProject()))
                             .toList();
-                    projectDefenseDTOMap.put(date.format(commonDateFormatter()), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
+                    projectDefenseDTOMap.put(CommonDateUtils.getDateStringWithTheDayOfWeek(date), projectDefenseMapper.mapToSummaryDTOs(projectDefensesWithProjects));
                 }
         );
         return projectDefenseDTOMap;

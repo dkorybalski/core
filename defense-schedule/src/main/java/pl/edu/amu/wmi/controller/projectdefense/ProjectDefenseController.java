@@ -66,7 +66,7 @@ public class ProjectDefenseController {
         return ResponseEntity.ok(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR", "SUPERVISOR"})
     @GetMapping("/projects")
     public ResponseEntity<List<ProjectNameDTO>> getProjectNames(@RequestHeader("study-year") String studyYear) {
         return ResponseEntity.ok()

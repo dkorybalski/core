@@ -3,12 +3,14 @@ package pl.edu.amu.wmi.mapper.projectdefense;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
-import pl.edu.amu.wmi.entity.*;
+import pl.edu.amu.wmi.entity.DefenseTimeSlot;
+import pl.edu.amu.wmi.entity.Project;
+import pl.edu.amu.wmi.entity.ProjectDefense;
+import pl.edu.amu.wmi.entity.SupervisorDefenseAssignment;
 import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseDTO;
 import pl.edu.amu.wmi.model.projectdefense.ProjectDefenseSummaryDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -36,9 +38,8 @@ public interface ProjectDefenseMapper {
     @Mapping(target = "time", source = "entity.defenseTimeslot", qualifiedByName = "DefenseTimeSlotStartTimeToString")
     @Mapping(target = "projectName", source = "entity.project.name")
     @Mapping(target = "committee", source = "entity.supervisorDefenseAssignments", qualifiedByName = "SupervisorDefenseAssignmentsToSupervisorsInitials")
-    @Mapping(target = "chairperson", source = "entity.chairpersonDefenseAssignment", qualifiedByName = "ChairpersonToChairpersonInitials")
     @Mapping(target = "classroom", source = "entity.classroom")
-    @Mapping(target = "students", source = "entity.project", qualifiedByName = "StudentsToStudentNames")
+    @Mapping(target = "students", source = "entity.project", qualifiedByName = "StudentsToStudentsNames")
     @Mapping(target = "supervisor", source = "entity.project", qualifiedByName = "SupervisorToSupervisorInitials")
     ProjectDefenseSummaryDTO mapToSummaryDto(ProjectDefense entity);
 
@@ -77,7 +78,7 @@ public interface ProjectDefenseMapper {
     @Named("StudentsToStudentsNames")
     default String studentsToStudentsNames(Project project) {
         if (Objects.nonNull(project)) {
-            return project.getStudentsBasicData();
+            return project.getSortedStudentsBasicData();
         } else {
             return null;
         }
@@ -95,17 +96,6 @@ public interface ProjectDefenseMapper {
     @Named("ChairpersonToChairpersonInitials")
     default String chairpersonToChairpersonInitials(SupervisorDefenseAssignment chairperson) {
         return chairperson.getSupervisor().getInitials();
-    }
-
-    @Named("StudentsToStudentNames")
-    default List<String> studentsToStudentNames(Project project) {
-        if (Objects.nonNull(project)) {
-            return project.getStudents().stream()
-                    .map(Student::getFullName)
-                    .toList();
-        } else {
-            return new ArrayList<>();
-        }
     }
 
     @Named("SupervisorToSupervisorInitials")

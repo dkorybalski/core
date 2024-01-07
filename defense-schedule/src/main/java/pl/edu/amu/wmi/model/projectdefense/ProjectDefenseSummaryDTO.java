@@ -3,8 +3,6 @@ package pl.edu.amu.wmi.model.projectdefense;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 public class ProjectDefenseSummaryDTO {
@@ -23,12 +21,7 @@ public class ProjectDefenseSummaryDTO {
      */
     private String committee;
 
-    /**
-     * name initials of chairperson
-     */
-    private String chairperson;
-
-    private List<String> students;
+    private String students;
 
     private String supervisor;
 }

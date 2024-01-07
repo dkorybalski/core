@@ -47,7 +47,6 @@ public class ProjectDefenseSummaryServiceImpl implements ProjectDefenseSummarySe
                 date,
                 defense.getTime(),
                 defense.getClassroom(),
-                defense.getChairperson(),
                 committeeMembers,
                 defense.getProjectName(),
                 defense.getSupervisor(),
@@ -59,7 +58,6 @@ public class ProjectDefenseSummaryServiceImpl implements ProjectDefenseSummarySe
         return new String[]{CSVHeaders.DATE,
                 CSVHeaders.TIME,
                 CSVHeaders.CLASSROOM,
-                CSVHeaders.CHAIRPERSON,
                 CSVHeaders.COMMITTEE_MEMBERS,
                 CSVHeaders.PROJECT_NAME,
                 CSVHeaders.SUPERVISOR,
@@ -71,7 +69,6 @@ public class ProjectDefenseSummaryServiceImpl implements ProjectDefenseSummarySe
         private static final String PROJECT_NAME = "NAZWA PROJEKTU";
         private static final String TIME = "GODZINA";
         private static final String CLASSROOM = "SALA";
-        private static final String CHAIRPERSON = "PRZEWODNICZĄCY";
         private static final String COMMITTEE_MEMBERS = "CZŁONKOWIE KOMISJI";
         private static final String SUPERVISOR = "OPIEKUN PROJEKTU";
         private static final String STUDENTS = "STUDENCI";

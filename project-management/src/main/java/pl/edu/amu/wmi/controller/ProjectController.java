@@ -28,9 +28,9 @@ import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.project.ProjectService;
 import pl.edu.amu.wmi.service.project.SupervisorProjectService;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @RestController
@@ -179,14 +179,19 @@ public class ProjectController {
     public ResponseEntity<Map<Semester, Map<EvaluationPhase, EvaluationCardDetailsDTO>>> getGradeDetailsByProjectId(@RequestHeader("study-year") String studyYear, @PathVariable Long projectId) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!permissionService.isUserAllowedToSeeProjectDetails(studyYear, userDetails.getUsername(), projectId)) {
-            return ResponseEntity.ok().body(Collections.emptyMap());
+            return ResponseEntity.ok().body(null);
+        }
+        Map<Semester, Map<EvaluationPhase, EvaluationCardDetailsDTO>> evaluationCards =
+                evaluationCardService.findEvaluationCards(projectId, studyYear, userDetails.getUsername());
+        if (Objects.isNull(evaluationCards)) {
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok()
-                .body(evaluationCardService.findEvaluationCards(projectId, studyYear, userDetails.getUsername()));
+                .body(evaluationCards);
     }
 
     @Secured({"SUPERVISOR", "COORDINATOR"})
-    @PutMapping("/{projectId}/evaluation-card/{evaluationCardId}")
+    @PatchMapping("/{projectId}/evaluation-card/{evaluationCardId}")
     public ResponseEntity<UpdatedGradeDTO> updateEvaluationCardGrade(@PathVariable Long evaluationCardId, @RequestBody SingleGroupGradeUpdateDTO singleGroupGradeUpdate) {
         return ResponseEntity.ok()
                 .body(evaluationCardService.updateEvaluationCard(evaluationCardId, singleGroupGradeUpdate));

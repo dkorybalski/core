@@ -6,7 +6,6 @@ import com.opencsv.exceptions.CsvException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import pl.edu.amu.wmi.dao.StudentDAO;
-import pl.edu.amu.wmi.dao.StudyYearDAO;
 import pl.edu.amu.wmi.entity.EvaluationCard;
 import pl.edu.amu.wmi.entity.Student;
 import pl.edu.amu.wmi.enumerations.EvaluationPhase;
@@ -26,11 +25,10 @@ public class DataFeedGradesExportServiceImpl implements DataFeedExportService {
 
     private final StudentDAO studentDAO;
 
-    private final StudyYearDAO studyYearDAO;
+    private static final String INDEX_REGEX_PATTERN = "^s\\d{6}";
 
-    public DataFeedGradesExportServiceImpl(StudentDAO studentDAO, StudyYearDAO studyYearDAO) {
+    public DataFeedGradesExportServiceImpl(StudentDAO studentDAO) {
         this.studentDAO = studentDAO;
-        this.studyYearDAO = studyYearDAO;
     }
 
     @Override
@@ -54,12 +52,19 @@ public class DataFeedGradesExportServiceImpl implements DataFeedExportService {
         List<EvaluationCard> evaluationCards = student.getConfirmedProject().getEvaluationCards();
 
         return new String[]{
-                student.getIndexNumber(),
+                adjustIndexNumber(student.getIndexNumber()),
                 extractGradeForSemesterAndTerm(evaluationCards, Semester.FIRST, EvaluationPhase.DEFENSE_PHASE, EvaluationStatus.PUBLISHED),
                 extractGradeForSemesterAndTerm(evaluationCards, Semester.FIRST, EvaluationPhase.RETAKE_PHASE, EvaluationStatus.RETAKE),
                 extractGradeForSemesterAndTerm(evaluationCards, Semester.SECOND, EvaluationPhase.DEFENSE_PHASE, EvaluationStatus.PUBLISHED),
                 extractGradeForSemesterAndTerm(evaluationCards, Semester.SECOND, EvaluationPhase.RETAKE_PHASE, EvaluationStatus.RETAKE)
         };
+    }
+
+    private String adjustIndexNumber(String indexNumber) {
+        if (indexNumber.matches(INDEX_REGEX_PATTERN)) {
+            return indexNumber.substring(1);
+        }
+        return indexNumber;
     }
 
     private String extractGradeForSemesterAndTerm(List<EvaluationCard> evaluationCards, Semester semester, EvaluationPhase phase, EvaluationStatus status) {

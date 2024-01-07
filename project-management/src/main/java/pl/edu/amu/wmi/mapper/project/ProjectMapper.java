@@ -65,15 +65,6 @@ public interface ProjectMapper {
     @Mapping(target = "students", ignore = true)
     ProjectDTO mapToProjectDtoWithRestrictions(Project entity);
 
-    @Mapping(target = "supervisor", source = "entity.supervisor")
-    @Mapping(target = "accepted", source = "acceptanceStatus", qualifiedByName = "AcceptedToBoolean")
-    @Mapping(target = "pointsFirstSemester", ignore = true)
-    @Mapping(target = "pointsSecondSemester", ignore = true)
-    @Mapping(target = "criteriaMet", ignore = true)
-    @Mapping(target = "externalLinks", ignore = true)
-    @Mapping(target = "students", ignore = true)
-    ProjectDTO mapToProjectDtoWithRestrictionsInPhaseDefense(Project entity);
-
     @IterableMapping(qualifiedByName = "mapWithoutRestrictions")
     List<ProjectDTO> mapToDTOs(List<Project> projectEntityList);
 
