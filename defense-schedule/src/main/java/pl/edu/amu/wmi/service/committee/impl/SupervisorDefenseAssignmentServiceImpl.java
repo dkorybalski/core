@@ -39,17 +39,26 @@ public class SupervisorDefenseAssignmentServiceImpl implements SupervisorDefense
     }
 
     /**
-     * Create supervisor defense assignment for all supervisors and all defense timeslots.
+     * Create supervisor defense assignment for all supervisors
+     * if defenseDate is null, then assignments are created for all defense time slots connected with defense schedule config
+     * if defenseDate is not null, then assignments are created only for defense time slots connected with the specific date
+     *
      */
     @Override
     @Transactional
-    public void createSupervisorDefenseAssignments(String studyYear, Long defenseScheduleConfigId) {
+    public void createSupervisorDefenseAssignments(String studyYear, Long defenseScheduleConfigId, LocalDate defenseDate) {
         List<Supervisor> supervisors = supervisorDAO.findAllByStudyYear(studyYear);
 
         if (supervisors.isEmpty())
             throw new BusinessException(MessageFormat.format("Supervisors for study year: {0} were not found", studyYear));
 
-        List<DefenseTimeSlot> defenseTimeSlots = defenseTimeSlotService.getAllTimeSlotsForDefenseConfig(defenseScheduleConfigId);
+        List<DefenseTimeSlot> defenseTimeSlots;
+        if (Objects.isNull(defenseDate)) {
+            defenseTimeSlots = defenseTimeSlotService.getAllTimeSlotsForDefenseConfig(defenseScheduleConfigId);
+        } else {
+            defenseTimeSlots = defenseTimeSlotService.getAllTimeSlotsForDefenseConfigAndDate(defenseScheduleConfigId, defenseDate);
+        }
+
 
         if (defenseTimeSlots.isEmpty())
             throw new BusinessException(MessageFormat.format("Time slots for defense schedule config with id: {0} were not found", defenseScheduleConfigId));

@@ -78,7 +78,7 @@ class ProjectDefenseControllerIT {
     void assignProjectToProjectDefenseAssignProjectCorrectly() throws Exception {
         //given based on data from file data.sql
         Long projectDefenseId = 1001L;
-        Long projectId = 1001L;
+        String projectId = "1001";
         ProjectDefensePatchDTO projectDefensePatchDTO = new ProjectDefensePatchDTO(projectId);
         ObjectMapper objectMapper = new ObjectMapper();
         //when
@@ -92,7 +92,7 @@ class ProjectDefenseControllerIT {
         assertThat(projectDefenses).isNotNull();
         boolean isProjectAssignedCorrectly = projectDefenses.stream()
                 .anyMatch(projectDefense -> Objects.equals(projectDefense.getProjectId(), String.valueOf(projectId)) &&
-                        Objects.equals(projectDefense.getProjectDefenseId(), projectDefenseId));
+                        Objects.equals(Long.valueOf(projectDefense.getProjectDefenseId()), projectDefenseId));
         assertTrue(isProjectAssignedCorrectly);
     }
 

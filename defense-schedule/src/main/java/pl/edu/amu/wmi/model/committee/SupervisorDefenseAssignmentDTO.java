@@ -24,6 +24,6 @@ public class SupervisorDefenseAssignmentDTO {
 
     private String classroom;
 
-    private Long projectId;
+    private String projectId;
 
 }

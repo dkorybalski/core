@@ -13,11 +13,11 @@ import java.util.List;
 public interface ProjectDefenseDAO extends JpaRepository<ProjectDefense, Long> {
 
     @EntityGraph(attributePaths = {"supervisorDefenseAssignments", "supervisorDefenseAssignments.defenseTimeSlot"})
-    List<ProjectDefense> findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(String studyYear);
+    List<ProjectDefense> findAllByStudyYearAndIsActiveIsTrueAndSupervisorDefenseAssignmentsNotEmpty(String studyYear);
 
-    List<ProjectDefense> findAllByProjectId(Long projectId);
+    List<ProjectDefense> findAllByProjectIdAndIsActiveIsTrue(Long projectId);
 
-    ProjectDefense findByProjectId(Long projectId);
+    ProjectDefense findByProjectIdAndIsActiveIsTrue(Long projectId);
 
     @Query("SELECT pd " +
             "FROM ProjectDefense pd " +
@@ -25,4 +25,6 @@ public interface ProjectDefenseDAO extends JpaRepository<ProjectDefense, Long> {
             "JOIN sda.defenseTimeSlot dts " +
             "WHERE dts.date = :date AND pd.project IS NOT NULL")
     List<ProjectDefense> findAllByDefenseDateAndProjectNotNull(LocalDate date);
+
+    List<ProjectDefense> findAllByStudyYearAndIsActiveIsTrue(String studyYear);
 }

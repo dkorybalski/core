@@ -18,6 +18,7 @@ public interface ProjectCriteriaGroupMapper {
     @Mapping(target = "gradeWeight", source = "gradeWeight", qualifiedByName = "PointsToPercent")
     @Mapping(target = "selectedCriterion", ignore = true)
     @Mapping(target = "criteria", ignore = true)
+    @Mapping(target = "modificationDate", ignore = true)
     CriteriaGroupDTO mapToDto(CriteriaGroup entity);
 
     List<CriteriaGroupDTO> mapToDtoList(List<CriteriaGroup> entities);

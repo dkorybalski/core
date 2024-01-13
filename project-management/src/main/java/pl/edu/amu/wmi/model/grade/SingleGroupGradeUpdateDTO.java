@@ -12,7 +12,7 @@ import pl.edu.amu.wmi.enumerations.CriterionCategory;
 public class SingleGroupGradeUpdateDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     private CriterionCategory selectedCriterion;
 

@@ -1,0 +1,10 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="katarzyna.jaroszewska" id="2024-01-10-add_additional_days_field_to_defense_schedule_config_table">
+        <addColumn tableName="defense_schedule_config">
+            <column name="additional_days" type="VARCHAR[]"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

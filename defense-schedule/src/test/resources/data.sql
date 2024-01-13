@@ -89,11 +89,11 @@ INSERT INTO public.defense_time_slot (id,creation_date,modification_date,version
 (1016,'2024-01-01 19:35:26.997351','2024-01-01 19:35:26.997351',0,'2024-01-09',30,'12:00:00','11:30:00','FULL_TIME#2023',100);
 
 --PROJECT_DEFENSE FULL_TIME#2023
-INSERT INTO public.project_defense (id,creation_date,modification_date,version,study_year,project_id) VALUES
-(1001,'2024-01-01 19:36:11.715232','2024-01-01 19:36:11.715232',0,'FULL_TIME#2023',NULL),
-(1002,'2024-01-01 19:36:11.723959','2024-01-01 19:36:11.723959',0,'FULL_TIME#2023',NULL),
-(1003,'2024-01-01 19:36:28.261369','2024-01-01 19:36:28.261369',0,'FULL_TIME#2023',NULL),
-(1004,'2024-01-01 19:36:28.267911','2024-01-01 19:36:28.267911',0,'FULL_TIME#2023',NULL);
+INSERT INTO public.project_defense (id,creation_date,modification_date,version,study_year,project_id, is_active) VALUES
+(1001,'2024-01-01 19:36:11.715232','2024-01-01 19:36:11.715232',0,'FULL_TIME#2023',NULL, true),
+(1002,'2024-01-01 19:36:11.723959','2024-01-01 19:36:11.723959',0,'FULL_TIME#2023',NULL, true),
+(1003,'2024-01-01 19:36:28.261369','2024-01-01 19:36:28.261369',0,'FULL_TIME#2023',NULL, true),
+(1004,'2024-01-01 19:36:28.267911','2024-01-01 19:36:28.267911',0,'FULL_TIME#2023',NULL, true);
 
 --SUPERVISOR_DEFENSE_ASSIGNMENT FULL_TIME#2023 SUPERVISOR 10
 INSERT INTO public.supervisor_defense_assignment (id,creation_date,modification_date,version,classroom,committee_identifier,is_available,is_chairperson,defense_time_slot_id,project_defense_id,supervisor_id) VALUES

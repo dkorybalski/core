@@ -11,12 +11,17 @@ import pl.edu.amu.wmi.exception.BusinessException;
 import pl.edu.amu.wmi.mapper.scheduleconfig.DefenseScheduleConfigMapper;
 import pl.edu.amu.wmi.model.scheduleconfig.DefensePhaseDTO;
 import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleConfigDTO;
+import pl.edu.amu.wmi.model.scheduleconfig.DefenseScheduleModificationDTO;
 import pl.edu.amu.wmi.service.committee.SupervisorDefenseAssignmentService;
 import pl.edu.amu.wmi.service.defensetimeslot.DefenseTimeSlotService;
+import pl.edu.amu.wmi.service.projectdefense.ProjectDefenseService;
 import pl.edu.amu.wmi.service.scheduleconfig.DefenseScheduleConfigService;
 
 import java.text.MessageFormat;
 import java.util.Objects;
+import java.util.Set;
+
+import static pl.edu.amu.wmi.util.CommonDateUtils.commonDateFormatter;
 
 
 @Slf4j
@@ -27,17 +32,19 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
     private final SupervisorDefenseAssignmentService supervisorDefenseAssignmentService;
     private final DefenseScheduleConfigDAO defenseScheduleConfigDAO;
     private final DefenseScheduleConfigMapper defenseScheduleConfigMapper;
+    private final ProjectDefenseService projectDefenseService;
 
 
     @Autowired
     public DefenseScheduleConfigServiceImpl(DefenseTimeSlotService defenseTimeSlotService,
                                             SupervisorDefenseAssignmentService supervisorDefenseAssignmentService,
                                             DefenseScheduleConfigDAO defenseScheduleConfigDAO,
-                                            DefenseScheduleConfigMapper defenseScheduleConfigMapper) {
+                                            DefenseScheduleConfigMapper defenseScheduleConfigMapper, ProjectDefenseService projectDefenseService) {
         this.defenseTimeSlotService = defenseTimeSlotService;
         this.supervisorDefenseAssignmentService = supervisorDefenseAssignmentService;
         this.defenseScheduleConfigDAO = defenseScheduleConfigDAO;
         this.defenseScheduleConfigMapper = defenseScheduleConfigMapper;
+        this.projectDefenseService = projectDefenseService;
     }
 
     @Override
@@ -51,16 +58,21 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         log.info("Defense schedule config was created with id: {}", defenseScheduleConfigEntity.getId());
 
         defenseTimeSlotService.createDefenseTimeSlots(studyYear, defenseScheduleConfigEntity.getId());
-        supervisorDefenseAssignmentService.createSupervisorDefenseAssignments(studyYear, defenseScheduleConfigEntity.getId());
+        supervisorDefenseAssignmentService.createSupervisorDefenseAssignments(studyYear, defenseScheduleConfigEntity.getId(), null);
     }
 
     @Override
     @Transactional
     public DefensePhaseDTO openRegistrationForDefense(String studyYear) {
-        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndDefensePhase(studyYear, DefensePhase.SCHEDULE_PLANNING);
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
         if (Objects.isNull(defenseScheduleConfig)) {
-            log.error("Opening registration for project defense failed - defense schedule process is in incorrect phase for study year: {}", studyYear);
-            throw new BusinessException("Opening registration for defense unsuccessful - process in incorrect phase");
+            log.error("Opening registration for project defense failed - active defense schedule config was not found for study year: {}", studyYear);
+            throw new BusinessException("Opening registration for defense unsuccessful - active defense schedule config was not found");
+        }
+
+        if (Objects.equals(defenseScheduleConfig.getDefensePhase(), DefensePhase.DEFENSE_PROJECT_REGISTRATION)) {
+            log.error("Opening registration for project defense failed - registration already opened");
+            throw new BusinessException("Opening registration for project defense failed - registration already opened");
         }
 
         defenseScheduleConfig.setDefensePhase(DefensePhase.DEFENSE_PROJECT_REGISTRATION);
@@ -124,9 +136,31 @@ public class DefenseScheduleConfigServiceImpl implements DefenseScheduleConfigSe
         if (Objects.isNull(defenseScheduleConfig)) {
             throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
         }
+        projectDefenseService.archiveProjectDefenses(studyYear);
         defenseScheduleConfig.setActive(Boolean.FALSE);
         defenseScheduleConfigDAO.save(defenseScheduleConfig);
         log.info("Defense schedule config for study year: {} with id: {} has beed archived", studyYear, defenseScheduleConfig.getId());
+    }
+
+    @Override
+    @Transactional
+    public void modifyDefenseSchedule(String studyYear, DefenseScheduleModificationDTO defenseScheduleModificationDTO) {
+        DefenseScheduleConfig defenseScheduleConfig = defenseScheduleConfigDAO.findByStudyYearAndIsActiveIsTrue(studyYear);
+        if (Objects.isNull(defenseScheduleConfig)) {
+            throw new BusinessException(MessageFormat.format("Active DefenseScheduleConfig for study year: {0} not found", studyYear));
+        }
+        if (Objects.isNull(defenseScheduleConfig.getAdditionalDays())) {
+            defenseScheduleConfig.setAdditionalDays(Set.of(defenseScheduleModificationDTO.date().format(commonDateFormatter())));
+        } else {
+            defenseScheduleConfig.getAdditionalDays().add(defenseScheduleModificationDTO.date().format(commonDateFormatter()));
+        }
+        defenseScheduleConfigDAO.save(defenseScheduleConfig);
+        defenseTimeSlotService.createDefenseTimeSlotsForASingleDefenseDay(
+                studyYear, defenseScheduleConfig, defenseScheduleModificationDTO.date());
+        supervisorDefenseAssignmentService.createSupervisorDefenseAssignments(
+                studyYear, defenseScheduleConfig.getId(), defenseScheduleModificationDTO.date());
+        log.info("Defense day {} was successfully added to an active defense schedule for a study year: {}", defenseScheduleModificationDTO.date(), studyYear);
+
     }
 
 }

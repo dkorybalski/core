@@ -1,0 +1,15 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="katarzyna.jaroszewska" id="2024-01-09-add_is_active_column_to_project_defense_table">
+        <addColumn tableName="project_defense">
+            <column defaultValueBoolean="false" name="is_active" type="boolean"/>
+        </addColumn>
+        <sql>
+            UPDATE project_defense
+            SET is_active = true
+            WHERE study_year = 'FULL_TIME#2023'
+        </sql>
+    </changeSet>
+</databaseChangeLog>

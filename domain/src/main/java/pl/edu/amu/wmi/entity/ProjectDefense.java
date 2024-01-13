@@ -24,6 +24,9 @@ public class ProjectDefense extends AbstractEntity {
 
     private String studyYear;
 
+    @Column(columnDefinition = "boolean default false")
+    private boolean isActive;
+
     @Transient
     private SupervisorDefenseAssignment chairpersonDefenseAssignment;
 
@@ -54,6 +57,13 @@ public class ProjectDefense extends AbstractEntity {
 
     public List<String> getCommitteeInitials() {
         return supervisorDefenseAssignments.stream().map(assignment -> assignment.getSupervisor().getInitials()).toList();
+    }
+
+    public List<String> getCommitteeMembers() {
+        return supervisorDefenseAssignments.stream()
+                .map(assignment -> assignment.getSupervisor().getFullName())
+                .sorted()
+                .toList();
     }
 
     @Override

@@ -112,13 +112,24 @@ public class ProjectServiceImpl implements ProjectService {
                     .filter(evaluationCard -> Objects.equals(Boolean.TRUE, evaluationCard.isActive()))
                     .findFirst().orElseThrow(()
                             -> new BusinessException(MessageFormat.format("There is none active evaluation card for project with id: {0}", id)));
-            if (shouldFreezeButtonBeShown(activeEvaluationCard)) {
+            if (shouldFreezeButtonBeShown(activeEvaluationCard, userIndexNumber, project)) {
                 projectDetailsDTO.setFreezeButtonShown(true);
-            } else if (shouldPublishButtonBeShown(activeEvaluationCard)) {
+            } else if (shouldPublishButtonBeShown(activeEvaluationCard, userIndexNumber)) {
                 projectDetailsDTO.setPublishButtonShown(true);
-            } else if (shouldRetakeButtonBeShown(activeEvaluationCard)) {
+            } else if (shouldRetakeButtonBeShown(activeEvaluationCard, userIndexNumber, project)) {
                 projectDetailsDTO.setRetakeButtonShown(true);
             }
+            ProjectDefense projectDefense = projectDefenseDAO.findByProjectIdAndIsActiveIsTrue(project.getId());
+
+            if (Objects.nonNull(projectDefense)) {
+                String defenseDay = projectDefense.getDefenseTimeslot().getDate().format(dateTimeFormatter)
+                        + " | " + getDayOfWeek(projectDefense.getDefenseTimeslot().getDate());
+                projectDetailsDTO.setDefenseDay(defenseDay);
+                projectDetailsDTO.setDefenseTime(String.valueOf(projectDefense.getDefenseTimeslot().getStartTime()));
+                projectDetailsDTO.setClassroom(projectDefense.getClassroom());
+                projectDetailsDTO.setCommittee(String.join(", ", projectDefense.getCommitteeMembers()));
+            }
+            projectDetailsDTO.setEvaluationPhase(getDetailedEvaluationPhase(project));
         } else {
             projectDetailsDTO = projectMapper.mapToProjectDetailsWithRestrictionsDto(project);
         }
@@ -128,19 +139,37 @@ public class ProjectServiceImpl implements ProjectService {
         return projectDetailsDTO;
     }
 
-    private boolean shouldRetakeButtonBeShown(EvaluationCard activeEvaluationCard) {
-        return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
-                && Objects.equals(PUBLISHED, activeEvaluationCard.getEvaluationStatus());
+    private boolean shouldRetakeButtonBeShown(EvaluationCard activeEvaluationCard, String userIndexNumber, Project project) {
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber) || projectMemberService.isUserAProjectSupervisor(project.getSupervisor(), userIndexNumber)) {
+            return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
+                    && Objects.equals(PUBLISHED, activeEvaluationCard.getEvaluationStatus());
+        } else {
+            return false;
+        }
+
     }
 
-    private boolean shouldPublishButtonBeShown(EvaluationCard activeEvaluationCard) {
-        return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
-                && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
+    private boolean shouldPublishButtonBeShown(EvaluationCard activeEvaluationCard, String userIndexNumber) {
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
+            return Objects.equals(DEFENSE_PHASE, activeEvaluationCard.getEvaluationPhase())
+                    && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
+        } else {
+            return false;
+        }
+
     }
 
-    private boolean shouldFreezeButtonBeShown(EvaluationCard activeEvaluationCard) {
-        return Objects.equals(SEMESTER_PHASE, activeEvaluationCard.getEvaluationPhase())
-                && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
+    private boolean shouldFreezeButtonBeShown(EvaluationCard activeEvaluationCard, String userIndexNumber, Project project) {
+        if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
+            if (!Objects.equals(AcceptanceStatus.ACCEPTED, project.getAcceptanceStatus())) {
+                return false;
+            }
+            return Objects.equals(SEMESTER_PHASE, activeEvaluationCard.getEvaluationPhase())
+                    && Objects.equals(ACTIVE, activeEvaluationCard.getEvaluationStatus());
+        } else {
+            return false;
+        }
+
     }
 
     private List<StudentDTO> prepareStudentDTOs(Project project) {
@@ -178,15 +207,15 @@ public class ProjectServiceImpl implements ProjectService {
             Comparator<Project> byStudentAssignedAndConfirmedProjects =
                     createComparatorByStudentAssignedAndConfirmedProjects(studentProjectsIds, student);
 
-            return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects, false, false);
+            return prepareSortedProjectListWithRestrictions(projectEntityList, studentProjectsIds, byStudentAssignedAndConfirmedProjects, false, false, userIndexNumber);
         } else {
             List<Long> supervisorProjectIds = getSupervisorProjectIds(supervisor);
             Comparator<Project> bySupervisorAssignedAndAcceptedProjects = createComparatorBySupervisorAssignedAndAcceptedProjects(supervisor);
 
             if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
-                return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects, false, true);
+                return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects, false, true, userIndexNumber);
             }
-            return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects, true, false);
+            return prepareSortedProjectListWithRestrictions(projectEntityList, supervisorProjectIds, bySupervisorAssignedAndAcceptedProjects, true, false, userIndexNumber);
         }
     }
 
@@ -200,7 +229,8 @@ public class ProjectServiceImpl implements ProjectService {
         if (Objects.isNull(student))
             return new ArrayList<>();
         return student.getAssignedProjects().stream()
-                .map(sp -> sp.getProject().getId()).toList();
+                .map(sp -> sp.getProject().getId())
+                .toList();
     }
 
     private Comparator<Project> createComparatorBySupervisorAssignedAndAcceptedProjects(Supervisor supervisor) {
@@ -219,12 +249,17 @@ public class ProjectServiceImpl implements ProjectService {
 
     private List<ProjectDTO> prepareSortedProjectListWithRestrictions(List<Project> projects, List<Long> userProjectIds,
                                                                       Comparator<Project> comparator, boolean isSupervisor,
-                                                                      boolean isCoordinator) {
+                                                                      boolean isCoordinator, String userIndexNumber) {
         projects.sort(comparator);
         List<ProjectDTO> projectDTOs = new ArrayList<>();
         projects.forEach(project -> {
-            if ((userProjectIds.contains(project.getId()) && !isEvaluationCardFreeze(project)) || isCoordinator) {
-                projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL));
+            if ((userProjectIds.contains(project.getId()) && !isEvaluationCardFreeze(project))
+                    || isCoordinator) {
+                if (!isSupervisor && !isCoordinator && !projectMemberService.isStudentAMemberOfProject(userIndexNumber, project)) {
+                    projectDTOs.add(mapToProjectDTO(project, MappingMode.WITH_FULL_RESTRICTIONS));
+                } else {
+                    projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL));
+                }
             } else if (userProjectIds.contains(project.getId()) && isEvaluationCardFreeze(project) && !isSupervisor) {
                 projectDTOs.add(mapToProjectDTO(project, MappingMode.FULL_WITHOUT_GRADES));
             } else if (isSupervisor && isProjectInDefenseOrRetakePhase(project)) {
@@ -270,7 +305,7 @@ public class ProjectServiceImpl implements ProjectService {
     private boolean isSemesterPhaseForSecondSemester(List<EvaluationCard> evaluationCards) {
         Predicate<EvaluationCard> isSecondSemester = evaluationCard -> Objects.equals(Semester.SECOND, evaluationCard.getSemester());
         Predicate<EvaluationCard> isSemesterPhase = evaluationCard -> Objects.equals(SEMESTER_PHASE, evaluationCard.getEvaluationPhase());
-        Predicate<EvaluationCard>isActiveStatus = evaluationCard -> Objects.equals(ACTIVE, evaluationCard.getEvaluationStatus());
+        Predicate<EvaluationCard> isActiveStatus = evaluationCard -> Objects.equals(ACTIVE, evaluationCard.getEvaluationStatus());
         return evaluationCards.stream()
                 .anyMatch(isSecondSemester.and(isSemesterPhase.and(isActiveStatus)));
     }
@@ -282,7 +317,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectDTO.setCriteriaMet(getCriteriaMet(entity));
         }
 
-        ProjectDefense projectDefense = projectDefenseDAO.findByProjectId(entity.getId());
+        ProjectDefense projectDefense = projectDefenseDAO.findByProjectIdAndIsActiveIsTrue(entity.getId());
 
         if (Objects.nonNull(projectDefense)) {
             projectDTO.setDefenseDay(extractDateAndTime(projectDefense));
@@ -308,7 +343,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private String getDetailedEvaluationPhase(Project project) {
         EvaluationCard theMostRecentEvaluationCard = evaluationCardService.findTheMostRecentEvaluationCard(project.getEvaluationCards(), null)
-                .orElseThrow(() ->  new BusinessException(MessageFormat.format("The most recent evaluation card was not found for project with id: {0}", project.getId())));
+                .orElseThrow(() -> new BusinessException(MessageFormat.format("The most recent evaluation card was not found for project with id: {0}", project.getId())));
 
         EvaluationPhase evaluationPhase = theMostRecentEvaluationCard.getEvaluationPhase();
         EvaluationStatus evaluationStatus = theMostRecentEvaluationCard.getEvaluationStatus();
@@ -413,7 +448,10 @@ public class ProjectServiceImpl implements ProjectService {
         externalLinkService.updateExternalLinks(projectDetailsDTO.getExternalLinks());
 
         Set<StudentProject> currentAssignedStudents = projectEntity.getAssignedStudents();
-        Set<StudentProject> newAssignedStudents = getAssignedStudentsToUpdate(projectDetailsDTO);
+        List<String> indexesOfStudentsAssignedToProjectBeforeUpdate = currentAssignedStudents.stream()
+                .map(studentProject -> studentProject.getStudent().getIndexNumber())
+                .toList();
+        Set<StudentProject> newAssignedStudents = getAssignedStudentsToUpdate(projectDetailsDTO, studyYear);
         Set<StudentProject> assignedStudentsToRemove = getAssignedStudentsToRemove(currentAssignedStudents, newAssignedStudents);
 
         // TODO: 6/23/2023 Extract students removing to a new method
@@ -426,6 +464,9 @@ public class ProjectServiceImpl implements ProjectService {
                     if (student.isProjectAdmin()) {
                         removeAdminRoleFromStudent(student);
                         student.setProjectAdmin(false);
+                        if (Objects.equals(student.getIndexNumber(), projectDetailsDTO.getAdmin())) {
+                            projectDetailsDTO.setAdmin(null);
+                        }
                     }
                     student.setConfirmedProject(null);
                     student.setProjectConfirmed(false);
@@ -433,8 +474,6 @@ public class ProjectServiceImpl implements ProjectService {
                     studentDAO.save(student);
                 }
             });
-            // TODO: 6/23/2023 Temporary workaround, need to be handled in a different way
-            projectDetailsDTO.setAdmin(projectDetailsDTO.getStudents().get(0).getIndexNumber());
         } else {
             assignedStudentsToRemove.forEach(assignedStudent -> {
                 Long studentId = assignedStudent.getStudent().getId();
@@ -449,8 +488,7 @@ public class ProjectServiceImpl implements ProjectService {
             });
         }
 
-        // TODO: 6/23/2023 refactor needed
-        updateProjectAdmin(projectId, projectDetailsDTO.getAdmin());
+        updateTheAdminOfTheProject(projectEntity, projectDetailsDTO.getAdmin());
 
         studentProjectDAO.deleteAll(assignedStudentsToRemove);
         projectEntity.removeStudentProject(assignedStudentsToRemove);
@@ -458,17 +496,18 @@ public class ProjectServiceImpl implements ProjectService {
         updateCurrentStudentRole(projectEntity.getAssignedStudents(), projectDetailsDTO.getStudents());
 
         for (StudentDTO student : projectDetailsDTO.getStudents()) {
-            // TODO: exception handling the student not found | add second param- study year to serach (after data-feed adjustments)
-            Student entity = studentDAO.findByUserData_IndexNumber(student.getIndexNumber());
+            Student entity = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, student.getIndexNumber());
             if (!entity.getIndexNumber().equals(userIndexNumber))
                 projectEntity.addStudent(entity, student.getRole(), false);
         }
 
         if (projectMemberService.isUserRoleCoordinator(userIndexNumber)) {
             projectEntity.getAssignedStudents().forEach(assignedStudent -> {
-                assignedStudent.setProjectConfirmed(true);
-                assignedStudent.getStudent().setProjectConfirmed(true);
-                assignedStudent.getStudent().setConfirmedProject(projectEntity);
+                if (!indexesOfStudentsAssignedToProjectBeforeUpdate.contains(assignedStudent.getStudent().getIndexNumber())) {
+                    assignedStudent.setProjectConfirmed(true);
+                    assignedStudent.getStudent().setProjectConfirmed(true);
+                    assignedStudent.getStudent().setConfirmedProject(projectEntity);
+                }
             });
         }
 
@@ -500,34 +539,43 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectDetailsDTO updateProjectAdmin(Long projectId, String studentIndex) {
-
         Project projectEntity = projectDAO.findById(projectId).orElseThrow(()
                 -> new ProjectManagementException(MessageFormat.format("Project with id: {0} not found", projectId)));
+
+        String indexNumberOfNewProjectAdmin = updateTheAdminOfTheProject(projectEntity, studentIndex);
+
+        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToProjectDetailsDto(projectEntity);
+        projectDetailsDTO.setAdmin(indexNumberOfNewProjectAdmin);
+        return projectDetailsDTO;
+    }
+
+    private String updateTheAdminOfTheProject(Project project, String indexNumber) {
         Role role = roleDAO.findByName(PROJECT_ADMIN);
 
-        StudentProject currentAdminStudentProjectEntity = getStudentProjectOfAdmin(projectEntity);
-        currentAdminStudentProjectEntity.setProjectAdmin(false);
-        studentProjectDAO.save(currentAdminStudentProjectEntity);
+        String newAdminIndexNumber = indexNumber;
+        if (Objects.isNull(indexNumber)) {
+            List<StudentProject> studentProjects = new ArrayList<>(project.getAssignedStudents());
+            newAdminIndexNumber = studentProjects.get(0).getStudent().getIndexNumber();
+        } else {
+            StudentProject currentAdminStudentProjectEntity = getStudentProjectOfAdmin(project);
+            currentAdminStudentProjectEntity.setProjectAdmin(false);
+            studentProjectDAO.save(currentAdminStudentProjectEntity);
 
-        StudentProject newAdminStudentProjectEntity = getStudentProjectByStudentIndex(projectEntity, studentIndex);
+            Student currentAdminStudentEntity = currentAdminStudentProjectEntity.getStudent();
+            currentAdminStudentEntity.setProjectAdmin(false);
+            currentAdminStudentEntity.getUserData().getRoles().remove(role);
+            studentDAO.save(currentAdminStudentEntity);
+        }
+
+        StudentProject newAdminStudentProjectEntity = getStudentProjectByStudentIndex(project, newAdminIndexNumber);
         newAdminStudentProjectEntity.setProjectAdmin(true);
         studentProjectDAO.save(newAdminStudentProjectEntity);
 
-        Student currentAdminStudentEntity = currentAdminStudentProjectEntity.getStudent();
         Student newAdminStudentEntity = newAdminStudentProjectEntity.getStudent();
-
-        currentAdminStudentEntity.setProjectAdmin(false);
-        currentAdminStudentEntity.getUserData().getRoles().remove(role);
         newAdminStudentEntity.setProjectAdmin(true);
         newAdminStudentEntity.getUserData().getRoles().add(role);
-        studentDAO.save(currentAdminStudentEntity);
         studentDAO.save(newAdminStudentEntity);
-
-        ProjectDetailsDTO projectDetailsDTO = projectMapper.mapToProjectDetailsDto(projectEntity);
-        projectDetailsDTO.setAdmin(newAdminStudentEntity.getIndexNumber());
-
-        return projectDetailsDTO;
-
+        return newAdminStudentEntity.getIndexNumber();
     }
 
     @Override
@@ -673,10 +721,10 @@ public class ProjectServiceImpl implements ProjectService {
             return PENDING;
     }
 
-    private Set<StudentProject> getAssignedStudentsToUpdate(ProjectDetailsDTO projectDetailsDTO) {
+    private Set<StudentProject> getAssignedStudentsToUpdate(ProjectDetailsDTO projectDetailsDTO, String studyYear) {
         Set<StudentProject> studentProjectsForUpdate = new HashSet<>();
         projectDetailsDTO.getStudents().forEach(studentDTO -> {
-            Student student = studentDAO.findByUserData_IndexNumber(studentDTO.getIndexNumber());
+            Student student = studentDAO.findByStudyYearAndUserData_IndexNumber(studyYear, studentDTO.getIndexNumber());
             StudentProject studentProject = studentProjectDAO.findByStudent_IdAndProject_Id(student.getId(), Long.valueOf(projectDetailsDTO.getId()));
             studentProjectsForUpdate.add(studentProject);
         });

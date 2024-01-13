@@ -81,11 +81,15 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private boolean isSupervisorAllowedToSeeGrades(Project project, EvaluationCard evaluationCardEntity, String indexNumber) {
+        boolean isUserASupervisor = Objects.equals(UserRole.SUPERVISOR, projectMemberServiceImpl.getUserRoleByUserIndex(indexNumber, UserRoleType.BASE));
         boolean isUserAProjectSupervisor = projectMemberServiceImpl.isUserAProjectSupervisor(project.getSupervisor(), indexNumber);
-        boolean isUserASupervisorAndProjectPhaseIsDifferentThanSemester = Objects.equals(UserRole.SUPERVISOR, projectMemberServiceImpl.getUserRoleByUserIndex(indexNumber, UserRoleType.BASE))
-                && !Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase());
+        boolean isProjectPhaseDifferentThanSemester = !Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase());
+        boolean isProjectPhaseSemesterAndStatusFrozenOrPublished = Objects.equals(EvaluationPhase.SEMESTER_PHASE, evaluationCardEntity.getEvaluationPhase())
+                && (Objects.equals(EvaluationStatus.FROZEN, evaluationCardEntity.getEvaluationStatus())
+                || Objects.equals(EvaluationStatus.PUBLISHED, evaluationCardEntity.getEvaluationStatus()));
 
-        return isUserAProjectSupervisor || isUserASupervisorAndProjectPhaseIsDifferentThanSemester;
+        return isUserASupervisor
+                && (isUserAProjectSupervisor || isProjectPhaseDifferentThanSemester || isProjectPhaseSemesterAndStatusFrozenOrPublished);
     }
 
     @Override

@@ -147,6 +147,7 @@ class PermissionServiceImplTest {
         Mockito.when(projectMemberServiceImpl.isUserRoleCoordinator(supervisorIndexNumber)).thenReturn(false);
         Mockito.when(projectMemberServiceImpl.isStudentAMemberOfProject(supervisorIndexNumber, project)).thenReturn(false);
         Mockito.when(projectMemberServiceImpl.isUserAProjectSupervisor(project.getSupervisor(), supervisorIndexNumber)).thenReturn(true);
+        Mockito.when(projectMemberServiceImpl.getUserRoleByUserIndex(supervisorIndexNumber, UserRoleType.BASE)).thenReturn(UserRole.SUPERVISOR);
         //when
         boolean isVisible = this.permissionService.isEvaluationCardVisibleForUser(evaluationCard, project, supervisorIndexNumber);
         //then

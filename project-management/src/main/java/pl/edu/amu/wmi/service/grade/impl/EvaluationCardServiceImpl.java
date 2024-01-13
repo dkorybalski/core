@@ -25,6 +25,7 @@ import pl.edu.amu.wmi.service.grade.EvaluationCardService;
 import pl.edu.amu.wmi.service.grade.GradeService;
 
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -183,13 +184,17 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
         List<CriteriaSectionDTO> sectionDTOs = projectCriteriaSectionMapper.mapToDtoList(sections);
 
         List<Grade> projectGrades = evaluationCardEntity.getGrades();
-        Map<Long, Integer> projectPointsByGroupId = new HashMap<>();
+        Map<String, Integer> projectPointsByGroupId = new HashMap<>();
+        Map<String, LocalDate> gradeModificationDateByGroupId = new HashMap<>();
         for (Grade projectGrade : projectGrades) {
-            projectPointsByGroupId.put(projectGrade.getCriteriaGroup().getId(), projectGrade.getPoints());
+            projectPointsByGroupId.put(String.valueOf(projectGrade.getCriteriaGroup().getId()), projectGrade.getPoints());
+            gradeModificationDateByGroupId.put(String.valueOf(projectGrade.getCriteriaGroup().getId()), projectGrade.getModificationDate().toLocalDate());
         }
 
-        sectionDTOs.forEach(section -> section.getCriteriaGroups().forEach(group ->
-                group.setSelectedCriterion(CriterionCategory.getByPointsReceived(projectPointsByGroupId.get(group.getId())))
+        sectionDTOs.forEach(section -> section.getCriteriaGroups().forEach(group -> {
+                    group.setSelectedCriterion(CriterionCategory.getByPointsReceived(projectPointsByGroupId.get(group.getId())));
+                    group.setModificationDate(gradeModificationDateByGroupId.get(group.getId()));
+                }
         ));
 
         evaluationCardDetailsDTO.setSections(sectionDTOs);
@@ -233,7 +238,7 @@ public class EvaluationCardServiceImpl implements EvaluationCardService {
 
         Semester semester = evaluationCard.getSemester();
 
-        Long criteriaGroupId = singleGroupGradeUpdate.getId();
+        Long criteriaGroupId = Long.valueOf(singleGroupGradeUpdate.getId());
         Grade gradeToUpdate = evaluationCard.getGrades()
                 .stream()
                 .filter(g -> g.getCriteriaGroup().getId().equals(criteriaGroupId))

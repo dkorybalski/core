@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class ExternalLinkDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     private String url;
 

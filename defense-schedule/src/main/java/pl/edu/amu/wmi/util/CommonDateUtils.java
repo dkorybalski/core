@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -23,13 +26,18 @@ public class CommonDateUtils {
      * Calculate defense days between selected date range. Add 1 to numOfDaysBetween to also include the last day as
      * selected.
      */
-    public static List<LocalDate> getDefenseDays(LocalDate startDate, LocalDate endDate) {
+    public static List<LocalDate> getDefenseDays(LocalDate startDate, LocalDate endDate, Set<String> additionalDays) {
         long numOfDaysBetween = Duration.ofDays(DAYS.between(startDate, endDate)).toDays();
 
-        return IntStream.iterate(0, i -> i + 1)
+        List<LocalDate> defenseDays = IntStream.iterate(0, i -> i + 1)
                 .limit(numOfDaysBetween + 1)
                 .mapToObj(startDate::plusDays)
-                .toList();
+                .collect(Collectors.toList());
+
+        if (Objects.nonNull(additionalDays) && !additionalDays.isEmpty()) {
+            additionalDays.forEach(day -> defenseDays.add(LocalDate.parse(day, commonDateFormatter())));
+        }
+        return defenseDays;
     }
 
     public static String getDateStringWithTheDayOfWeek(LocalDate date) {

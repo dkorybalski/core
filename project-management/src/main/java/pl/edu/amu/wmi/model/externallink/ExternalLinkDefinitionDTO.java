@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class ExternalLinkDefinitionDTO {
 
-    private Long id;
+    private String id;
 
     private String name;
 

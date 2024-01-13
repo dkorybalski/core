@@ -10,6 +10,8 @@ import pl.edu.amu.wmi.enumerations.DefensePhase;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Getter
 @Setter
@@ -30,6 +32,8 @@ public class DefenseScheduleConfig extends AbstractEntity {
     private String studyYear;
 
     private boolean isActive;
+
+    private Set<String> additionalDays = new TreeSet<>();
 
     @Enumerated(EnumType.STRING)
     private DefensePhase defensePhase;

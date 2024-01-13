@@ -10,7 +10,7 @@ import pl.edu.amu.wmi.enumerations.EvaluationStatus;
 public class EvaluationCardStatusDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     private EvaluationStatus evaluationStatus;
 

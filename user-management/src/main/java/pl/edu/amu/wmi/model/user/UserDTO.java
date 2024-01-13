@@ -34,11 +34,11 @@ public class UserDTO {
     /**
      * user projects connected with actualYear
      */
-    private List<Long> projects = new ArrayList<>();
+    private List<String> projects = new ArrayList<>();
 
     /**
      * accepted projects in actual year
      */
-    private List<Long> acceptedProjects = new ArrayList<>();
+    private List<String> acceptedProjects = new ArrayList<>();
 
 }
