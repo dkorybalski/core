@@ -9,7 +9,7 @@ import pl.edu.amu.wmi.enumerations.CommitteeIdentifier;
 @NoArgsConstructor
 public class ProjectDefenseDTO {
 
-    private Long projectDefenseId;
+    private String projectDefenseId;
 
     private String projectId;
 

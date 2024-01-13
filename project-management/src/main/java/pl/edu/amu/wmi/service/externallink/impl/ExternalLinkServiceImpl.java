@@ -6,17 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.edu.amu.wmi.dao.ExternalLinkDAO;
 import pl.edu.amu.wmi.dao.ExternalLinkDefinitionDAO;
-import pl.edu.amu.wmi.dao.ProjectDAO;
-import pl.edu.amu.wmi.entity.BaseAbstractEntity;
 import pl.edu.amu.wmi.entity.ExternalLink;
 import pl.edu.amu.wmi.entity.ExternalLinkDefinition;
-import pl.edu.amu.wmi.entity.Project;
 import pl.edu.amu.wmi.exception.externallink.ExternalLinkException;
-import pl.edu.amu.wmi.exception.project.ProjectManagementException;
-import pl.edu.amu.wmi.mapper.externallink.ExternalLinkMapper;
-import pl.edu.amu.wmi.mapper.project.SupervisorProjectMapper;
 import pl.edu.amu.wmi.model.externallink.ExternalLinkDTO;
-import pl.edu.amu.wmi.model.externallink.ExternalLinkDataDTO;
 import pl.edu.amu.wmi.service.externallink.ExternalLinkService;
 
 import java.text.MessageFormat;
@@ -66,7 +59,7 @@ public class ExternalLinkServiceImpl implements ExternalLinkService {
 
         externalLinks.forEach(externalLinkDto -> {
             ExternalLink externalLink = externalLinkDAO.findById(
-                    externalLinkDto.getId()).orElseThrow(()
+                    Long.valueOf(externalLinkDto.getId())).orElseThrow(()
                     -> new ExternalLinkException(MessageFormat.format("External link with id: {0} not found.", externalLinkDto.getId())));
             externalLink.setUrl(externalLinkDto.getUrl());
             externalLinkEntities.add(externalLink);

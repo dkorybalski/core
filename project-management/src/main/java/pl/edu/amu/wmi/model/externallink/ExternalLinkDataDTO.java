@@ -14,7 +14,7 @@ import java.util.Set;
 public class ExternalLinkDataDTO {
 
     @NotNull
-    private Long projectId;
+    private String projectId;
 
     private String projectName;
 

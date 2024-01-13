@@ -44,4 +44,14 @@ public class ProjectDetailsDTO {
 
     private Set<ExternalLinkDTO> externalLinks;
 
+    private String defenseDay;
+
+    private String defenseTime;
+
+    private String evaluationPhase;
+
+    private String classroom;
+
+    private String committee;
+
 }

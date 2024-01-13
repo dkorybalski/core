@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface SupervisorDefenseAssignmentService {
 
-    void createSupervisorDefenseAssignments(String studyYear, Long defenseScheduleConfigId);
+    void createSupervisorDefenseAssignments(String studyYear, Long defenseScheduleConfigId, LocalDate defenseDate);
 
     List<LocalDate> getAllDefenseAssignmentDaysForStudyYear(String studyYear);
 

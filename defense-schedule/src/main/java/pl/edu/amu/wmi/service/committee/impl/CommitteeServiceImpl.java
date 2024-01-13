@@ -356,7 +356,7 @@ public class CommitteeServiceImpl implements CommitteeService {
 
     private Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> createMapTemplate(DefenseScheduleConfig defenseScheduleConfig) {
         Map<String, Map<CommitteeIdentifier, ChairpersonAssignmentDTO>> mapTemplate = new TreeMap<>();
-        List<LocalDate> dates = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
+        List<LocalDate> dates = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate(), defenseScheduleConfig.getAdditionalDays());
         dates.forEach(day -> {
             Map<CommitteeIdentifier, ChairpersonAssignmentDTO> map = new TreeMap<>();
             Arrays.stream(CommitteeIdentifier.values()).forEach(committeeIdentifier -> {

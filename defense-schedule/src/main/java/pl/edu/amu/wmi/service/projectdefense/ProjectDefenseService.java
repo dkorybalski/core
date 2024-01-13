@@ -57,4 +57,5 @@ public interface ProjectDefenseService {
 
     void deleteProjectDefenses(List<Long> projectDefenseIdsToBeRemoved);
 
+    void archiveProjectDefenses(String studyYear);
 }

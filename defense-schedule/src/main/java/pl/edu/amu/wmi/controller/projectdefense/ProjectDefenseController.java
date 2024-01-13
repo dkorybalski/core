@@ -2,6 +2,7 @@ package pl.edu.amu.wmi.controller.projectdefense;
 
 import com.opencsv.exceptions.CsvException;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@Slf4j
 @RequestMapping("/schedule/defense")
 public class ProjectDefenseController {
 
@@ -62,7 +64,11 @@ public class ProjectDefenseController {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Set<Project> updatedProjectDefenses = projectDefenseService.assignProjectsToProjectDefenses(projectDefenseDTOs);
         List<Student> studentsToNotify = projectDefenseService.getStudentsFromProjectDefenses(updatedProjectDefenses);
-        defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(studentsToNotify);
+        Thread thread = new Thread(() -> {
+            defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(studentsToNotify);
+            log.info("Notifications about project defenses changes have been sent successfully");
+        });
+        thread.start();
         return ResponseEntity.ok(projectDefenseService.getProjectDefenses(studyYear, userDetails.getUsername()));
     }
 

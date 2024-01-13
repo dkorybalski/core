@@ -42,12 +42,10 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
 
         LocalDate startDay = defenseScheduleConfig.getStartDate();
         LocalDate endDay = defenseScheduleConfig.getEndDate();
-        LocalTime startTime = defenseScheduleConfig.getStartTime();
-        LocalTime endTime = defenseScheduleConfig.getEndTime();
         Integer defenseSlotDuration = defenseScheduleConfig.getDefenseDuration();
 
-        List<LocalDate> defenseDays = getDefenseDays(startDay, endDay);
-        List<LocalTime> defenseHours = getDefenseHours(startTime, endTime, defenseSlotDuration);
+        List<LocalDate> defenseDays = getDefenseDays(startDay, endDay, defenseScheduleConfig.getAdditionalDays());
+        List<LocalTime> defenseHours = extractDefenseHours(defenseScheduleConfig);
 
         defenseDays.forEach(day -> {
             defenseHours.forEach(hour -> {
@@ -56,6 +54,32 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
             });
             log.info("Defense timeslots were created for day: {}", day.toString());
         });
+    }
+
+    @Override
+    @Transactional
+    public void createDefenseTimeSlotsForASingleDefenseDay(String studyYear, DefenseScheduleConfig defenseScheduleConfig, LocalDate date) {
+        Integer defenseSlotDuration = defenseScheduleConfig.getDefenseDuration();
+        List<LocalTime> defenseHours = extractDefenseHours(defenseScheduleConfig);
+
+        defenseHours.forEach(hour -> {
+            DefenseTimeSlot defenseTimeSlot = createSingleTimeSlot(date, hour, hour.plusMinutes(defenseSlotDuration), defenseSlotDuration, studyYear, defenseScheduleConfig);
+            defenseTimeSlotDAO.save(defenseTimeSlot);
+        });
+        log.info("Defense timeslots were created for day: {}", date.toString());
+    }
+
+    @Override
+    public List<DefenseTimeSlot> getAllTimeSlotsForDefenseConfigAndDate(Long defenseScheduleConfigId, LocalDate date) {
+        return defenseTimeSlotDAO.findAllByDateAndDefenseScheduleConfig_Id(date, defenseScheduleConfigId);
+    }
+
+    private List<LocalTime> extractDefenseHours(DefenseScheduleConfig defenseScheduleConfig) {
+        LocalTime startTime = defenseScheduleConfig.getStartTime();
+        LocalTime endTime = defenseScheduleConfig.getEndTime();
+        Integer defenseSlotDuration = defenseScheduleConfig.getDefenseDuration();
+
+        return getDefenseHours(startTime, endTime, defenseSlotDuration);
     }
 
     /**
@@ -95,4 +119,3 @@ public class DefenseTimeSlotServiceImpl implements DefenseTimeSlotService {
     }
 
 }
-

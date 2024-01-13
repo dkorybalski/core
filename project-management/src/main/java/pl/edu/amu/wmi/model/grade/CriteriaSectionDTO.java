@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CriteriaSectionDTO {
 
-    private Long id;
+    private String id;
 
     private String name;
 

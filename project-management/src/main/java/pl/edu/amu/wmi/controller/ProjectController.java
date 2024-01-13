@@ -242,7 +242,7 @@ public class ProjectController {
         );
     }
 
-    @Secured({"COORDINATOR"})
+    @Secured({"COORDINATOR","SUPERVISOR"})
     @PutMapping("/{projectId}/evaluation-card/retake")
     public ResponseEntity<EvaluationCardsDTO> retakeEvaluationCard(@RequestHeader("study-year") String studyYear,
                                                                                                               @PathVariable Long projectId) {

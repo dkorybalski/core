@@ -11,6 +11,6 @@ public class ProjectNameDTO {
 
     String id;
     String name;
-    Long projectDefenseId;
+    String projectDefenseId;
 
 }

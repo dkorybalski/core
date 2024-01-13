@@ -43,7 +43,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
             return null;
         }
         List<Supervisor> supervisors = supervisorDAO.findAllByStudyYear(studyYear);
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndIsActiveIsTrueAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseByDateMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         List<SupervisorStatisticsDTO> supervisorStatisticsDTOs = new ArrayList<>();
         Map<String, Integer> statisticsTemplateMap = createStatisticsTemplateMap(defenseScheduleConfig);
@@ -58,7 +58,7 @@ public class SupervisorStatisticsServiceImpl implements SupervisorStatisticsServ
 
     private Map<String, Integer> createStatisticsTemplateMap(DefenseScheduleConfig defenseScheduleConfig) {
         Map<String, Integer> statisticsTemplateMap = new TreeMap<>();
-        List<LocalDate> defenseDays = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate());
+        List<LocalDate> defenseDays = getDefenseDays(defenseScheduleConfig.getStartDate(), defenseScheduleConfig.getEndDate(), defenseScheduleConfig.getAdditionalDays());
         defenseDays.forEach(defenseDay -> statisticsTemplateMap.put(getDateStringWithTheDayOfWeek(defenseDay), 0));
         return statisticsTemplateMap;
     }

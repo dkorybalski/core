@@ -16,7 +16,7 @@ import java.util.Map;
 public class CriteriaGroupDTO {
 
     @NotNull
-    private Long id;
+    private String id;
 
     private String name;
 

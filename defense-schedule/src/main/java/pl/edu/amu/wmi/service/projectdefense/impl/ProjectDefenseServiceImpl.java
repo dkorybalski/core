@@ -74,13 +74,13 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
             return null;
         }
         DefensePhase defensePhase = defenseScheduleConfig.getDefensePhase();
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndIsActiveIsTrueAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         return createProjectDefenseDTOs(studyYear, indexNumber, projectDefenses, defensePhase);
     }
 
     @Override
     public Map<String, List<ProjectDefenseSummaryDTO>> getProjectDefensesSummary(String studyYear) {
-        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndIsActiveIsTrueAndSupervisorDefenseAssignmentsNotEmpty(studyYear);
         Map<LocalDate, List<ProjectDefense>> projectDefenseMap = projectDefenses.stream().collect(Collectors.groupingBy(projectDefense -> projectDefense.getDefenseTimeslot().getDate()));
         Map<String, List<ProjectDefenseSummaryDTO>> projectDefenseDTOMap = new TreeMap<>();
         projectDefenseMap.forEach((date, defenses) -> {
@@ -129,7 +129,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     }
 
     private Optional<Project> changeSingleAssignmentWhenNecessary(ProjectDefenseDTO projectDefenseDTO) {
-        Long projectDefenseId = projectDefenseDTO.getProjectDefenseId();
+        Long projectDefenseId = Long.valueOf(projectDefenseDTO.getProjectDefenseId());
         ProjectDefense projectDefenseEntity = projectDefenseDAO.findById(projectDefenseId)
                 .orElseThrow(() -> new BusinessException(MessageFormat.format("Project defense with id: {0} not found", projectDefenseId)));
 
@@ -168,7 +168,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
      * If yes remove project from ProjectDefense entity. Otherwise, do nothing.
      */
     private void removeProjectFromExistingDefenseIfNeeded(Long projectDefenseNewProjectId) {
-        ProjectDefense projectDefenseToClear = projectDefenseDAO.findByProjectId(projectDefenseNewProjectId);
+        ProjectDefense projectDefenseToClear = projectDefenseDAO.findByProjectIdAndIsActiveIsTrue(projectDefenseNewProjectId);
         if (Objects.nonNull(projectDefenseToClear)) {
             projectDefenseToClear.setProject(null);
             projectDefenseDAO.save(projectDefenseToClear);
@@ -202,11 +202,20 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         });
     }
 
+    @Override
+    @Transactional
+    public void archiveProjectDefenses(String studyYear) {
+        List<ProjectDefense> projectDefenses = projectDefenseDAO.findAllByStudyYearAndIsActiveIsTrue(studyYear);
+        projectDefenses.forEach(projectDefense -> projectDefense.setActive(Boolean.FALSE));
+        projectDefenseDAO.saveAll(projectDefenses);
+        log.info("Active project defenses for study year: {} have been archived", studyYear);
+    }
+
     private ProjectNameDTO mapTupleToProjectNameDto(Tuple tuple) {
         Project project = (Project) tuple.get("project");
         Long defenseId = (Long) tuple.get("projectDefenseId");
         String extendedProjectName = createExtendedProjectName(project);
-        return new ProjectNameDTO(String.valueOf(project.getId()), extendedProjectName, defenseId);
+        return new ProjectNameDTO(String.valueOf(project.getId()), extendedProjectName, String.valueOf(defenseId));
     }
 
     private String createExtendedProjectName(Project project) {
@@ -227,7 +236,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         }
         Project newlyAssignedProject = null;
         if (Objects.nonNull(projectDefensePatchDTO.projectId())) {
-            newlyAssignedProject = getProjectById(projectDefensePatchDTO.projectId());
+            newlyAssignedProject = getProjectById(Long.valueOf(projectDefensePatchDTO.projectId()));
         }
         if (Objects.isNull(newlyAssignedProject)) {
             if (Objects.nonNull(previouslyAssignedProject)) {
@@ -260,7 +269,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
                 defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(previouslyAssignedProject.getStudents()));
             }
         } else {
-            Project newlyAssignedProject = getProjectById(projectDefensePatchDTO.projectId());
+            Project newlyAssignedProject = getProjectById(Long.valueOf(projectDefensePatchDTO.projectId()));
             projectDefense.setProject(newlyAssignedProject);
             projectDefenseDAO.save(projectDefense);
             defenseNotificationService.notifyStudentsAboutProjectDefenseAssignment(new ArrayList<>(newlyAssignedProject.getStudents()));
@@ -271,7 +280,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
     }
 
     private void removeExistingProjectDefenseAssignments(ProjectDefensePatchDTO projectDefensePatchDTO) {
-        List<ProjectDefense> projectDefensesConnectedWithPreviousProject = projectDefenseDAO.findAllByProjectId(projectDefensePatchDTO.projectId());
+        List<ProjectDefense> projectDefensesConnectedWithPreviousProject = projectDefenseDAO.findAllByProjectIdAndIsActiveIsTrue(Long.valueOf(projectDefensePatchDTO.projectId()));
         projectDefensesConnectedWithPreviousProject.forEach(defense -> {
             defense.setProject(null);
             projectDefenseDAO.save(defense);
@@ -372,6 +381,7 @@ public class ProjectDefenseServiceImpl implements ProjectDefenseService {
         ProjectDefense projectDefense = new ProjectDefense();
         projectDefense.addSupervisorDefenseAssignments(supervisorDefenseAssignments);
         projectDefense.setStudyYear(studyYear);
+        projectDefense.setActive(Boolean.TRUE);
         projectDefense = projectDefenseDAO.save(projectDefense);
         log.info("Project Defense with id: {} has been created", projectDefense.getId());
     }

@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
             final String roleWithTheHighestPermissions = findRoleWithTheHighestPermissions(userData.getRoles());
             userDTO.setRole(roleWithTheHighestPermissions);
 
-            final List<Long> acceptedProjects = new ArrayList<>();
-            final List<Long> assignedProjects = new ArrayList<>();
+            final List<String> acceptedProjects = new ArrayList<>();
+            final List<String> assignedProjects = new ArrayList<>();
             final List<String> studyYears = new ArrayList<>();
 
             if (hasRoleStudent(userData.getRoles())) {
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
 
                 final Project acceptedProject = entity.getConfirmedProject();
                 if (acceptedProject != null) {
-                    acceptedProjects.add(acceptedProject.getId());
+                    acceptedProjects.add(String.valueOf(acceptedProject.getId()));
                 }
                 assignedProjects.addAll(getStudentAssignedProjects(entity));
             } else if (hasRoleCoordinator(userData.getRoles())) {
@@ -148,20 +148,23 @@ public class UserServiceImpl implements UserService {
         return actualStudyYear;
     }
 
-    private List<Long> getSupervisorAssignedProjects(Supervisor entity) {
+    private List<String> getSupervisorAssignedProjects(Supervisor entity) {
         return entity.getProjects().stream()
-                .map(BaseAbstractEntity::getId).toList();
+                .map(project -> String.valueOf(project.getId()))
+                .toList();
     }
 
-    private List<Long> getSupervisorAcceptedProjects(Supervisor entity) {
+    private List<String> getSupervisorAcceptedProjects(Supervisor entity) {
         return entity.getProjects().stream()
                 .filter(project -> project.getAcceptanceStatus().equals(AcceptanceStatus.ACCEPTED))
-                .map(BaseAbstractEntity::getId).toList();
+                .map(project -> String.valueOf(project.getId()))
+                .toList();
     }
 
-    private List<Long> getStudentAssignedProjects(Student entity) {
+    private List<String> getStudentAssignedProjects(Student entity) {
         return entity.getAssignedProjects().stream()
-                .map(studentProject -> studentProject.getProject().getId()).toList();
+                .map(studentProject -> String.valueOf(studentProject.getProject().getId()))
+                .toList();
     }
 
     private Supervisor findSupervisorByActualStudyYear(List<Supervisor> supervisors, String actualStudyYear, String indexNumber) {
