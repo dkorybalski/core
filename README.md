@@ -67,7 +67,7 @@ List of scheduled jobs:
 
 * installation of: maven, java 17
 * creation of Postgres database
-* substitution of all environment variables (see `config.env.example` file)
+* substitution of all environment variables (see [config.env.example](https://github.com/System-PRI/deploy/blob/main/config.env.example) file)
 
 #### Secrets
 
@@ -113,55 +113,8 @@ java -jar -Dspring.profiles.active=local <environment variables> pri-application
 // before execution check the name of the jar file
 // as <environment variables> put all variables from config.env.example file (e.g. -DPOSTGRES_URL=${POSTGRES_URL} -DPOSTGRES_DB=${POSTGRES_DB})
 ```
-
-## How to run application using Docker:
-
-### Prerequisites
-
-#### Docker network
-
-Custom docker network named `pri-network` has to be created on the host machine (server, local). To do it use command:
-
-````
-sudo docker network create -d bridge pri-network
-````
-
-#### Secrets
-
-See `config.env.example` file.
-
-#### Liquibase
-
-[//]: # (todo)
-
-#### Profile
-
-Two profiles are available: `docker-prod` and `docker-dev`.
-For development purpose use `docker-dev` profile.
-`docker-prod` profile is dedicated for CI/CD process.
-
-### Starting the application
-
-To run the application and rebuild Docker images use command:
-
-```
-docker compose -f docker-compose-${env}.yml --env-file ${path} up --build
-```
-
-To restart the application without Docker images rebuild use command:
-
-```
-docker compose -f docker-compose-${env}.yml --env-file ${path} up`
-```
-
-`${env}` possible values: `dev`,`prod`. \
-`${path}` path to the config.env file (e.g. `--env-file config.env`)
-
-## Useful links:
-
-* Swagger UI:
-  http://localhost:8080/pri/swagger-ui/index.html
-* H2 database: http://localhost:8080/pri/h2/
+## How to run application using docker:
+Check out [deploy](https://github.com/System-PRI/deploy) repository.
 
 ## How to test the application:
 
