@@ -1,9 +1,11 @@
 package pl.edu.amu.wmi.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
+import pl.edu.amu.wmi.client.DiplomasRestClient;
 import pl.edu.amu.wmi.model.diploma.*;
 
 import java.util.List;
@@ -12,10 +14,12 @@ import java.util.List;
 @RequestMapping("/project-diplomas")
 @AllArgsConstructor
 public class ProjectDiplomaController {
+    private final DiplomasRestClient diplomasRestClient;
 
     @Secured({"PROJECT_ADMIN", "COORDINATOR"})
     @GetMapping
-    public ResponseEntity<List<DiplomaDTO>> getDiplomas() {
+    public ResponseEntity<?> getDiplomas(HttpServletRequest request) {
+        diplomasRestClient.forwardRequest(request);
         return ResponseEntity.ok(List.of(
             new DiplomaDTO("Title en", "Title pl", "DESC", 1,
                 List.of(new DiplomaChapterDTO("Chapter 1", "DESC", "student1"))),
@@ -26,7 +30,9 @@ public class ProjectDiplomaController {
 
     @Secured({"STUDENT", "PROJECT_ADMIN", "COORDINATOR"})
     @GetMapping("/{project-id}")
-    public ResponseEntity<DiplomaDTO> getDiplomaByProjectId(@PathVariable("project-id") Integer projectId) {
+    public ResponseEntity<?> getDiplomaByProjectId(@PathVariable("project-id") Integer projectId,
+                                                   HttpServletRequest request) {
+        diplomasRestClient.forwardRequest(request);
         return ResponseEntity.ok(
             new DiplomaDTO("Title en", "Title pl", "DESC", 1,
                 List.of(new DiplomaChapterDTO("Chapter 1", "DESC", "student1"))));
@@ -34,7 +40,9 @@ public class ProjectDiplomaController {
 
     @Secured({"STUDENT"})
     @PutMapping
-    public ResponseEntity<Void> updateDiploma(@RequestBody DiplomaAddOrUpdateDTO dto) {
+    public ResponseEntity<?> updateDiploma(@RequestBody DiplomaAddOrUpdateDTO dto,
+                                           HttpServletRequest request) {
+        diplomasRestClient.forwardRequest(request);
         System.out.println(dto);
         return ResponseEntity.ok()
             .build();
@@ -42,7 +50,9 @@ public class ProjectDiplomaController {
 
     @Secured({"STUDENT"})
     @PutMapping("/chapters")
-    public ResponseEntity<Void> updateDiplomaChapter(@RequestBody DiplomaChapterAddOrUpdateDTO dto) {
+    public ResponseEntity<?> updateDiplomaChapter(@RequestBody DiplomaChapterAddOrUpdateDTO dto,
+                                                  HttpServletRequest request) {
+        diplomasRestClient.forwardRequest(request);
         System.out.println(dto);
         return ResponseEntity.ok()
             .build();
