@@ -21,6 +21,7 @@ public class DiplomasRestClient {
     public ResponseEntity<String> forwardRequest(HttpServletRequest request) {
         try {
             URI url = createForwardUrl(request);
+            System.out.println(url);
             return sendRequest(restTemplate, url, HttpMethod.valueOf(request.getMethod()),
                 getRequestBodyFromRequest(request));
         } catch (HttpStatusCodeException ex) {
@@ -51,7 +52,6 @@ public class DiplomasRestClient {
         final String originalUrl = request.getRequestURL().toString();
         return UriComponentsBuilder.newInstance()
             .uri(new URI("http://localhost:3300" +  originalUrl.substring(originalUrl.indexOf("/pri"))))
-            .path(request.getContextPath())
             .build(true)
             .toUri();
     }

@@ -19,13 +19,12 @@ public class ProjectDiplomaController {
     @Secured({"PROJECT_ADMIN", "COORDINATOR"})
     @GetMapping
     public ResponseEntity<?> getDiplomas(HttpServletRequest request) {
-        diplomasRestClient.forwardRequest(request);
-        return ResponseEntity.ok(List.of(
-            new DiplomaDTO("Title en", "Title pl", "DESC", 1,
-                List.of(new DiplomaChapterDTO("Chapter 1", "DESC", "student1"))),
-            new DiplomaDTO("Title en 2", "Title pl 2", "DESC 2", 1,
-                List.of(new DiplomaChapterDTO("Chapter 1 --", "DESC --", "student1")))
-        ));
+        String body = diplomasRestClient.forwardRequest(request)
+            .getBody();
+        System.out.println(body);
+        return ResponseEntity.ok(
+            body
+        );
     }
 
     @Secured({"STUDENT", "PROJECT_ADMIN", "COORDINATOR"})
