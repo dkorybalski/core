@@ -32,7 +32,7 @@ public class DiplomasRestClient {
         }
     }
 
-    private static String getRequestBodyFromRequest(HttpServletRequest request) throws IOException {
+    private String getRequestBodyFromRequest(HttpServletRequest request) throws IOException {
         return request.getReader()
             .lines()
             .collect(Collectors.joining());
@@ -51,13 +51,15 @@ public class DiplomasRestClient {
     private static URI createForwardUrl(HttpServletRequest request) throws URISyntaxException {
         final String originalUrl = request.getRequestURL().toString();
         return UriComponentsBuilder.newInstance()
-            .uri(new URI("http://localhost:3300" +  originalUrl.substring(originalUrl.indexOf("/pri"))))
+            .uri(new URI("http://localhost:3300" + originalUrl.substring(originalUrl.indexOf("/pri"))))
             .build(true)
             .toUri();
     }
 
     private <T> ResponseEntity<String> sendRequest(RestTemplate restTemplate, URI url, HttpMethod requestType, T data) {
-        HttpEntity<T> entity = new HttpEntity<>(data);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<T> entity = new HttpEntity<>(data, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, requestType, entity, String.class);
         return ResponseEntity.status(responseEntity.getStatusCode())
             .body(responseEntity.getBody());
