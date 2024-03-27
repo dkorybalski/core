@@ -29,7 +29,7 @@ public class ProjectDiplomaController {
             .body(response.getBody());
     }
 
-    @Secured({"STUDENT"})
+    @Secured({"STUDENT", "PROJECT_ADMIN", "COORDINATOR"})
     @PutMapping
     public ResponseEntity<?> updateDiploma(HttpServletRequest request) {
         ResponseEntity<String> response = diplomasRestClient.forwardRequest(request);
